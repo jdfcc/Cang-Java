@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author jdfcc
+ * @since 2023-1-3
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
