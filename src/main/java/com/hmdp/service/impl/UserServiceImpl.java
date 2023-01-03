@@ -1,20 +1,35 @@
 package com.hmdp.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
+import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.RegexUtils;
+import com.hmdp.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.statement.select.KSQLWindow;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static com.hmdp.utils.RedisConstants.*;
 import static com.hmdp.utils.SystemConstants.*;
 
 /**
@@ -30,7 +45,10 @@ import static com.hmdp.utils.SystemConstants.*;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
     @Autowired
-    private UserMapper service;
+    private UserMapper mapper;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Result sendCode(String phone, HttpSession session) {
@@ -41,11 +59,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        生成验证码
         String code = RandomUtil.randomNumbers(4);
 
-//        储存进session
-        session.setAttribute(VERIFICATION_CODE, code);
+//        String code = "1234";
+
+//        储存进redis
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code);
 
 //        发送验证码
         log.info("The verification code is: {}", code);
+
+//        设置验证码过期时间
+        stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
 //        返回
         return Result.ok();
@@ -53,19 +76,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public Result login(LoginFormDTO dto, HttpSession session) {
-//        校验手机号
+        //        校验手机号
         String phone = dto.getPhone();
         if (RegexUtils.isPhoneInvalid(phone))
             return Result.fail("手机号格式有误");
-//校验验证码
-        String cacheCode = (String) session.getAttribute(VERIFICATION_CODE);
+        //校验验证码
+        String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
         String code = dto.getCode();
         if (cacheCode == null || !cacheCode.equals(code))
             return Result.fail("验证码有误");
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getPhone, phone);
-        User user = service.selectOne(wrapper);
+        User user = mapper.selectOne(wrapper);
 
 //        校验密码
 //        String password=dto.getPassword();
@@ -74,18 +97,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            return Result.fail("密码错误");
 
         //        判断用户是否存在，不存在则注册
-        if(user==null){
-            user=new User();
+//        TODO 注册用户
+        if (user == null) {
+            user = new User();
             user.setPhone(phone);
-            user.setNickName(USER_NICK_NAME_PREFIX+RandomUtil.randomString(5));
-            service.insert(user);
+            user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
+            mapper.insert(user);
         }
-        session.setAttribute(USER,user);
-        return Result.ok();
+        UserDTO date = BeanUtil.copyProperties(user, UserDTO.class);
+        String token = UUID.randomUUID().toString(true);
+//        将dto转换成map
+        Map<String, Object> userMap = BeanUtil.beanToMap(date, new HashMap<>(),
+                CopyOptions.create()
+                        .setIgnoreNullValue(true)
+                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
+//        储存进redis
+        stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, userMap);
+        stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+//        将token返回给前端
+        return Result.ok(token);
     }
 
     @Override
-    public Result logout() {
+    public Result logout(HttpServletRequest request) {
+        stringRedisTemplate.delete(LOGIN_USER_KEY+request.getHeader(REQUEST_HEAD));
+        UserHolder.removeUser();
         return Result.ok();
     }
 }

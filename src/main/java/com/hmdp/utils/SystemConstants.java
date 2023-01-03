@@ -6,6 +6,5 @@ public class SystemConstants {
     public static final int DEFAULT_PAGE_SIZE = 5;
     public static final int MAX_PAGE_SIZE = 10;
     public static final String VERIFICATION_CODE="code";
-
     public static final String USER="user";
 }
