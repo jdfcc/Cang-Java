@@ -33,6 +33,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Autowired
     private ShopMapper shopMapper;
 
+    @Autowired
+    private IShopService service;
+
     @Override
     public Result selectShopById(Long id) {
 
@@ -54,4 +57,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
         return Result.ok(shop);
     }
+
+
 }

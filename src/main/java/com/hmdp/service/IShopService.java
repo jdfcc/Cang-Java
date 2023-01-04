@@ -11,8 +11,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  *
  * @author jdfcc
  * @since 2023-1-4
+ *
  */
 public interface IShopService extends IService<Shop> {
 
     Result selectShopById(Long id);
+
+
 }
