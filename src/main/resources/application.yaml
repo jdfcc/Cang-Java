@@ -1,5 +1,9 @@
 server:
   port: 8081
+
+login:
+  authorization: false
+
 spring:
   application:
     name: hmdp
