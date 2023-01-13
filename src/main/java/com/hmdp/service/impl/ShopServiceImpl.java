@@ -99,9 +99,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         Shop shop = cacheClient.queryWithLogicalExpire(
                 CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.SECONDS);
         if (shop == null) {
-            LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Shop::getId, id);
-            shop = shopMapper.selectOne(wrapper);
+            shop = cacheClient.queryWithCacheThrough(CACHE_SHOP_KEY,id,Shop.class,this::getById,CACHE_SHOP_TTL,TimeUnit.MINUTES);
             cacheClient.setWithLogicExpire(CACHE_SHOP_KEY + id, shop, CACHE_SHOP_TTL, TimeUnit.SECONDS);
         }
         return Result.ok(shop);

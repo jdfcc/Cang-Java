@@ -9,7 +9,9 @@ public class RedisConstants {
     public static final Long CACHE_NULL_TTL = 2L;
 
     public static final Long CACHE_SHOP_TTL = 10L;
-    public static final String CACHE_SHOP_KEY = "hmdp:cache:shop:";
+    public static final String CACHE_SHOP_KEY = "hmdp:cache:redisData:shop:";
+
+    public static final String CACHE_ENTITY_KEY = "entity:";
 
     public static final String CACHE_SHOP_TYPE_KEY = "hmdp:cache:shopType:";
     public static final Long CACHE_SHOP_TYPE_TTL = 144L;

@@ -57,7 +57,7 @@ public class CacheClient {
      */
     public <R, ID> R queryWithCacheThrough(
             String key, ID id, Class<R> type, Function<ID, R> dbFallback, Long saveTime, TimeUnit unit) {
-        String queryId = key + String.valueOf(id);
+        String queryId = key + CACHE_ENTITY_KEY+String.valueOf(id);
         String json = redisTemplate.opsForValue().get(queryId);
         if (StrUtil.isNotBlank(json))
             return JSONUtil.toBean(json, type);
@@ -69,7 +69,7 @@ public class CacheClient {
             redisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, unit);
             return null;
         }
-        this.set(key, r, saveTime, unit);
+        this.set(queryId, r, saveTime, unit);
         return r;
     }
 
@@ -138,7 +138,6 @@ public class CacheClient {
                 }
 //            数据重建未完成，查询数据库
                 R newR = dbFallback.apply(id);
-//                log.info("...................... : {}", newR.toString());
                 this.setWithLogicExpire(queryKey, newR, saveTime, unit);
             } catch (Exception e) {
                 throw new RuntimeException(e);
