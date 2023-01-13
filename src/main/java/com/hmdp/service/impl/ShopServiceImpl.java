@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hmdp.dto.Result;
+import com.hmdp.entity.RedisData;
 import com.hmdp.entity.Shop;
 import com.hmdp.mapper.ShopMapper;
 import com.hmdp.service.IShopService;
@@ -41,7 +42,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Autowired
     private ShopMapper shopMapper;
-
     @Autowired
     private CacheClient cacheClient;
 
@@ -97,7 +97,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 //        }
 //        return Result.ok(shop);
         Shop shop = cacheClient.queryWithLogicalExpire(
-                CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.MINUTES);
+                CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.SECONDS);
+        if (shop == null) {
+            LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Shop::getId, id);
+            shop = shopMapper.selectOne(wrapper);
+            cacheClient.setWithLogicExpire(CACHE_SHOP_KEY + id, shop, CACHE_SHOP_TTL, TimeUnit.SECONDS);
+        }
         return Result.ok(shop);
     }
 
