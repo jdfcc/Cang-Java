@@ -8,15 +8,15 @@ public class RedisConstants {
 
     public static final Long CACHE_NULL_TTL = 2L;
 
-    public static final Long CACHE_SHOP_TTL = 30L;
+    public static final Long CACHE_SHOP_TTL = 10L;
     public static final String CACHE_SHOP_KEY = "hmdp:cache:shop:";
 
     public static final String CACHE_SHOP_TYPE_KEY = "hmdp:cache:shopType:";
     public static final Long CACHE_SHOP_TYPE_TTL = 144L;
 
-    public static final String LOCK_SHOP_KEY = "hmdp:lock:shop:";
-    public static final Long LOCK_SHOP_TTL = 10L;
-    public static final String LOCK_SHOP_VALUE="1";
+    public static final String LOCK_KEY = "hmdp:lock:";
+    public static final Long LOCK_TTL = 10L;
+    public static final String LOCK_VALUE="1";
     public static final int THREAD_SLEEP_TIME = 10;
 
 
