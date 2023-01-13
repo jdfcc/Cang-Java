@@ -1,8 +1,10 @@
 package com.hmdp;
 
 import cn.hutool.core.util.RandomUtil;
+import com.hmdp.service.impl.ShopServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -11,6 +13,9 @@ import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
 @SpringBootTest
 @Slf4j
 class HmDianPingApplicationTests {
+
+    @Autowired
+    private ShopServiceImpl shopServiceImpl;
 
     @Value("${login.authorization}")
     private Boolean auth;

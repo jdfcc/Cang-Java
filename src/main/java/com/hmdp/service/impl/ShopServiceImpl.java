@@ -1,6 +1,7 @@
 package com.hmdp.service.impl;
 
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,6 +16,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.hmdp.utils.RedisConstants.*;
@@ -37,14 +41,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Autowired
     private ShopMapper shopMapper;
 
-    @Autowired
-    private IShopService service;
+    //线程池
+    private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
 
     @Override
     public Result selectShopById(Long id) {
 
         String key = CACHE_SHOP_KEY + id;
         String value = redisTemplate.opsForValue().get(key);
+
 //        value不为空，直接返回
         if (StrUtil.isNotBlank(value)) {
             Shop shop = JSONUtil.toBean(value, Shop.class);
@@ -56,19 +61,43 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             return Result.fail("The store does not exist.");
         }
 //如果shop为空，在数据库里面查
-        LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Shop::getId, id);
-        Shop shop = shopMapper.selectOne(wrapper);
-        if (shop == null) {
-            redisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
-            return Result.fail("The store does not exist.");
-        }
-//        写入redis
-        redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop));
-        redisTemplate.expire(key, CACHE_SHOP_TTL, TimeUnit.MINUTES);
+        Shop shop = null;
+        try {
+            Boolean lock = getLock(LOCK_SHOP_KEY);
+//        获取失败
+            if (!lock) {
+                Thread.sleep(THREAD_SLEEP_TIME);
+                selectShopById(id);
+            }
 
+            LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Shop::getId, id);
+            shop = shopMapper.selectOne(wrapper);
+
+            if (shop == null) {
+                //            redis写空值解决缓存穿透
+                redisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
+                return Result.fail("The store does not exist.");
+            }
+//        doubleCheck,因为线程在休眠过程中其他线程可能已经重建好了redis数据
+            value = redisTemplate.opsForValue().get(key);
+            if (StrUtil.isNotBlank(value)) {
+                shop = JSONUtil.toBean(value, Shop.class);
+                log.info(String.valueOf(shop));
+                return Result.ok(shop);
+            }
+
+//        redis写入真实值
+            redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop));
+            redisTemplate.expire(key, CACHE_SHOP_TTL, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            removeLock(LOCK_SHOP_KEY);
+        }
         return Result.ok(shop);
     }
+
 
     @Override
     @Transactional
@@ -79,4 +108,25 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         redisTemplate.delete(CACHE_SHOP_KEY + shop.getId());
         return Result.ok();
     }
+
+    /**
+     * 获取互斥锁，如果获取成功返回true
+     *
+     * @param key
+     * @return
+     */
+    public Boolean getLock(String key) {
+        Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, LOCK_SHOP_VALUE, LOCK_SHOP_TTL, TimeUnit.SECONDS);
+        return BooleanUtil.isTrue(flag);
+    }
+
+    /**
+     * 移除互斥锁
+     *
+     * @param key
+     */
+    public void removeLock(String key) {
+        redisTemplate.delete(key);
+    }
+
 }

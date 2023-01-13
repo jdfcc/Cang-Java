@@ -61,11 +61,11 @@ public class ShopController {
     public Result updateShop(@RequestBody Shop shop) {
         // 写入数据库
         return shopService.updateShop(shop);
-
     }
 
     /**
      * 根据商铺类型分页查询商铺信息
+     *+
      *
      * @param typeId  商铺类型
      * @param current 页码
