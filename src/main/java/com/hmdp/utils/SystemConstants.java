@@ -5,6 +5,8 @@ public class SystemConstants {
     public static final String USER_NICK_NAME_PREFIX = "user_";
     public static final int DEFAULT_PAGE_SIZE = 5;
     public static final int MAX_PAGE_SIZE = 10;
-    public static final String VERIFICATION_CODE="code";
-    public static final String USER="user";
+
+    public static final String VOUCHER_ERROR="Voucher is no longer available";
+//    public static final String VERIFICATION_CODE="code";
+//    public static final String USER="user";
 }

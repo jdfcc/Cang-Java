@@ -15,7 +15,6 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (UserHolder.getUser() == null) {
-            log.info("NOT LOGIN");
             response.setStatus(SC_UNAUTHORIZED);
             return false;
         }
