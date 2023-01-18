@@ -18,7 +18,6 @@ import java.util.function.Function;
 import static com.hmdp.utils.RedisConstants.*;
 
 @Component
-
 public class CacheClient {
 
     @Autowired
