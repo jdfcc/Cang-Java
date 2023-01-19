@@ -9,7 +9,6 @@ import com.hmdp.mapper.SeckillVoucherMapper;
 import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.hmdp.utils.ILock;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
@@ -23,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static com.hmdp.utils.RedisConstants.CACHE_VOUCHER_ORDER_LOCK_TTL;
-import static com.hmdp.utils.SystemConstants.VOUCHER_ERROR;
+import static com.hmdp.utils.SystemConstants.*;
 
 /**
  * <p>
@@ -48,21 +47,25 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         secKillWrapper.eq(SeckillVoucher::getVoucherId, voucherId).gt(SeckillVoucher::getStock, 0);
         SeckillVoucher secKillVoucher = voucherMapper.selectOne(secKillWrapper);
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(secKillVoucher.getEndTime()))
+        if (now.isAfter(secKillVoucher.getEndTime())) {
             return Result.fail(VOUCHER_ERROR);
-        if (now.isBefore(secKillVoucher.getBeginTime()))
+        }
+        if (now.isBefore(secKillVoucher.getBeginTime())) {
             return Result.fail(VOUCHER_ERROR);
-        if (secKillVoucher.getStock() < 1)
+        }
+        if (secKillVoucher.getStock() < 1) {
             return Result.fail(VOUCHER_ERROR);
-        Long id = UserHolder.getUser().getId();
+        }
 
+        Long id = UserHolder.getUser().getId();
         SimpleRedisLock simpleRedisLock = null;
         IVoucherOrderService proxy = null;
         try {
             simpleRedisLock = new SimpleRedisLock(redisTemplate, String.valueOf(id));
             boolean isLock = simpleRedisLock.tryLock(CACHE_VOUCHER_ORDER_LOCK_TTL);
-            if (!isLock)
-                return Result.fail(VOUCHER_ERROR);
+            if (!isLock) {
+                return Result.fail(VOUCHER_ERROR_WAIT);
+            }
             proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucher(voucherId);
         } catch (IllegalStateException e) {
@@ -80,7 +83,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                 .eq(VoucherOrder::getUserId, UserHolder.getUser().getId());
         int count = this.count(voucherOrderWrapper);
         if (count > 0)
-            return Result.fail(VOUCHER_ERROR);
+            return Result.fail(VOUCHER_ERROR_ALREADY_BUY);
         boolean flag = voucherMapper.updateVoucher(voucherId);
         if (!flag)
             return Result.fail(VOUCHER_ERROR);

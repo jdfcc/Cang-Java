@@ -1,10 +1,6 @@
 package com.hmdp;
 
 import cn.hutool.core.util.RandomUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.hmdp.dto.Result;
-import com.hmdp.entity.Shop;
-import com.hmdp.mapper.ShopMapper;
 import com.hmdp.service.IShopService;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.CacheClient;
@@ -15,88 +11,88 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
-import static com.hmdp.utils.RedisConstants.CACHE_SHOP_TTL;
 
 @SpringBootTest
 @Slf4j
 class HmDianPingApplicationTests {
 
-    @Autowired
-    private ShopServiceImpl shopServiceImpl;
+//
+//    @Autowired
+//    private ShopServiceImpl shopServiceImpl;
+//
+//    @Autowired
+//    private CacheClient cacheClient;
+//
+//    @Autowired
+//    private IShopService service;
+//    @Autowired
+//    private RedisIdWorker redisIdWorker;
+//
+//    private ExecutorService es = Executors.newFixedThreadPool(500);
 
-    @Autowired
-    private CacheClient cacheClient;
 
-    @Autowired
-    private IShopService service;
-    @Autowired
-    private RedisIdWorker redisIdWorker;
-
-
-    private ExecutorService es = Executors.newFixedThreadPool(500);
-
-    @Test
-    public void testIdWorker() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(300);
-
-        Runnable task = () -> {
-            for (int i = 0; i < 100; i++) {
-                long id = redisIdWorker.nextId("order");
-                System.out.println("id = " + id);
-            }
-            latch.countDown();
-        };
-        long begin = System.currentTimeMillis();
-        for (int i = 0; i < 300; i++) {
-            es.submit(task);
-        }
-        latch.await();
-        long end = System.currentTimeMillis();
-        System.out.println("time = " + (end - begin));
-    }
-
-//    @Test
-//    public void testCache() {
-//        Long id=1L;
-//        Shop shop = cacheClient.queryWithCacheThrough(
-//                CACHE_SHOP_KEY, id, Shop.class,this::select,CACHE_SHOP_TTL, TimeUnit.MINUTES);
-//        cacheClient.setWithLogicExpire(CACHE_SHOP_KEY, );
+//    @org.junit.jupiter.api.Test
+//    public void testIdWorker() throws InterruptedException {
+//        CountDownLatch latch = new CountDownLatch(300);
+//
+//        Runnable task = () -> {
+//            for (int i = 0; i < 100; i++) {
+//                long id = redisIdWorker.nextId("order");
+//                System.out.println("id = " + id);
+//            }
+//            latch.countDown();
+//        };
+//        long begin = System.currentTimeMillis();
+//        for (int i = 0; i < 300; i++) {
+//            es.submit(task);
+//        }
+//        latch.await();
+//        long end = System.currentTimeMillis();
+//        System.out.println("time = " + (end - begin));
 //    }
-
-    @Value("${login.authorization}")
-    private Boolean auth;
-
-    @Test
-    public void testCode() {
-        String code = RandomUtil.randomNumbers(4);
-        log.info("code: {}", code);
-    }
-
-    @Test
-    public void testName() {
-        Long id = 0x8000000000000000L;
-//        cache:shop:-9223372036854775808
-        String key = CACHE_SHOP_KEY + id;
-        log.info(key);
-    }
-
-    @Test
-    public void testAuth() {
-        if (!auth)
-            log.info("1");
-    }
-
-    @Test
-    public void testNull() {
-        String str = "";
-        if (str != null)
-            log.info("not null");
-    }
+//
+////    @Test
+////    public void testCache() {
+////        Long id=1L;
+////        Shop shop = cacheClient.queryWithCacheThrough(
+////                CACHE_SHOP_KEY, id, Shop.class,this::select,CACHE_SHOP_TTL, TimeUnit.MINUTES);
+////        cacheClient.setWithLogicExpire(CACHE_SHOP_KEY, );
+////    }
+//
+//    @Value("${login.authorization}")
+//    private Boolean auth;
+//
+//    @org.junit.jupiter.api.Test
+//    public void testCode() {
+//        String code = RandomUtil.randomNumbers(4);
+//        log.info("code: {}", code);
+//    }
+//
+//    @org.junit.jupiter.api.Test
+//    public void testName() {
+//        Long id = 0x8000000000000000L;
+////        cache:shop:-9223372036854775808
+//        String key = CACHE_SHOP_KEY + id;
+//        log.info(key);
+//    }
+//
+//    @org.junit.jupiter.api.Test
+//    public void testAuth() {
+//        if (!auth)
+//            log.info("1");
+//    }
+//
+//    @org.junit.jupiter.api.Test
+//    public void testNull() {
+//        String str = "";
+//        if (str != null)
+//            log.info("not null");
+//    }
 
 }

@@ -7,6 +7,9 @@ public class SystemConstants {
     public static final int MAX_PAGE_SIZE = 10;
 
     public static final String VOUCHER_ERROR="Voucher is no longer available";
+    public static final String VOUCHER_ERROR_ALREADY_BUY="You have already bought this Voucher";
+
+    public static final String VOUCHER_ERROR_WAIT="please wait some time to buy this Voucher";
 //    public static final String VERIFICATION_CODE="code";
 //    public static final String USER="user";
 }
