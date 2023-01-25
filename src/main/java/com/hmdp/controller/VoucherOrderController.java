@@ -27,3 +27,4 @@ public class VoucherOrderController {
         return voucherOrderService.SecKillVoucher(voucherId);
     }
 }
+

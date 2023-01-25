@@ -13,6 +13,8 @@ import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import org.jetbrains.annotations.NotNull;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
+import static com.hmdp.utils.RedisConstants.CACHE_VOUCHER_ORDER_KEY;
 import static com.hmdp.utils.RedisConstants.CACHE_VOUCHER_ORDER_LOCK_TTL;
 import static com.hmdp.utils.SystemConstants.*;
 
@@ -41,6 +45,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private RedissonClient redissonClient;
+
     @Override
     public Result SecKillVoucher(Long voucherId) {
         LambdaQueryWrapper<SeckillVoucher> secKillWrapper = new LambdaQueryWrapper<>();
@@ -58,20 +65,21 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
 
         Long id = UserHolder.getUser().getId();
-        SimpleRedisLock simpleRedisLock = null;
+//        SimpleRedisLock simpleRedisLock = null;
+        RLock lock = redissonClient.getLock(CACHE_VOUCHER_ORDER_KEY+id);
+
         IVoucherOrderService proxy = null;
         try {
-            simpleRedisLock = new SimpleRedisLock(redisTemplate, String.valueOf(id));
-            boolean isLock = simpleRedisLock.tryLock(CACHE_VOUCHER_ORDER_LOCK_TTL);
+//            simpleRedisLock = new SimpleRedisLock(redisTemplate, String.valueOf(id));
+//            boolean isLock = simpleRedisLock.tryLock(CACHE_VOUCHER_ORDER_LOCK_TTL);
+            boolean isLock = lock.tryLock();
             if (!isLock) {
                 return Result.fail(VOUCHER_ERROR_WAIT);
             }
             proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucher(voucherId);
-        } catch (IllegalStateException e) {
-            throw new RuntimeException(e);
         } finally {
-            simpleRedisLock.unLock();
+            lock.unlock();
         }
     }
 
