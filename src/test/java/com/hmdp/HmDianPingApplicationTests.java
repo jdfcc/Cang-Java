@@ -21,6 +21,18 @@ import static com.hmdp.utils.RedisConstants.CACHE_SHOP_KEY;
 @SpringBootTest
 @Slf4j
 class HmDianPingApplicationTests {
+    @Value("${spring.redis.host}")
+    private String address;
+
+    @Value("${spring.redis.password}")
+    private String password;
+
+    @Test
+    public void test(){
+        log.info("address: {}",address);
+        log.info("password: {}",password);
+    }
+
 
 //
 //    @Autowired
