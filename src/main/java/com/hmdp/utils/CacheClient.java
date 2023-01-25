@@ -55,7 +55,7 @@ public class CacheClient {
      */
     public <R, ID> R queryWithCacheThrough(
             String key, ID id, Class<R> type, Function<ID, R> dbFallback, Long saveTime, TimeUnit unit) {
-        String queryId = key + CACHE_ENTITY_KEY+String.valueOf(id);
+        String queryId = key + CACHE_ENTITY_KEY + String.valueOf(id);
         String json = redisTemplate.opsForValue().get(queryId);
         if (StrUtil.isNotBlank(json))
             return JSONUtil.toBean(json, type);
@@ -118,53 +118,56 @@ public class CacheClient {
 
 //        已过期，需要重建缓存
         String lockKey = LOCK_KEY + id;
+        SimpleRedisLock simpleRedisLock = new SimpleRedisLock(redisTemplate, lockKey);
+        Boolean lock = simpleRedisLock.tryLock(LOCK_TTL);
 //        log.info("缓存已过期");
-        if (getLock(lockKey))
+        if (lock)
 //            log.info("获取互斥锁成功");
 //            获取互斥锁成功，开启另外一个进程开始数据重建任务
-        CACHE_REBUILD_EXECUTOR.submit(() -> {
-            try {
-                String newJson = redisTemplate.opsForValue().get(queryKey);
+            CACHE_REBUILD_EXECUTOR.submit(() -> {
+                try {
+                    String newJson = redisTemplate.opsForValue().get(queryKey);
 //            检查数据重建是否已由其他线程完成，即缓存逻辑过期时间是否已为未过期
-                RedisData newRedisData = JSONUtil.toBean(newJson, RedisData.class);
-                LocalDateTime newExpireTime = newRedisData.getExpireTime();
-                if (newExpireTime.isAfter(LocalDateTime.now())) {
-                    //      数据重建完成,逻辑过期时间未过期，将json反序列化成对象并返回
-                    JSONObject newData = (JSONObject) newRedisData.getData();
-                    R newR = JSONUtil.toBean(newData, type);
-                    return newR;
-                }
+
+                    RedisData newRedisData = JSONUtil.toBean(newJson, RedisData.class);
+                    LocalDateTime newExpireTime = newRedisData.getExpireTime();
+                    if (newExpireTime.isAfter(LocalDateTime.now())) {
+                        //      数据重建完成,逻辑过期时间未过期，将json反序列化成对象并返回
+                        JSONObject newData = (JSONObject) newRedisData.getData();
+                        R newR = JSONUtil.toBean(newData, type);
+                        return newR;
+                    }
 //            数据重建未完成，查询数据库
-                R newR = dbFallback.apply(id);
-                this.setWithLogicExpire(queryKey, newR, saveTime, unit);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                removeLock(lockKey);
-            }
-            return r;
-        });
+                    R newR = dbFallback.apply(id);
+                    this.setWithLogicExpire(queryKey, newR, saveTime, unit);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    simpleRedisLock.unLock();
+                }
+                return r;
+            });
         return r;
     }
 
-    /**
-     * 获取互斥锁
-     *
-     * @param key
-     * @return
-     */
-    public Boolean getLock(String key) {
-        Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, LOCK_VALUE, LOCK_TTL, TimeUnit.SECONDS);
-        return BooleanUtil.isTrue(flag);
-    }
-
-    /**
-     * 移除互斥锁
-     *
-     * @param key
-     */
-    public void removeLock(String key) {
-        redisTemplate.delete(key);
-    }
+//    /**
+//     * 获取互斥锁
+//     *
+//     * @param key
+//     * @return
+//     */
+//    public Boolean getLock(String key) {
+//        Boolean flag = redisTemplate.opsForValue().setIfAbsent(key, LOCK_VALUE, LOCK_TTL, TimeUnit.SECONDS);
+//        return BooleanUtil.isTrue(flag);
+//    }
+//
+//    /**
+//     * 移除互斥锁
+//     *
+//     * @param key
+//     */
+//    public void removeLock(String key) {
+//        redisTemplate.delete(key);
+//    }
 
 }
