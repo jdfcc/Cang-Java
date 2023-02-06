@@ -3,12 +3,17 @@ package com.hmdp.utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import static com.hmdp.utils.RedisConstants.REDIS_INCREASE_KEY;
 
+/**
+ * @author jdfcc
+ * @description id生成器
+ */
 @Component
 public class RedisIdWorker {
 
