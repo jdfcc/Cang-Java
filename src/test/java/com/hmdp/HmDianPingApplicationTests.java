@@ -1,6 +1,7 @@
 package com.hmdp;
 
 import cn.hutool.core.util.RandomUtil;
+import com.hmdp.mapper.BlogMapper;
 import com.hmdp.service.IShopService;
 import com.hmdp.service.impl.ShopServiceImpl;
 import com.hmdp.utils.CacheClient;
@@ -26,6 +27,15 @@ class HmDianPingApplicationTests {
 
     @Value("${spring.redis.password}")
     private String password;
+
+    @Autowired
+    private BlogMapper blogMapper;
+
+    @Test
+    public void testRemove(){
+        Boolean unliked = blogMapper.unliked(23L);
+        log.info("flag: {}",unliked);
+    }
 
     @Test
     public void test(){

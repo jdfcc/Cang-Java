@@ -40,6 +40,7 @@ public class CacheClient {
         redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(data), time, unit);
     }
 
+
     /**
      * 查询名为key+id的对象储存进redis并返回，利用存储空值解决缓存穿透问题
      *

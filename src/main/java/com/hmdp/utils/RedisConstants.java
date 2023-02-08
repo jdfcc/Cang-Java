@@ -1,7 +1,7 @@
 package com.hmdp.utils;
 
 public class RedisConstants {
-    public static final String REQUEST_HEAD = "authorization";
+//    public static final String REQUEST_HEAD = "authorization";
     public static final String LOGIN_CODE_KEY = "hmdp:login:code:";
     public static final Long LOGIN_CODE_TTL = 2L;
     public static final String LOGIN_USER_KEY = "hmdp:login:token:";
@@ -32,6 +32,12 @@ public class RedisConstants {
     public static final String SECKILL_ORDER_KEY = "hmdp:seckill:order:";
 
     public static final String BLOG_LIKED_KEY = "hmdp:blog:liked:";
+    public static final String BLOG_HOT_KEY = "hmdp:blog:hot:";
+    public static final Long BLOG_HOT_KEY_TTL = 30L;
+
+    public static final String BLOG_KEY = "hmdp:blog:";
+    public static final Long BLOG_KEY_TTL = 144L;
+
     public static final String FEED_KEY = "hmdp:feed:";
     public static final String SHOP_GEO_KEY = "hmdp:shop:geo:";
     public static final String USER_SIGN_KEY = "hmdp:sign:";

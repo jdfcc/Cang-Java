@@ -10,6 +10,7 @@ public class UserHolder {
     }
 
     public static UserDTO getUser(){
+
         return tl.get();
     }
 
