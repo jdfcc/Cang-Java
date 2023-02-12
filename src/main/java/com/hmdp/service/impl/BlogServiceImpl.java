@@ -1,9 +1,9 @@
 package com.hmdp.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
@@ -16,15 +16,11 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.CacheClient;
 import com.hmdp.utils.SystemConstants;
 import com.hmdp.utils.UserHolder;
-import jodd.time.TimeUtil;
-import jodd.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.hmdp.utils.RedisConstants.*;
+import static com.hmdp.utils.SystemConstants.MAX_PAGE_SIZE;
 import static com.hmdp.utils.SystemConstants.NOT_LOGIN;
 
 /**
@@ -53,15 +50,23 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Autowired
     private CacheClient cacheClient;
 
+    public Page<Blog> queryPage(Integer current) {
+        return this.query().orderByDesc("liked").page(new Page<>(current, MAX_PAGE_SIZE));
+
+    }
+
     @Override
     public Result queryHotblog(Integer current) {
         String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY);
         List<Blog> lists = JSONUtil.toList(json, Blog.class);
-        if(!lists.isEmpty())
+        if (!lists.isEmpty())
             return Result.ok(lists);
         Page<Blog> page = this.query()
                 .orderByDesc("liked")
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+
+//        Page page = cacheClient.queryWithCacheThrough(
+//                BLOG_HOT_KEY, null, Page.class, this::queryPage, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
         // 获取当前页数据
         List<Blog> records = page.getRecords();
         // 查询用户
@@ -72,7 +77,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             Boolean liked = this.isLiked(key, userId);
             blog.setIsLike(liked);
         });
-        cacheClient.set(BLOG_HOT_KEY,records,BLOG_HOT_KEY_TTL,TimeUnit.SECONDS);
+        cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
         return Result.ok(records);
 
     }
@@ -125,9 +130,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     @Override
     public Result queryBlog(String id) {
-        String json = redisTemplate.opsForValue().get(BLOG_KEY+id);
-        Blog b= JSONUtil.toBean(json,Blog.class);
-        if(!(b.getId()==null))
+        String json = redisTemplate.opsForValue().get(BLOG_KEY + id);
+        Blog b = JSONUtil.toBean(json, Blog.class);
+        if (!(b.getId() == null))
             return Result.ok(b);
         Blog blog = this.getById(id);
         String key = BLOG_LIKED_KEY + id;
@@ -138,7 +143,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         blog.setName(user.getNickName());
         blog.setIcon(user.getIcon());
         blog.setIsLike(this.isLiked(key, userId));
-        cacheClient.set(BLOG_KEY+id,blog,BLOG_KEY_TTL,TimeUnit.SECONDS);
+        cacheClient.set(BLOG_KEY + id, blog, BLOG_KEY_TTL, TimeUnit.SECONDS);
         return Result.ok(blog);
     }
 
