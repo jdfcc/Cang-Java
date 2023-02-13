@@ -3,7 +3,6 @@ package com.hmdp.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.extension.conditions.query.QueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
@@ -51,7 +50,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     private CacheClient cacheClient;
 
     public Page<Blog> queryPage(Integer current) {
-        return this.query().orderByDesc("liked").page(new Page<>(current, MAX_PAGE_SIZE));
+        return query().orderByDesc("liked").page(new Page<>(current, MAX_PAGE_SIZE));
 
     }
 

@@ -21,6 +21,7 @@ public class RedisConstants {
 
     public static final String LOCK_KEY = "hmdp:lock:";
     public static final String REDIS_INCREASE_KEY = "hmdp:increaseKey:";
+    public static final String FOLLOW_KEY = "hmdp:follow:";
     public static final Long LOCK_TTL = 10L;
     public static final String LOCK_VALUE = "1";
 
