@@ -9,6 +9,7 @@ public class SystemConstants {
     public static final String REQUEST_HEAD = "authorization";
 
     public static final String NOT_LOGIN = "please login first";
+    public static final String CREATE_BLOG_FAILED = "Add failed";
 
     public static final String VOUCHER_ERROR="Voucher is no longer available";
     public static final String VOUCHER_ERROR_ALREADY_BUY="You have already bought this Voucher";

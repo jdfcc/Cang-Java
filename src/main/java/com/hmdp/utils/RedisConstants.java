@@ -37,6 +37,7 @@ public class RedisConstants {
     public static final Long BLOG_HOT_KEY_TTL = 30L;
 
     public static final String BLOG_KEY = "hmdp:blog:";
+
     public static final Long BLOG_KEY_TTL = 144L;
 
     public static final String FEED_KEY = "hmdp:feed:";

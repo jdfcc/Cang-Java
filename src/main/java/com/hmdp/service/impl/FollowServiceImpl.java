@@ -6,6 +6,7 @@ import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.Follow;
 import com.hmdp.entity.User;
+import com.hmdp.mapper.BlogMapper;
 import com.hmdp.mapper.FollowMapper;
 import com.hmdp.service.IFollowService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,11 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static com.hmdp.utils.RedisConstants.FEED_KEY;
 import static com.hmdp.utils.RedisConstants.FOLLOW_KEY;
 import static com.hmdp.utils.SystemConstants.NOT_LOGIN;
 
@@ -42,6 +45,8 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     private StringRedisTemplate redisTemplate;
     @Autowired
     private IUserService userService;
+    @Resource
+    private BlogMapper blogMapper;
 
     @Transactional
     @Override
@@ -62,6 +67,11 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
             LambdaQueryWrapper<Follow> followWrapper=new LambdaQueryWrapper();
             followWrapper.eq(Follow::getUserId,userId);
             redisTemplate.opsForSet().remove(key, String.valueOf(id));
+//            取关时，从当前用户消息队列删除目标的blog id
+            List<String> ids = blogMapper.getIds(String.valueOf(id));
+            for (String s : ids) {
+                redisTemplate.opsForZSet().remove(FEED_KEY+userId,s);
+            }
             mapper.delete(followWrapper);
         }
         return Result.ok("操作成功");

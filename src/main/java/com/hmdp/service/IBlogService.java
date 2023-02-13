@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * 服务类
  * </p>
  *
- * @author 虎哥
- * @since 2021-12-22
+ * @author jdfcc
+ * @since 2023-2-12
  */
 public interface IBlogService extends IService<Blog> {
 
@@ -23,4 +23,8 @@ public interface IBlogService extends IService<Blog> {
 
 
     Result queryLikes(String id);
+
+    Result saveBlog(Blog blog);
+
+    Result queryFollow(Long max, Integer offset);
 }
