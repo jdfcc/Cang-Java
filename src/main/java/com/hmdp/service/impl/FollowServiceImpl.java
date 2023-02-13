@@ -4,10 +4,12 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
+import com.hmdp.entity.Blog;
 import com.hmdp.entity.Follow;
 import com.hmdp.entity.User;
 import com.hmdp.mapper.BlogMapper;
 import com.hmdp.mapper.FollowMapper;
+import com.hmdp.service.IBlogService;
 import com.hmdp.service.IFollowService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.service.IUserService;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.annotation.Resource;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +50,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Autowired
     private IUserService userService;
     @Resource
-    private BlogMapper blogMapper;
+    private IBlogService blogService;
 
     @Transactional
     @Override
@@ -62,13 +66,21 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
         if(isFollow){
             redisTemplate.opsForSet().add(key, String.valueOf(id));
             mapper.insert(follower);
+//            关注的时候查询所有博客并加入消息队列以供用户查看
+            List<String> ids = blogService.getIds(id);
+            for (String s : ids) {
+                Blog blog = blogService.getById(s);
+                LocalDateTime updateTime = blog.getUpdateTime();
+                long score= Timestamp.valueOf(updateTime).getTime();
+                redisTemplate.opsForZSet().add(FEED_KEY+userId,s,score);
+            }
         }
         else {
             LambdaQueryWrapper<Follow> followWrapper=new LambdaQueryWrapper();
             followWrapper.eq(Follow::getUserId,userId);
             redisTemplate.opsForSet().remove(key, String.valueOf(id));
 //            取关时，从当前用户消息队列删除目标的blog id
-            List<String> ids = blogMapper.getIds(String.valueOf(id));
+            List<String> ids = blogService.getIds(id);
             for (String s : ids) {
                 redisTemplate.opsForZSet().remove(FEED_KEY+userId,s);
             }

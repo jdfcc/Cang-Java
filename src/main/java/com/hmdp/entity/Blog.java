@@ -87,7 +87,7 @@ public class Blog implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 更新时间
+     * 更新时间,可以认为他是时间戳，即score
      */
     private LocalDateTime updateTime;
 
