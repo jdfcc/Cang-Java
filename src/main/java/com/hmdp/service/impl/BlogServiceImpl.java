@@ -85,41 +85,90 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     @Override
     public Result queryFollow(Long max, Integer offset) {
-        UserDTO user = UserHolder.getUser();
+//        UserDTO user = UserHolder.getUser();
+//        if (user == null)
+//            return Result.fail(NOT_LOGIN);
+//        String key = FEED_KEY + user.getId();
+//        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.
+//                opsForZSet().rangeByScoreWithScores(key, 0, max, offset, 2);
+//        if (typedTuples == null || typedTuples.isEmpty())
+//            return Result.ok();
+//        List<Long> ids = new ArrayList<>(typedTuples.size());
+//        int count = 1;//偏移量
+//        Long min_score = 0L;//最小值
+//        for (ZSetOperations.TypedTuple<String> typedTuple : typedTuples) {
+//            ids.add(Long.valueOf(typedTuple.getValue()));
+//            Long score = typedTuple.getScore().longValue();
+//            if (score == min_score) {
+//                count++;
+//            } else {
+//                min_score = score;
+//                count = 1;
+//            }
+//        }
+//        List<Blog> blogs = new ArrayList<>();
+//        for (Long id : ids) {
+//            Blog blog = blogMapper.selectById(id);
+//            blogs.add(blog);
+//        }
+//        for (Blog blog : blogs) {
+//            queryBlogUser(blog);
+//            Boolean liked = this.isLiked(key, user.getId());
+//            blog.setIsLike(liked);
+//        }
+//        ScrollResult r = new ScrollResult();
+//        r.setList(blogs);
+//        r.setMinTime(min_score);
+//        r.setOffset(count);
+//        return Result.ok(r);
+        // 1.获取当前用户
+                UserDTO user = UserHolder.getUser();
         if (user == null)
             return Result.fail(NOT_LOGIN);
-        String key = FEED_KEY + user.getId();
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.
-                opsForZSet().rangeByScoreWithScores(key, 0, max, offset, 2);
-        if (typedTuples == null || typedTuples.isEmpty())
+        Long userId = user.getId();
+        // 2.查询收件箱 ZREVRANGEBYSCORE key Max Min LIMIT offset count
+        String key = FEED_KEY + userId;
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.opsForZSet()
+                .reverseRangeByScoreWithScores(key, 0, max, offset, 2);
+        // 3.非空判断
+        if (typedTuples == null || typedTuples.isEmpty()) {
             return Result.ok();
+        }
+        // 4.解析数据：blogId、minTime（时间戳）、offset
         List<Long> ids = new ArrayList<>(typedTuples.size());
-        int count = 1;//偏移量
-        Long min_score = 0L;//最小值
-        for (ZSetOperations.TypedTuple<String> typedTuple : typedTuples) {
-            ids.add(Long.valueOf(typedTuple.getValue()));
-            Long score = typedTuple.getScore().longValue();
-            if (score == min_score) {
-                count++;
-            } else {
-                min_score = score;
-                count = 1;
+        long minTime = 0; // 2
+        int os = 1; // 2
+        for (ZSetOperations.TypedTuple<String> tuple : typedTuples) { // 5 4 4 2 2
+            // 4.1.获取id
+            ids.add(Long.valueOf(tuple.getValue()));
+            // 4.2.获取分数(时间戳）
+            long time = tuple.getScore().longValue();
+            if(time == minTime){
+                os++;
+            }else{
+                minTime = time;
+                os = 1;
             }
         }
-        List<Blog> blogs = new ArrayList<>();
-        for (Long id : ids) {
-            Blog blog = blogMapper.selectById(id);
-            blogs.add(blog);
-        }
+
+        // 5.根据id查询blog
+        String idStr = StrUtil.join(",", ids);
+        List<Blog> blogs = query().in("id", ids).last("ORDER BY FIELD(id," + idStr + ")").list();
+
         for (Blog blog : blogs) {
+            // 5.1.查询blog有关的用户
             queryBlogUser(blog);
+            // 5.2.查询blog是否被点赞
             Boolean liked = this.isLiked(key, user.getId());
             blog.setIsLike(liked);
         }
+
+        // 6.封装并返回
         ScrollResult r = new ScrollResult();
         r.setList(blogs);
-        r.setMinTime(min_score);
-        r.setOffset(count);
+        r.setOffset(os);
+        r.setMinTime(minTime);
+
         return Result.ok(r);
     }
 
