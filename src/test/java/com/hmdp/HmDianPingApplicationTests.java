@@ -19,9 +19,7 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -95,6 +93,20 @@ class HmDianPingApplicationTests {
         log.info("password: {}",password);
     }
 
+
+    @Test
+    public void  testInt(){
+        int value =1;
+        Integer integer = new Integer(value);
+        int s=integer;
+        log.info("@@@@@@@@@@@@ {}",integer);
+        log.info("------------------ {}",s);
+        Set<String> strings = new HashSet<>();
+        strings.add("foo");
+        strings.add("bar");
+        strings.add("1");
+        System.out.println(strings.toString());
+    }
 
 
 

@@ -18,6 +18,7 @@ import com.hmdp.service.IUserService;
 import com.hmdp.utils.CacheClient;
 import com.hmdp.utils.SystemConstants;
 import com.hmdp.utils.UserHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -47,14 +48,17 @@ import static com.hmdp.utils.SystemConstants.*;
 public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IBlogService {
     @Resource
     private IUserService userService;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     @Resource
     private BlogMapper blogMapper;
     @Resource
     private CacheClient cacheClient;
     @Resource
     private FollowMapper followMapper;
+
+    public BlogServiceImpl(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public Result queryHotblog(Integer current) {
@@ -75,12 +79,32 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             Long userId = blog.getUserId();
             this.queryBlogUser(blog);
             String key = BLOG_LIKED_KEY + blog.getId();
+
+
             Boolean liked = this.isLiked(key, userId);
             blog.setIsLike(liked);
         });
         cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
         return Result.ok(records);
+    }
 
+    @Override
+    public Result queryBlog(String id) {
+        String json = redisTemplate.opsForValue().get(BLOG_KEY + id);
+        Blog b = JSONUtil.toBean(json, Blog.class);
+        if (!(b.getId() == null))
+            return Result.ok(b);
+        Blog blog = this.getById(id);
+        String key = BLOG_LIKED_KEY + id;
+        if (blog == null)
+            return Result.fail("blog exists");
+        Long userId = blog.getUserId();
+        User user = userService.getById(userId);
+        blog.setName(user.getNickName());
+        blog.setIcon(user.getIcon());
+        blog.setIsLike(this.isLiked(key, userId));
+        cacheClient.set(BLOG_KEY + id, blog, BLOG_KEY_TTL, TimeUnit.SECONDS);
+        return Result.ok(blog);
     }
 
     @Override
@@ -122,7 +146,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 //        r.setOffset(count);
 //        return Result.ok(r);
         // 1.获取当前用户
-                UserDTO user = UserHolder.getUser();
+
+        UserDTO user = UserHolder.getUser();
         if (user == null)
             return Result.fail(NOT_LOGIN);
         Long userId = user.getId();
@@ -130,6 +155,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         String key = FEED_KEY + userId;
         Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.opsForZSet()
                 .reverseRangeByScoreWithScores(key, 0, max, offset, 2);
+
         // 3.非空判断
         if (typedTuples == null || typedTuples.isEmpty()) {
             return Result.ok();
@@ -143,9 +169,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             ids.add(Long.valueOf(tuple.getValue()));
             // 4.2.获取分数(时间戳）
             long time = tuple.getScore().longValue();
-            if(time == minTime){
+            if (time == minTime) {
                 os++;
-            }else{
+            } else {
                 minTime = time;
                 os = 1;
             }
@@ -168,7 +194,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         r.setList(blogs);
         r.setOffset(os);
         r.setMinTime(minTime);
-
         return Result.ok(r);
     }
 
@@ -194,6 +219,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         List<String> followsId = followMapper.getFollowerId(user.getId());
         for (String followId : followsId) {
             String key = FEED_KEY + followId;
+//            发布消息
             redisTemplate.opsForZSet()
                     .add(key, String.valueOf(blog.getId()), System.currentTimeMillis());
         }
@@ -234,39 +260,31 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         Boolean isMember = this.isLiked(key, userId);
 //        已点赞，取消点赞,从set集合里面移除用户，点赞数减一
         if (isMember) {
+
             Boolean unliked = blogMapper.unliked(id);
             if (unliked)//移除成功
+            {
                 redisTemplate.opsForZSet().remove(key, String.valueOf(userId));
+                redisTemplate.opsForValue().getAndDelete(BLOG_HOT_KEY);
+            }
+
         } else {//未点赞,点赞数加一，将用户添加至集合
             Boolean liked = blogMapper.liked(id);
+
             if (liked)
                 redisTemplate.opsForZSet().add(key, String.valueOf(userId), System.currentTimeMillis());
         }
+        redisTemplate.opsForValue().getAndDelete(BLOG_KEY + id);
+        redisTemplate.opsForValue().getAndDelete(BLOG_HOT_KEY);
+//        cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
         return Result.ok();
     }
 
 
-    @Override
-    public Result queryBlog(String id) {
-        String json = redisTemplate.opsForValue().get(BLOG_KEY + id);
-        Blog b = JSONUtil.toBean(json, Blog.class);
-        if (!(b.getId() == null))
-            return Result.ok(b);
-        Blog blog = this.getById(id);
-        String key = BLOG_LIKED_KEY + id;
-        if (blog == null)
-            return Result.fail("blog exists");
-        Long userId = blog.getUserId();
-        User user = userService.getById(userId);
-        blog.setName(user.getNickName());
-        blog.setIcon(user.getIcon());
-        blog.setIsLike(this.isLiked(key, userId));
-        cacheClient.set(BLOG_KEY + id, blog, BLOG_KEY_TTL, TimeUnit.SECONDS);
-        return Result.ok(blog);
-    }
-
     public Boolean isLiked(String key, Long userId) {
-        Double score = redisTemplate.opsForZSet().score(key, String.valueOf(userId));
+        Long id = UserHolder.getUser().getId();
+        Long a = id;
+        Double score = redisTemplate.opsForZSet().score(key, String.valueOf(id));
         if (score == null)
             return false;
         return true;
