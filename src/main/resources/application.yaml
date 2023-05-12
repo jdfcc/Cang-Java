@@ -6,7 +6,7 @@ login:
 
 spring:
   application:
-    name: hmdp
+    name: Cang
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/hmdp?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
@@ -25,9 +25,9 @@ spring:
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
 mybatis-plus:
-  type-aliases-package: com.hmdp.entity # 别名扫描包
+  type-aliases-package: com.Cang.entity # 别名扫描包
 logging:
   level:
-    com.hmdp: debug
+    com.Cang: debug
   pattern:
     dateformat: mm:ss.SSS
