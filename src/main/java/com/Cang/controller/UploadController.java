@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
@@ -18,7 +19,8 @@ import java.util.UUID;
 public class UploadController {
 
     @PostMapping("blog")
-    public Result uploadImage(@RequestParam("file") MultipartFile image) {
+    public Result uploadImage(@RequestParam("file") MultipartFile image, HttpServletRequest request) {
+        log.info("%%%%%%%%%% {}",request.getHeader("Content-Type"));
         try {
             // 获取原始文件名称
             String originalFilename = image.getOriginalFilename();

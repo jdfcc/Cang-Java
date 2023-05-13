@@ -4,6 +4,8 @@ import com.Cang.entity.Shop;
 import com.Cang.mapper.BlogMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.IShopService;
+import com.Cang.service.IUserInfoService;
+import com.Cang.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +31,20 @@ class CangApplicationTests {
 
     @Autowired
     private BlogMapper blogMapper;
+
+    @Autowired
+    private IUserInfoService userService;
     @Autowired
     private FollowMapper followMapper;
     @Autowired
     private IShopService shopService;
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Test
+    void testSearch(){
+        System.out.println(userService.getById(1010));
+    }
     @Test
     public void testDel(){
         redisTemplate.opsForZSet().remove("jdfcc","1232");

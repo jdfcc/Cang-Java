@@ -76,8 +76,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             Long userId = blog.getUserId();
             this.queryBlogUser(blog);
             String key = BLOG_LIKED_KEY + blog.getId();
-
-
             Boolean liked = this.isLiked(key, userId);
             blog.setIsLike(liked);
         });
@@ -207,6 +205,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Transactional
     @Override
     public Result saveBlog(Blog blog) {
+        if(blog.getShopId()==null){
+            return Result.fail("shop id can't be null");
+        }
         UserDTO user = UserHolder.getUser();
         blog.setUserId(user.getId());
         // 保存探店博文
@@ -279,8 +280,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
 
     public Boolean isLiked(String key, Long userId) {
-        Long id = UserHolder.getUser().getId();
-        Long a = id;
+        UserDTO user = UserHolder.getUser();
+        if (user == null){
+            return false;
+        }
+        Long id = user.getId();
         Double score = redisTemplate.opsForZSet().score(key, String.valueOf(id));
         if (score == null)
             return false;

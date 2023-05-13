@@ -26,6 +26,11 @@ spring:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
 mybatis-plus:
   type-aliases-package: com.Cang.entity # 别名扫描包
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true #开启驼峰命名转换原则 TODO 开启驼峰命名有问题。
+
 logging:
   level:
     com.Cang: debug

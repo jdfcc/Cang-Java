@@ -28,6 +28,7 @@ public class UserInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * TODO 开启驼峰命名有问题。
      * 主键，用户id
      */
     @TableId(value = "user_id", type = IdType.AUTO)
