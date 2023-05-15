@@ -38,5 +38,7 @@ public class RedisConstants {
     public static final String FEED_KEY = "hmdp:feed:";
     public static final String SHOP_GEO_KEY = "hmdp:shop:geo:";
 
+    public static final String CHAT_MESSAGE_KEY = "hmdp:message:";
+
 
 }

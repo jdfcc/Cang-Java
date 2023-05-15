@@ -1,11 +1,11 @@
 package com.Cang;
 
+import com.Cang.entity.Blog;
+import com.Cang.entity.Chat;
 import com.Cang.entity.Shop;
 import com.Cang.mapper.BlogMapper;
 import com.Cang.mapper.FollowMapper;
-import com.Cang.service.IShopService;
-import com.Cang.service.IUserInfoService;
-import com.Cang.service.IUserService;
+import com.Cang.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +13,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_KEY;
 import static com.Cang.utils.RedisConstants.SHOP_GEO_KEY;
 
 @SpringBootTest
@@ -34,12 +39,20 @@ class CangApplicationTests {
 
     @Autowired
     private IUserInfoService userService;
+
+    @Autowired
+    private IBlogService blogService;
     @Autowired
     private FollowMapper followMapper;
     @Autowired
     private IShopService shopService;
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private ChatService chatService;
+    @Autowired
+    private StringRedisTemplate StringredisTemplate;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Test
     void testSearch(){
@@ -47,13 +60,56 @@ class CangApplicationTests {
     }
     @Test
     public void testDel(){
-        redisTemplate.opsForZSet().remove("jdfcc","1232");
+        StringredisTemplate.opsForZSet().remove("jdfcc","1232");
     }
 
     @Test
     public void testFollow(){
         List<String> follows = followMapper.getFollowerId(2L);
         log.info("follows: {}",follows);
+    }
+
+    @Test
+    public void testChat(){
+        Chat chat = new Chat();
+        chat.setMessage("Hello");
+        chat.setSend(1L);
+        chat.setReceive(2L);
+        chatService.sendMessage(chat);
+    }
+
+    @Test
+    public void testTime(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        double seconds = dateTime.toEpochSecond(ZoneOffset.UTC);
+        double milliseconds = seconds * 1000;
+        System.out.println(milliseconds);
+    }
+    @Test
+    public void testHash(){
+//        Chat chat = new Chat();
+//        chat.setMessage("Hello");
+//        chat.setSend(1L);
+//        chat.setReceive(2L);
+//        redisTemplate.opsForHash().put(CHAT_MESSAGE_KEY,String.valueOf(1013L),chat);
+////        StringredisTemplate.opsForHash().put(CHAT_MESSAGE_KEY,String.valueOf(1014L),chat);
+//        redisTemplate.opsForHash().put(CHAT_MESSAGE_KEY,String.valueOf(1011L),chat);
+//        Chat o = (Chat) redisTemplate.opsForHash().get(CHAT_MESSAGE_KEY, String.valueOf(1013L));
+//        System.out.println(o.getMessage());
+    }
+
+    @Test
+    public void testBlog(){
+        Blog blog = new Blog();
+        blog.setId(222L);
+        blog.setCreateTime(LocalDateTime.now());
+        blog.setShopId(10L);
+        blog.setUserId(2L);
+        blog.setTitle("Blog");
+        blog.setContent("123231");
+        blog.setImages("1111");
+        blogService.save(blog);
+
     }
 
     @Test
@@ -78,7 +134,7 @@ class CangApplicationTests {
                         new Point(shop.getX(), shop.getY())
                 ));
             }
-            redisTemplate.opsForGeo().add(key, locations);
+            StringredisTemplate.opsForGeo().add(key, locations);
         }
     }
     @Test
