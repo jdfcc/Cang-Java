@@ -28,9 +28,14 @@ public class ChatController {
         return chatService.sendMessage(chat);
     }
 
-    @PutMapping("/get/{id}")
+    @GetMapping("/get/{id}")
     public Result getMessage(@PathVariable String id){
         return chatService.getMessage(Long.valueOf(id));
+    }
+
+    @GetMapping("")
+    public Result getMessageList(){
+        return chatService.getMessageList();
     }
 
 }

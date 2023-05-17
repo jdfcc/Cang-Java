@@ -13,4 +13,6 @@ public interface ChatService extends IService<Chat> {
     Result sendMessage(Chat chat);
 
     Result getMessage(Long id);
+
+    Result getMessageList();
 }

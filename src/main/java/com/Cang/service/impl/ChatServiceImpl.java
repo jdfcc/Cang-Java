@@ -34,7 +34,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public ChatServiceImpl(ChatMapper chatMapper,RedisTemplate<String, Object> redisTemplate) {
+    public ChatServiceImpl(ChatMapper chatMapper, RedisTemplate<String, Object> redisTemplate) {
         this.chatMapper = chatMapper;
         this.redisTemplate = redisTemplate;
     }
@@ -49,13 +49,12 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Transactional
     public Result sendMessage(Chat chat) {
         chat.setCreateTime(LocalDateTime.now());
-//        为两用户之间新增一个全局id用以维护聊天记录，类似于mysql的二级索引的回表查询
         Long userid = UserHolder.getUser().getId();
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
         int insert = chatMapper.insert(chat); //TODO 加一个异常判断
-        redisTemplate.opsForList().leftPush(key,chat);
+        redisTemplate.opsForList().leftPush(key, chat);
         return Result.ok(insert);
     }
 
@@ -92,7 +91,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     }
 
     /**
-     * 获取公共key
+     * 获取公共key 为两用户之间新增一个全局id用以维护聊天记录，类似于mysql的二级索引的回表查询
      *
      * @param a 用户id
      * @param b 目标用户id
@@ -102,5 +101,19 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         return CHAT_MESSAGE_USER_KEY + (a + b);
     }
 
+    /**
+     * 在数据库中找出不重复的userKey
+     * @return 所有userKey中时间靠后的最后一条消息
+     */
+    @Override
+    public Result getMessageList() {
+        List<String> keys = chatMapper.queryChatList();
+        List<Chat> list=new ArrayList<>();
+        for(String key : keys){
+            Chat chat = chatMapper.selectLast(key);
+            list.add(chat);
+        }
+        return Result.ok(list);
+    }
 
 }

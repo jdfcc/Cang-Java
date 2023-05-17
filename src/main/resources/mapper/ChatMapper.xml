@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Cang.mapper.ChatMapper">
+
+
+    <select id="queryChatList" resultType="java.lang.String" parameterType="list">
+        --         SELECT *
+--         FROM tb_chat v
+--         WHERE v.send = #{send}
+
+        SELECT DISTINCT user_key
+        FROM tb_chat;
+    </select>
+
+    <select id="selectLast" resultType="com.Cang.entity.Chat" parameterType="java.lang.String">
+        SELECT *
+        FROM tb_chat c
+        WHERE c.user_key = #{userKey}
+        ORDER BY create_time DESC LIMIT 1;
+    </select>
+
+</mapper>

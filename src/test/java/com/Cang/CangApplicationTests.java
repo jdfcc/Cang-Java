@@ -4,6 +4,7 @@ import com.Cang.entity.Blog;
 import com.Cang.entity.Chat;
 import com.Cang.entity.Shop;
 import com.Cang.mapper.BlogMapper;
+import com.Cang.mapper.ChatMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.*;
 import com.Cang.utils.IdGeneratorSnowflake;
@@ -55,6 +56,8 @@ class CangApplicationTests {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private ChatMapper chatMapper;
     @Test
     void testSearch(){
         System.out.println(userService.getById(1010));
@@ -125,6 +128,13 @@ class CangApplicationTests {
         redisTemplate.opsForList().leftPush("1111111111",jdfcc);
         jdfcc="2222222222222obj";
         redisTemplate.opsForList().leftPush("22222222222",jdfcc,222);
+    }
+
+
+    @Test
+    public void testChatSelect(){
+        Chat chat = chatMapper.selectLast("hmdp:message:user:1658817518032258034");
+        System.out.println(chat);
     }
 
     @Test
