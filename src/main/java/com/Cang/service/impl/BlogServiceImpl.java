@@ -17,6 +17,7 @@ import com.Cang.service.IUserService;
 import com.Cang.utils.CacheClient;
 import com.Cang.utils.SystemConstants;
 import com.Cang.utils.UserHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -43,18 +44,18 @@ import static com.Cang.utils.SystemConstants.*;
  */
 @Service
 public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IBlogService {
-    @Resource
-    private IUserService userService;
+    private final IUserService userService;
     private final StringRedisTemplate redisTemplate;
-    @Resource
-    private BlogMapper blogMapper;
+    private final BlogMapper blogMapper;
     @Resource
     private CacheClient cacheClient;
-    @Resource
-    private FollowMapper followMapper;
+    private final FollowMapper followMapper;
 
-    public BlogServiceImpl(StringRedisTemplate redisTemplate) {
+    public BlogServiceImpl(StringRedisTemplate redisTemplate, IUserService userService, BlogMapper blogMapper, FollowMapper followMapper) {
         this.redisTemplate = redisTemplate;
+        this.userService = userService;
+        this.blogMapper = blogMapper;
+        this.followMapper = followMapper;
     }
 
     @Override

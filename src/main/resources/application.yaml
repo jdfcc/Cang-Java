@@ -36,3 +36,7 @@ logging:
     com.Cang: debug
   pattern:
     dateformat: mm:ss.SSS
+
+snowflake:
+  data-center: 1 #数据中心id
+  worker-id: 1 #机器id

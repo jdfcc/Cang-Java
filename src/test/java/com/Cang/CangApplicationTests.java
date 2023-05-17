@@ -6,6 +6,7 @@ import com.Cang.entity.Shop;
 import com.Cang.mapper.BlogMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.*;
+import com.Cang.utils.IdGeneratorSnowflake;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +97,12 @@ class CangApplicationTests {
 //        redisTemplate.opsForHash().put(CHAT_MESSAGE_KEY,String.valueOf(1011L),chat);
 //        Chat o = (Chat) redisTemplate.opsForHash().get(CHAT_MESSAGE_KEY, String.valueOf(1013L));
 //        System.out.println(o.getMessage());
+    }
+
+    @Test
+    public void testIdGenerate(){
+        long l = new IdGeneratorSnowflake().snowflakeId();
+        log.info("@@@@@@@ {}",String.valueOf(l));
     }
 
     @Test

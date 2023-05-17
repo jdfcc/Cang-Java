@@ -10,6 +10,7 @@ import com.Cang.service.IBlogService;
 
 import com.Cang.utils.SystemConstants;
 import com.Cang.utils.UserHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -27,8 +28,11 @@ import java.util.List;
 @RequestMapping("/blog")
 public class BlogController {
 
-    @Resource
-    private IBlogService blogService;
+    private final IBlogService blogService;
+
+    public BlogController(IBlogService blogService) {
+        this.blogService = blogService;
+    }
 
     /**
      * 保存博客并推送给粉丝
