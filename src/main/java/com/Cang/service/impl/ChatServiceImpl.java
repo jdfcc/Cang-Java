@@ -2,11 +2,8 @@ package com.Cang.service.impl;
 
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
-import com.Cang.entity.ChatKey;
-import com.Cang.mapper.ChatKeyMapper;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
-import com.Cang.utils.IdGeneratorSnowflake;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,10 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
-import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_KEY;
+import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_KEY;
 
 /**
  * @author Jdfcc
@@ -33,12 +31,11 @@ import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_KEY;
 public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements ChatService {
 
     private final ChatMapper chatMapper;
-    private final ChatKeyMapper chatKeyMapper;
+
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public ChatServiceImpl(ChatMapper chatMapper, ChatKeyMapper chatKeyMapper, RedisTemplate<String, Object> redisTemplate) {
+    public ChatServiceImpl(ChatMapper chatMapper,RedisTemplate<String, Object> redisTemplate) {
         this.chatMapper = chatMapper;
-        this.chatKeyMapper = chatKeyMapper;
         this.redisTemplate = redisTemplate;
     }
 
@@ -52,68 +49,57 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Transactional
     public Result sendMessage(Chat chat) {
         chat.setCreateTime(LocalDateTime.now());
-        int insert = chatMapper.insert(chat);
-        Long userId = UserHolder.getUser().getId();
-        String targetId = String.valueOf(chat.getReceive());
-//        从hash中取出所有此用户向目标用户发送的chat并加入新的chat
-//        TODO: 为两用户之间新增一个全局id用以维护聊天记录，类似于mysql的二级索引的回表查询
-
-        ArrayList<Chat> chats = getChat(key, hashKey);
-        chats.add(chat);
-        log.info("%%%%%%% {}", chats);
-//        将消息重新放入hash
-        String key = CHAT_MESSAGE_KEY + userId;
-        redisTemplate.opsForHash().put(key, hashKey, chats);
+//        为两用户之间新增一个全局id用以维护聊天记录，类似于mysql的二级索引的回表查询
+        Long userid = UserHolder.getUser().getId();
+        Long targetId = chat.getReceive();
+        String key = this.getKey(userid, targetId);
+        chat.setUserKey(key);
+        int insert = chatMapper.insert(chat); //TODO 加一个异常判断
+        redisTemplate.opsForList().leftPush(key,chat);
         return Result.ok(insert);
     }
 
-    /**
-     * 从hash中获取到相应的chat
-     *
-     * @param userId 当前用户id
-     * @param targetId 目标用户id
-     * @return  当前用户与目标用户的所有聊天记录
-     */
-    public List<Chat> getChat(Long userId, Long targetId) {
-        String key = CHAT_MESSAGE_KEY + userId;
-        List<Chat> chats = (List<Chat>) redisTemplate.opsForHash().get(key, targetId);
-        if (chats == null) { //redis没有缓存,从数据库查找并重构缓存
-            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            chatLambdaQueryWrapper.eq(Chat::getId,userId).eq(Chat::getReceive,targetId);
-            chats = chatMapper.selectList(chatLambdaQueryWrapper);
-
-        }
-        return chats;
-    }
-
-    @Transactional
-    public void saveToRedis(Long userId){
-        Long key=new IdGeneratorSnowflake().snowflakeId();
-        ChatKey chatKey = new ChatKey();
-        chatKey.setUserId(userId);
-        chatKey.setUserKey(key);
-        int insert = chatKeyMapper.insert(chatKey);
-        if(insert !=0){ //在redis中缓存此数据
-
-        }
-    }
 
     /**
-     * 获取到储存在UserHold中储存的用户与此id用户的所有对话,双向
+     * 获取到储存在UserHold中储存的用户与此id用户的所有对话
      *
-     * @param id
+     * @param targetId
      * @return
      */
     @Override
-    public Result getMessage(String id) {
+    @Transactional
+    public Result getMessage(Long targetId) {
         Long userId = UserHolder.getUser().getId();
-//        double max = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-        String key1 = CHAT_MESSAGE_KEY + userId;
-        String key2 = CHAT_MESSAGE_KEY + id;
-        ArrayList<Chat> chat1 = getChat(key1, id);
-        ArrayList<Chat> chat2 = getChat(key2, String.valueOf(userId));
+        String key = this.getKey(userId, targetId);
 
-        return null;
+        List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
+        if (chats == null) {
+//            从数据库中查询并重建缓存
+            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            chatLambdaQueryWrapper.eq(Chat::getUserKey, key);
+            chats = Collections.singletonList(chatMapper.selectList(chatLambdaQueryWrapper));
+            if (chats == null) { //数据库中也为空，两人第一次聊天
+                chats = new ArrayList<>();
+//                储存空缓存以解决缓存击穿
+                redisTemplate.opsForList().leftPush(key, null);
+            }
+//            重建缓存
+            for (Object temp : chats) {
+                redisTemplate.opsForList().leftPush(key, temp);
+            }
+        }
+        return Result.ok(chats);
+    }
+
+    /**
+     * 获取公共key
+     *
+     * @param a 用户id
+     * @param b 目标用户id
+     * @return {a+b} 由于两个参数均为雪花算法生成，故不存在相加后作为全局id重复的可能性
+     */
+    public String getKey(Long a, Long b) {
+        return CHAT_MESSAGE_USER_KEY + (a + b);
     }
 
 

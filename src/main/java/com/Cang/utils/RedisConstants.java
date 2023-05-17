@@ -40,5 +40,7 @@ public class RedisConstants {
 
     public static final String CHAT_MESSAGE_KEY = "hmdp:message:";
 
+    public static final String CHAT_MESSAGE_USER_KEY="hmdp:message:user:";
+
 
 }

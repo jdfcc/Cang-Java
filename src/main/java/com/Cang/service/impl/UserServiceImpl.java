@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.dto.LoginFormDTO;
@@ -85,7 +86,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return Result.fail("验证码有误");
 
 
-
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getPhone, phone);
         User user = mapper.selectOne(wrapper);
@@ -101,7 +101,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user == null) {
             user = new User();
             user.setPhone(phone);
+//            通过雪花算法生成用户id
+            user.setId(new IdGeneratorSnowflake().snowflakeId());
             user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
+            log.info("%%%%%%%%% {}",user);
             mapper.insert(user);
         }
         UserDTO date = BeanUtil.copyProperties(user, UserDTO.class);
@@ -121,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public Result logout(HttpServletRequest request) {
-        stringRedisTemplate.delete(LOGIN_USER_KEY+request.getHeader(REQUEST_HEAD));
+        stringRedisTemplate.delete(LOGIN_USER_KEY + request.getHeader(REQUEST_HEAD));
         UserHolder.removeUser();
         return Result.ok();
     }

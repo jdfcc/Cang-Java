@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface ChatService extends IService<Chat> {
     Result sendMessage(Chat chat);
 
-    Result getMessage(String id);
+    Result getMessage(Long id);
 }

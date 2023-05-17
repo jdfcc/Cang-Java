@@ -30,7 +30,7 @@ public class ChatController {
 
     @PutMapping("/get/{id}")
     public Result getMessage(@PathVariable String id){
-        return chatService.getMessage(id);
+        return chatService.getMessage(Long.valueOf(id));
     }
 
 }

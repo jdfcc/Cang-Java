@@ -120,6 +120,21 @@ class CangApplicationTests {
     }
 
     @Test
+    public void testInsert(){
+        String jdfcc = "111111111111obj";
+        redisTemplate.opsForList().leftPush("1111111111",jdfcc);
+        jdfcc="2222222222222obj";
+        redisTemplate.opsForList().leftPush("22222222222",jdfcc,222);
+    }
+
+    @Test
+    public void testAddL(){
+        Long a=2L;
+        Long b=3L;
+        log.info("@@@@@@@@@@ {}",a+b);
+    }
+
+    @Test
     void loadShopData() {
         // 1.查询店铺信息
         List<Shop> list = shopService.list();
