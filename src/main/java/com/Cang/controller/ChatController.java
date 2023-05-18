@@ -33,6 +33,10 @@ public class ChatController {
         return chatService.getMessage(Long.valueOf(id));
     }
 
+    /**
+     *
+     * @return 当前用户与所有人接收或发送消息的最后一条消息
+     */
     @GetMapping("")
     public Result getMessageList(){
         return chatService.getMessageList();

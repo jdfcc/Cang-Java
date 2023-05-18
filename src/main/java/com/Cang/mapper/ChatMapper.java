@@ -17,7 +17,7 @@ public interface ChatMapper extends BaseMapper<Chat> {
      * 找出所有不重复的userKey
      * @return 所有不重复的userKey
      */
-    List<String> queryChatList();
+    List<String> queryChatList(Long userid);
 
     /**
      *  找出userKey中靠后的最后一条消息

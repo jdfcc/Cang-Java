@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.service.MailService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -43,15 +44,21 @@ import static com.Cang.utils.SystemConstants.*;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-    @Autowired
-    private UserMapper mapper;
+    private final UserMapper mapper;
+
+    private final MailService mailService;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    public UserServiceImpl(UserMapper mapper, MailService mailService) {
+        this.mapper = mapper;
+        this.mailService = mailService;
+    }
+
     @Override
     public Result sendCode(String phone, HttpSession session) {
-//        验证手机号是否合法
+//        验证手机号是否合法 TODO 取消手机号注册功能，改用邮箱注册。需要实现一个校验邮箱是否合法的工具类来实现此功能
         if (RegexUtils.isPhoneInvalid(phone))
             return Result.fail("手机号格式有误");
 
@@ -64,7 +71,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code);
 
 //        发送验证码
-        log.info("The verification code is: {}", code);
+
+        mailService.sendVerFicationMail("3039898075@qq.com",code);
 
 //        设置验证码过期时间
         stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);

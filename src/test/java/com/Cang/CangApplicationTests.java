@@ -134,7 +134,9 @@ class CangApplicationTests {
     @Test
     public void testChatSelect(){
         Chat chat = chatMapper.selectLast("hmdp:message:user:1658817518032258034");
+        List<String> keys = chatMapper.queryChatList(1010L);
         System.out.println(chat);
+        System.out.println(keys);
     }
 
     @Test

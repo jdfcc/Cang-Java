@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 
+import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY;
 import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_KEY;
 
 /**
@@ -103,16 +104,23 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     /**
      * 在数据库中找出不重复的userKey
+     *
      * @return 所有userKey中时间靠后的最后一条消息
      */
     @Override
     public Result getMessageList() {
-        List<String> keys = chatMapper.queryChatList();
-        List<Chat> list=new ArrayList<>();
-        for(String key : keys){
-            Chat chat = chatMapper.selectLast(key);
-            list.add(chat);
+        Long userid = UserHolder.getUser().getId();
+        String cache = CHAT_MESSAGE_USER_CACHE_KEY + userid;
+        List<Chat> list = (List<Chat>) redisTemplate.opsForValue().get(cache);
+        if (list == null) {
+            List<String> keys = chatMapper.queryChatList(userid);
+            list = new ArrayList<>();
+            for (String key : keys) {
+                Chat chat = chatMapper.selectLast(key);
+                list.add(chat);
+            }
         }
+
         return Result.ok(list);
     }
 

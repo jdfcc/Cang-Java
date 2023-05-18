@@ -3,13 +3,11 @@
 <mapper namespace="com.Cang.mapper.ChatMapper">
 
 
-    <select id="queryChatList" resultType="java.lang.String" parameterType="list">
-        --         SELECT *
---         FROM tb_chat v
---         WHERE v.send = #{send}
-
+    <select id="queryChatList" resultType="java.lang.String" parameterType="long">
+        <!-- 查询与指定用户有过聊天记录的用户列表 -->
         SELECT DISTINCT user_key
-        FROM tb_chat;
+        FROM tb_chat
+        WHERE send=#{userid} or receive=#{userid};
     </select>
 
     <select id="selectLast" resultType="com.Cang.entity.Chat" parameterType="java.lang.String">
