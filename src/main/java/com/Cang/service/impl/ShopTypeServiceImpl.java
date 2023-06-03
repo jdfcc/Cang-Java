@@ -27,11 +27,14 @@ import static com.Cang.utils.RedisConstants.CACHE_SHOP_TYPE_TTL;
  */
 @Service
 public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> implements IShopTypeService {
-    @Autowired
-    private ShopTypeMapper mapper;
+    private final ShopTypeMapper mapper;
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+
+    public ShopTypeServiceImpl(ShopTypeMapper mapper, StringRedisTemplate stringRedisTemplate) {
+        this.mapper = mapper;
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     @Override
     public Result selectList() {

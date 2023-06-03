@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -21,9 +22,12 @@ import java.time.LocalDateTime;
 @Data
 @TableName("tb_chat")
 public class Chat implements Serializable {
-//防止精度丢失
+    /**
+     * 防止精度丢失
+     */
     @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
+
 
     @JsonSerialize(using = ToStringSerializer.class)
     private Long send;

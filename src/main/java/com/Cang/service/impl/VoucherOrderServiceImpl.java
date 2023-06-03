@@ -1,6 +1,7 @@
 package com.Cang.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.Cang.exception.EmptyUserHolderException;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.Cang.dto.Result;
 import com.Cang.entity.VoucherOrder;
@@ -99,8 +100,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                             StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
                     );
 //                    消息为空，继续读取
-                    if (message == null || message.isEmpty())
+                    if (message == null || message.isEmpty()){
                         continue;
+                    }
 //                    读取成功，创建订单
                     MapRecord<String, Object, Object> map = message.get(0);
                     Map<Object, Object> value = map.getValue();
@@ -172,16 +174,22 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
     /**
      * 生成订单id并往消息队列里面发送订单信息
-     *
      */
     @Override
     public Result SecKillVoucher(Long voucherId) {
-        Long id = UserHolder.getUser().getId();
+        Long id = null;
+        try {
+            id = UserHolder.getUser().getId();
+        } catch (EmptyUserHolderException e) {
+            e.printStackTrace();
+        }
+
         Long orderId = redisIdWorker.nextId("secKillVoucher");
         Long result = redisTemplate.execute(VOUCHER_SCRIPT,
                 Collections.emptyList(), id.toString(), voucherId.toString(), orderId.toString());
-        if (result != 0)
+        if (result != 0) {
             return Result.fail(VOUCHER_ERROR);
+        }
         proxy = (IVoucherOrderService) AopContext.currentProxy();
         return Result.ok(orderId);
     }

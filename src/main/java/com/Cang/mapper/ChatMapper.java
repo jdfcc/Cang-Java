@@ -20,9 +20,9 @@ public interface ChatMapper extends BaseMapper<Chat> {
     List<String> queryChatList(Long userid);
 
     /**
-     *  找出userKey中靠后的最后一条消息
-     * @param userKey
-     * @return userKey中靠后的最后一条消息
+     * 从数据库中找出与此用户id有关的最后一条消息
+     * @param userid
+     * @return
      */
-    Chat selectLast(@Param("userKey") String userKey);
+    List<Chat> selectLast(@Param("userid") Long userid);
 }

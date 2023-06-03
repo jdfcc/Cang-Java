@@ -4,6 +4,7 @@ import com.Cang.entity.User;
 
 /**
  * 封装User
+ * @author Jdfcc
  */
 public class BaseContext {
     private static ThreadLocal<User> threadLocal = new ThreadLocal<>();

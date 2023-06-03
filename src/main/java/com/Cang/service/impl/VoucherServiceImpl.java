@@ -49,8 +49,9 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         List<Voucher> list = new ArrayList<>();
         for (Voucher voucher : vouchers) {
            if(LocalDateTime.now().isBefore(voucher.getEndTime())&&
-           LocalDateTime.now().isAfter(voucher.getBeginTime()))
+           LocalDateTime.now().isAfter(voucher.getBeginTime())) {
                list.add(voucher);
+           }
         }
         // 返回结果
         return Result.ok(list);

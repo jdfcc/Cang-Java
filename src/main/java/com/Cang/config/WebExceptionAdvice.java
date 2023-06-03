@@ -3,6 +3,9 @@ package com.Cang.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * @author Jdfcc
+ */
 @Slf4j
 @RestControllerAdvice
 public class WebExceptionAdvice {

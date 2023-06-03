@@ -65,8 +65,10 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
         System.out.println("数据: " + user);
         if (user != null) {
             Mail mailBean = new Mail();
-            mailBean.setRecipient(user.getEmail());//接收者
-            mailBean.setSubject("用户信息");//标题
+            //接收者
+            mailBean.setRecipient(user.getEmail());
+            //标题
+            mailBean.setSubject("用户信息");
             String message = "SpringBootMail发送一个简单格式的邮件，时间为：" + new Date();
             //内容主体
             mailBean.setContent(message);

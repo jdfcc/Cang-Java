@@ -8,9 +8,9 @@ local userId=ARGV[1]
 local voucherId=ARGV[2]
 
 -- 订单id
-local orderKey='hmdp:seckill:order:'..voucherId
+local orderKey='Cang:seckill:order:'..voucherId
 -- 库存id
-local stockKey='hmdp:seckill:stock:'..voucherId
+local stockKey='Cang:seckill:stock:'..voucherId
 
 -- 库存为0
 if(tonumber(redis.call('get',stockKey))==0) then

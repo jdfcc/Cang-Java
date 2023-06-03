@@ -1,5 +1,6 @@
 package com.Cang;
 
+import com.Cang.dto.Result;
 import com.Cang.entity.Blog;
 import com.Cang.entity.Chat;
 import com.Cang.entity.Shop;
@@ -8,6 +9,8 @@ import com.Cang.mapper.ChatMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.*;
 import com.Cang.utils.IdGeneratorSnowflake;
+import com.Cang.utils.UserHolder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +27,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_KEY;
-import static com.Cang.utils.RedisConstants.SHOP_GEO_KEY;
+import static com.Cang.utils.RedisConstants.*;
+import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY_LAST;
 
 @SpringBootTest
 @Slf4j
@@ -133,10 +136,33 @@ class CangApplicationTests {
 
     @Test
     public void testChatSelect(){
-        Chat chat = chatMapper.selectLast("hmdp:message:user:1658817518032258034");
-        List<String> keys = chatMapper.queryChatList(1010L);
-        System.out.println(chat);
-        System.out.println(keys);
+        List<Chat> chat = chatMapper.selectLast(1010L);
+//        List<String> keys = chatMapper.queryChatList(1010L);
+        System.out.println(chat.toString());
+//        System.out.println(keys);
+    }
+
+    @Test
+    public void testChatsLast(){
+        Long id = 1010L;
+        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, 0, -1);
+        if (chats .isEmpty()) {
+            log.info("重建缓存");
+//            需要从数据库中重建缓存
+            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+            chatLambdaQueryWrapper.eq(Chat::getSend, id);
+            List<Chat> newChat = chatMapper.selectLast(UserHolder.getUser().getId());
+            for (Object tem : newChat) {
+//                重建缓存
+                long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);
+                double score = seconds * 1000;
+                redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, tem, score);
+
+            }
+            System.out.println(newChat);
+        }
+
     }
 
     @Test

@@ -10,11 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.Cang.utils.RedisConstants.KEY_PREFIX;
+
+/**
+ * @author Jdfcc
+ */
 public class SimpleRedisLock implements ILock {
 
     private StringRedisTemplate redisTemplate;
     private String key;
-    private static final String key_prefix = "hmdp:voucherOrder:lock:";
+
     private static final String id_prefix = UUID.randomUUID().toString(true) + "-";
 
     private static final DefaultRedisScript<Long> UNLOCK_SCRIPT;
@@ -34,13 +39,13 @@ public class SimpleRedisLock implements ILock {
     public Boolean tryLock(Long timeSec) {
         String id = id_prefix + Thread.currentThread().getId();
         boolean flag = redisTemplate.opsForValue().
-                setIfAbsent(key_prefix + key, id, timeSec, TimeUnit.SECONDS);
+                setIfAbsent(KEY_PREFIX + key, id, timeSec, TimeUnit.SECONDS);
         return BooleanUtil.isTrue(flag);
     }
 
     @Override
     public void unLock() {
-        String finalKey = key_prefix +key;
+        String finalKey = KEY_PREFIX +key;
         String name = redisTemplate.opsForValue().get(finalKey);
         List<String> KEYS = new ArrayList();
         KEYS.add(name);

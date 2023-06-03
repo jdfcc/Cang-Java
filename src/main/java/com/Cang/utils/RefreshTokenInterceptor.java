@@ -15,6 +15,9 @@ import static com.Cang.utils.RedisConstants.LOGIN_USER_KEY;
 import static com.Cang.utils.RedisConstants.LOGIN_USER_TTL;
 import static com.Cang.utils.SystemConstants.REQUEST_HEAD;
 
+/**
+ * @author Jdfcc
+ */
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     private StringRedisTemplate stringRedisTemplate;

@@ -27,13 +27,16 @@ import static com.Cang.utils.RedisConstants.*;
 @Slf4j
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IShopService {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private ShopMapper shopMapper;
-    @Autowired
-    private CacheClient cacheClient;
+    private final ShopMapper shopMapper;
+    private final CacheClient cacheClient;
+
+    public ShopServiceImpl(StringRedisTemplate redisTemplate, ShopMapper shopMapper, CacheClient cacheClient) {
+        this.redisTemplate = redisTemplate;
+        this.shopMapper = shopMapper;
+        this.cacheClient = cacheClient;
+    }
 
     @Override
     public Result selectShopById(Long id) {
@@ -99,8 +102,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     @Override
     @Transactional
     public Result updateShop(Shop shop) {
-        if (shop.getId() == null)
+        if (shop.getId() == null) {
             return Result.fail("ID could not be empty");
+        }
         shopMapper.updateById(shop);
         redisTemplate.delete(CACHE_SHOP_KEY + shop.getId());
         return Result.ok();

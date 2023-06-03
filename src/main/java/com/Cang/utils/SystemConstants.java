@@ -1,5 +1,8 @@
 package com.Cang.utils;
 
+/**
+ * @author Jdfcc
+ */
 public class SystemConstants {
     public static final String IMAGE_UPLOAD_DIR = "E:\\Cang\\public\\imgs\\";
     public static final String USER_NICK_NAME_PREFIX = "user_";

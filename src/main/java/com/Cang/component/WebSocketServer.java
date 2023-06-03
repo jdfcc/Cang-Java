@@ -2,115 +2,142 @@ package com.Cang.component;
 
 /**
  * @author Jdfcc
- * @Description WebServer
+ * @Description 单人聊天
  * @DateTime 2023/5/17 21:41
  */
 
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.thymeleaf.util.StringUtils;
+
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * @author websocket服务
- */
-@ServerEndpoint(value = "/imserver/{username}")
+@Slf4j
 @Component
+@ServerEndpoint("/notice/{userId}")
 public class WebSocketServer {
-    private static final Logger log = LoggerFactory.getLogger(WebSocketServer.class);
+
+
+
     /**
-     * 记录当前在线连接数
+     * 存储客户端session信息
      */
-    public static final Map<String, Session> sessionMap = new ConcurrentHashMap<>();
+    public static Map<String, Session> clients = new ConcurrentHashMap<>();
+
     /**
-     * 连接建立成功调用的方法
+     * 存储把不同用户的客户端session信息集合
      */
+    public static Map<String, Set<String>> connection = new ConcurrentHashMap<>();
+
+    /**
+     * 会话id
+     */
+    private String sid = null;
+
+    /**
+     * 建立连接的用户id
+     */
+    private String userId;
+
+    /**
+     * @description: 当与前端的websocket连接成功时，执行该方法
+     * @PathParam 获取ServerEndpoint路径中的占位符信息类似 控制层的 @PathVariable注解
+     **/
     @OnOpen
-    public void onOpen(Session session, @PathParam("username") String username) {
-        sessionMap.put(username, session);
-        log.info("有新用户加入，username={}, 当前在线人数为：{}", username, sessionMap.size());
-        JSONObject result = new JSONObject();
-        JSONArray array = new JSONArray();
-        result.set("users", array);
-        for (Object key : sessionMap.keySet()) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.set("username", key);
-            // {"username", "zhang", "username": "admin"}
-            array.add(jsonObject);
+    public void onOpen(Session session, @PathParam("userId") String userId) {
+        this.sid = UUID.randomUUID().toString();
+        this.userId = userId;
+        clients.put(this.sid, session);
+        //判断该用户是否存在会话信息，不存在则添加
+        Set<String> clientSet = connection.get(userId);
+        if (clientSet == null) {
+            clientSet = new HashSet<>();
+            connection.put(userId, clientSet);
         }
-//        {"users": [{"username": "zhang"},{ "username": "admin"}]}
-        sendAllMessage(JSONUtil.toJsonStr(result));  // 后台发送消息给所有的客户端
+        clientSet.add(this.sid);
+        log.info(this.userId + "用户建立连接，" + this.sid + "连接开启！");
     }
+
     /**
-     * 连接关闭调用的方法
-     */
+     * @description: 当连接失败时，执行该方法
+     **/
     @OnClose
-    public void onClose(Session session, @PathParam("username") String username) {
-        sessionMap.remove(username);
-        log.info("有一连接关闭，移除username={}的用户session, 当前在线人数为：{}", username, sessionMap.size());
+    public void onClose() {
+        clients.remove(this.sid);
+        log.info(this.sid + "连接断开");
     }
+
     /**
-     * 收到客户端消息后调用的方法
-     * 后台收到客户端发送过来的消息
-     * onMessage 是一个消息的中转站
-     * 接受 浏览器端 socket.send 发送过来的 json数据
-     * @param message 客户端发送过来的消息
-     */
+     * @description: 当收到前台发送的消息时，执行该方法
+     **/
     @OnMessage
-    public void onMessage(String message, Session session, @PathParam("username") String username) {
-        log.info("服务端收到用户username={}的消息:{}", username, message);
-        JSONObject obj = JSONUtil.parseObj(message);
-        String toUsername = obj.getStr("to"); // to表示发送给哪个用户，比如 admin
-        String text = obj.getStr("text"); // 发送的消息文本  hello
-        // {"to": "admin", "text": "聊天文本"}
-        Session toSession = sessionMap.get(toUsername); // 根据 to用户名来获取 session，再通过session发送消息文本
-        if (toSession != null) {
-            // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
-            // {"from": "zhang", "text": "hello"}
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.set("from", username);  // from 是 zhang
-            jsonObject.set("text", text);  // text 同上面的text
-            this.sendMessage(jsonObject.toString(), toSession);
-            log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
-        } else {
-            log.info("发送失败，未找到用户username={}的session", toUsername);
-        }
+    public void onMessage(String message, Session session) {
+        log.info("收到来自用户：" + this.userId + "的信息   " + message);
+        //自定义消息实体
+//        ViewQueryInfoDTO viewQueryInfoDTO = JSON.parseObject(message, ViewQueryInfoDTO.class);
+//        viewQueryInfoDTO.setUserId(this.userId);
+//        //判断该次请求的消息类型是心跳检测还是获取信息
+//        if (viewQueryInfoDTO.getType().equals("heartbeat")){
+//            //立刻向前台发送消息，代表后台正常运行
+//            sendMessageByUserId(this.userId,new MessageInfo("heartbeat","ok"));
+//        }
+//        if (viewQueryInfoDTO.getType().equals("message")){
+//            //执行业务逻辑
+//            MessageInfo messageInfo = xxService.list(viewQueryInfoDTO);
+//            sendMessageByUserId(this.userId,messageInfo);
+//        }
+
     }
+
+    /**
+     * @description: 当连接发生错误时，执行该方法
+     **/
     @OnError
-    public void onError(Session session, Throwable error) {
-        log.error("发生错误");
+    public void onError(Throwable error) {
+        log.info("系统错误");
         error.printStackTrace();
     }
+
     /**
-     * 服务端发送消息给客户端
-     */
-    private void sendMessage(String message, Session toSession) {
-        try {
-            log.info("服务端给客户端[{}]发送消息{}", toSession.getId(), message);
-            toSession.getBasicRemote().sendText(message);
-        } catch (Exception e) {
-            log.error("服务端发送消息给客户端失败", e);
-        }
-    }
-    /**
-     * 服务端发送消息给所有客户端
-     */
-    private void sendAllMessage(String message) {
-        try {
-            for (Session session : sessionMap.values()) {
-                log.info("服务端给客户端[{}]发送消息{}", session.getId(), message);
-                session.getBasicRemote().sendText(message);
-            }
-        } catch (Exception e) {
-            log.error("服务端发送消息给客户端失败", e);
-        }
-    }
+     * @description: 通过userId向用户发送信息
+     * 该类定义成静态可以配合定时任务实现定时推送
+     **/
+//    public static void sendMessageByUserId(String userId, MessageInfo message){
+//        if (!StringUtils.isEmpty(userId)) {
+//            Set<String> clientSet = connection.get(userId);
+//            //用户是否存在客户端连接
+//            if (Objects.nonNull(clientSet)) {
+//                Iterator<String> iterator = clientSet.iterator();
+//                while (iterator.hasNext()) {
+//                    String sid = iterator.next();
+//                    Session session = clients.get(sid);
+//                    //向每个会话发送消息
+//                    if (Objects.nonNull(session)){
+//                        try {
+//                            String jsonString = JSON.toJSONString(message);
+//                            //同步发送数据，需要等上一个sendText发送完成才执行下一个发送
+//                            session.getBasicRemote().sendText(jsonString);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
 }
+
 

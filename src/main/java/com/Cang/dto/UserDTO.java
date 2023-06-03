@@ -2,6 +2,9 @@ package com.Cang.dto;
 
 import lombok.Data;
 
+/**
+ * @author Jdfcc
+ */
 @Data
 public class UserDTO {
     private Long id;

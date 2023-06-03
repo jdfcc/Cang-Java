@@ -59,8 +59,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Result sendCode(String phone, HttpSession session) {
 //        验证手机号是否合法 TODO 取消手机号注册功能，改用邮箱注册。需要实现一个校验邮箱是否合法的工具类来实现此功能
-        if (RegexUtils.isPhoneInvalid(phone))
+        if (RegexUtils.isPhoneInvalid(phone)) {
             return Result.fail("手机号格式有误");
+        }
 
 //        生成验证码
         String code = RandomUtil.randomNumbers(4);
@@ -74,6 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         mailService.sendVerFicationMail("3039898075@qq.com",code);
 
+        log.info("验证码为: {}",code);
 //        设置验证码过期时间
         stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
@@ -85,13 +87,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Result login(LoginFormDTO dto, HttpSession session) {
         //        校验手机号
         String phone = dto.getPhone();
-        if (RegexUtils.isPhoneInvalid(phone))
+        if (RegexUtils.isPhoneInvalid(phone)) {
             return Result.fail("手机号格式有误");
+        }
         //校验验证码
         String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
         String code = dto.getCode();
-        if (cacheCode == null || !cacheCode.equals(code))
+        if (cacheCode == null || !cacheCode.equals(code)) {
             return Result.fail("验证码有误");
+        }
 
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
@@ -126,8 +130,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        储存进redis
         stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, userMap);
         stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
-//        将token返回给前端
-        return Result.ok(token);
+//        将token和用户id返回给前端
+        user = mapper.selectOne(wrapper);
+        Long id = user.getId();
+        log.info("登录用户id为: {}",id);
+        return Result.ok(token,id);
     }
 
     @Override

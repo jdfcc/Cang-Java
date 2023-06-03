@@ -5,6 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
+/**
+ * @author Jdfcc
+ */
 @MapperScan("com.Cang.mapper")
 @SpringBootApplication
 @EnableAspectJAutoProxy(exposeProxy = true)

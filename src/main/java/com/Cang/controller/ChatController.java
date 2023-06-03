@@ -34,12 +34,12 @@ public class ChatController {
     }
 
     /**
-     *
-     * @return 当前用户与所有人接收或发送消息的最后一条消息
+     * 当用户进入聊天选项卡时会加载此方法。
+     * @return 当前用户与所有人聊天的最后一条消息。
      */
-    @GetMapping("")
-    public Result getMessageList(){
-        return chatService.getMessageList();
+    @GetMapping("/home")
+    public Result getHomeChat(){
+        return chatService.getHomeChat();
     }
 
 }

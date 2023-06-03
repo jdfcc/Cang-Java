@@ -93,7 +93,6 @@ public class BlogController {
         return blogService.queryLikes(String.valueOf(id));
     }
 
-    // BlogController
     @GetMapping("/of/user")
     public Result queryBlogByUserId(
             @RequestParam(value = "current", defaultValue = "1") Integer current,

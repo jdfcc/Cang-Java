@@ -19,13 +19,16 @@ import static com.Cang.utils.RedisConstants.*;
 @Component
 public class CacheClient {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private RedisData redisData;
+    private final RedisData redisData;
 
     private static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
+
+    public CacheClient(StringRedisTemplate redisTemplate, RedisData redisData) {
+        this.redisTemplate = redisTemplate;
+        this.redisData = redisData;
+    }
 
     /**
      * 将key,data存进redis中并设置过期时间
@@ -57,11 +60,14 @@ public class CacheClient {
             String key, ID id, Class<R> type, Function<ID, R> dbFallback, Long saveTime, TimeUnit unit) {
         String queryId = key + CACHE_ENTITY_KEY + String.valueOf(id);
         String json = redisTemplate.opsForValue().get(queryId);
-        if (StrUtil.isNotBlank(json))
+        if (StrUtil.isNotBlank(json)) {
             return JSONUtil.toBean(json, type);
+        }
         //            处理缓存穿透
-        if (json != null)//为处理缓存穿透所存的空字符串
+        if (json != null)
+        {
             return null;
+        }
         R r = dbFallback.apply(id);
         if (r == null) {
             redisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, unit);
@@ -102,8 +108,9 @@ public class CacheClient {
             String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallback, Long saveTime, TimeUnit unit) {
         String queryKey = keyPrefix + String.valueOf(id);
         String json = redisTemplate.opsForValue().get(queryKey);
-        if (StrUtil.isBlank(json))
+        if (StrUtil.isBlank(json)) {
             return null;
+        }
 //      命中,将json反序列化成对象
         RedisData redisData = JSONUtil.toBean(json, RedisData.class);
         JSONObject data = (JSONObject) redisData.getData();
@@ -124,6 +131,7 @@ public class CacheClient {
         if (lock)
 //            log.info("获取互斥锁成功");
 //            获取互斥锁成功，开启另外一个进程开始数据重建任务
+        {
             CACHE_REBUILD_EXECUTOR.submit(() -> {
                 try {
                     String newJson = redisTemplate.opsForValue().get(queryKey);
@@ -147,6 +155,7 @@ public class CacheClient {
                 }
                 return r;
             });
+        }
         return r;
     }
 

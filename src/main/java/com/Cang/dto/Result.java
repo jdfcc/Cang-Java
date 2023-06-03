@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * @author Jdfcc
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,6 +28,10 @@ public class Result {
 
     public static Result ok(List<?> data, Long total) {
         return new Result(true, null, data, total);
+    }
+
+    public static Result ok(Object data, Long id) {
+        return new Result(true, null, data, id);
     }
 
     public static Result fail(String errorMsg) {

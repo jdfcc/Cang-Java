@@ -42,21 +42,25 @@ import static com.Cang.utils.SystemConstants.NOT_LOGIN;
 @Service
 public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> implements IFollowService {
 
-    @Autowired
-    private FollowMapper mapper;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-    @Autowired
-    private IUserService userService;
+    private final FollowMapper mapper;
+    private final StringRedisTemplate redisTemplate;
+    private final IUserService userService;
     @Resource
     private IBlogService blogService;
 
-    @Transactional
+    public FollowServiceImpl(IUserService userService, StringRedisTemplate redisTemplate, FollowMapper mapper) {
+        this.userService = userService;
+        this.redisTemplate = redisTemplate;
+        this.mapper = mapper;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result follow(Long id, Boolean isFollow) {
         UserDTO user= UserHolder.getUser();
-        if(user==null)
+        if(user==null) {
             return Result.fail(NOT_LOGIN);
+        }
         Long userId= user.getId();
         Follow follower=new Follow();
         follower.setUserId(userId);
@@ -91,27 +95,31 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public Result isFollow(Long id) {
         UserDTO user= UserHolder.getUser();
-        if(user==null)
+        if(user==null) {
             return Result.fail(NOT_LOGIN);
+        }
         Long userId= user.getId();
         LambdaQueryWrapper<Follow> followWrapper= new LambdaQueryWrapper();
         followWrapper.eq(Follow::getUserId,userId).eq(Follow::getFollowUserId,id);
         Follow follow = mapper.selectOne(followWrapper);
-        if(follow==null)
+        if(follow==null) {
             return Result.ok(false);
+        }
         return Result.ok(true);
     }
 
     @Override
     public Result common(Long id) {
         UserDTO user= UserHolder.getUser();
-        if(user==null)
+        if(user==null) {
             return Result.fail(NOT_LOGIN);
+        }
         Long userId= user.getId();
         Set<String> follow = redisTemplate.opsForSet().intersect(FOLLOW_KEY + userId, FOLLOW_KEY + id);
         List<UserDTO> users = new ArrayList<>();
-        if(follow==null)
+        if(follow==null) {
             return Result.ok(Collections.emptyList());
+        }
         for(String temp:follow)
         {
             User u = userService.getById(temp);

@@ -2,6 +2,7 @@ package com.Cang.service.impl;
 
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
+import com.Cang.exception.SQLException;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
 import com.Cang.utils.UserHolder;
@@ -13,13 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-
-import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY;
-import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_KEY;
+import static com.Cang.utils.RedisConstants.*;
 
 /**
  * @author Jdfcc
@@ -40,53 +41,55 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         this.redisTemplate = redisTemplate;
     }
 
-    /**
-     * 将发送到的消息存储到数据库后将此消息以 CHAT_MESSAGE_KEY+ SEND为key, RECEIVE 为HashKey储存在RedisHash中
-     *
-     * @param chat
-     * @return
-     */
+
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Result sendMessage(Chat chat) {
         chat.setCreateTime(LocalDateTime.now());
         Long userid = UserHolder.getUser().getId();
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
-        int insert = chatMapper.insert(chat); //TODO 加一个异常判断
-        redisTemplate.opsForList().leftPush(key, chat);
+        chat.setSend(userid);
+        //TODO 加一个异常判断
+        int insert = chatMapper.insert(chat);
+        if (insert == 0) {
+            throw new SQLException("插入失败");
+        }
+        redisTemplate.opsForList().rightPush(key, chat);
+        long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
+        double score = seconds * 1000;
+//        在当前用户与目标用户首页消息列表中添加此条消息
+        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + UserHolder.getUser(), chat, score);
+        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + chat.getReceive(), chat, score);
         return Result.ok(insert);
     }
 
 
-    /**
-     * 获取到储存在UserHold中储存的用户与此id用户的所有对话
-     *
-     * @param targetId
-     * @return
-     */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Result getMessage(Long targetId) {
         Long userId = UserHolder.getUser().getId();
         String key = this.getKey(userId, targetId);
-
+// TODO
         List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
-        if (chats == null) {
+
+        if (chats.isEmpty()) {
 //            从数据库中查询并重建缓存
             LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            chatLambdaQueryWrapper.eq(Chat::getUserKey, key);
-            chats = Collections.singletonList(chatMapper.selectList(chatLambdaQueryWrapper));
-            if (chats == null) { //数据库中也为空，两人第一次聊天
+            chatLambdaQueryWrapper.eq(Chat::getUserKey, key).orderByAsc(Chat::getCreateTime);
+            List<Chat> newChats = chatMapper.selectList(chatLambdaQueryWrapper);
+            //数据库中也为空，两人第一次聊天
+            if (newChats.isEmpty()) {
                 chats = new ArrayList<>();
 //                储存空缓存以解决缓存击穿
                 redisTemplate.opsForList().leftPush(key, null);
             }
 //            重建缓存
-            for (Object temp : chats) {
-                redisTemplate.opsForList().leftPush(key, temp);
+            for (Object temp : newChats) {
+                redisTemplate.opsForList().rightPush(key, temp);
             }
+            return Result.ok(newChats);
         }
         return Result.ok(chats);
     }
@@ -102,26 +105,25 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         return CHAT_MESSAGE_USER_KEY + (a + b);
     }
 
-    /**
-     * 在数据库中找出不重复的userKey
-     *
-     * @return 所有userKey中时间靠后的最后一条消息
-     */
+
     @Override
-    public Result getMessageList() {
-        Long userid = UserHolder.getUser().getId();
-        String cache = CHAT_MESSAGE_USER_CACHE_KEY + userid;
-        List<Chat> list = (List<Chat>) redisTemplate.opsForValue().get(cache);
-        if (list == null) {
-            List<String> keys = chatMapper.queryChatList(userid);
-            list = new ArrayList<>();
-            for (String key : keys) {
-                Chat chat = chatMapper.selectLast(key);
-                list.add(chat);
+    public Result getHomeChat() {
+        Long id = UserHolder.getUser().getId();
+        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, 0, -1);
+        if (chats.isEmpty()) {
+//            需要从数据库中重建缓存
+            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+            chatLambdaQueryWrapper.eq(Chat::getSend, id);
+            chats = Collections.singleton(chatMapper.selectLast(UserHolder.getUser().getId()));
+            for (Object tem : chats) {
+//                重建缓存
+                long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);
+                double score = seconds * 1000;
+                redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, tem, score);
             }
         }
-
-        return Result.ok(list);
+        return Result.ok(chats);
     }
 
 }

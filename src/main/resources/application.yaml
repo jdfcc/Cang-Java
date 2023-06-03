@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 9090
 
 login:
   authorization: false
@@ -13,9 +13,10 @@ spring:
     username: root
     password: 1234
   redis:
+    database: 1
     host: 120.55.80.133
-    port: 6379
-    password: 123456
+    port: 6380
+    password: 3039@Hyd123G,,,
     lettuce:
       pool:
         max-active: 10
