@@ -7,6 +7,7 @@ import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -71,7 +72,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     public Result getMessage(Long targetId) {
         Long userId = UserHolder.getUser().getId();
         String key = this.getKey(userId, targetId);
-// TODO
         List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
 
         if (chats.isEmpty()) {

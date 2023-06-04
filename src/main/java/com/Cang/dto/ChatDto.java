@@ -31,6 +31,11 @@ public class ChatDto {
     private String avatar;
 
 
+    /**
+     * 消息类型
+     */
+    private String type;
+
     private String nickName;
 
     /**
@@ -51,4 +56,8 @@ public class ChatDto {
     private String message;
 
 
+    public ChatDto(String type, String message) {
+        this.type = type;
+        this.message = message;
+    }
 }
