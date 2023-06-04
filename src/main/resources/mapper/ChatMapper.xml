@@ -3,14 +3,7 @@
 <mapper namespace="com.Cang.mapper.ChatMapper">
 
 
-    <select id="queryChatList" resultType="java.lang.String" parameterType="long">
-        <!-- 查询与指定用户有过聊天记录的用户列表 -->
-        SELECT DISTINCT user_key
-        FROM tb_chat
-        WHERE send=#{userid} or receive=#{userid};
-    </select>
-
-    <select id="selectLast" resultType="com.Cang.entity.Chat" >
+    <select id="selectLast" resultType="com.Cang.entity.Chat">
         select id, send, receive, message, max(create_time) as createTime, `like`, user_key
         from tb_chat
         where user_key in (SELECT user_key
@@ -18,6 +11,16 @@
                            WHERE receive = #{userid}
                               OR send = #{userid})
         GROUP BY user_key;
+    </select>
+
+    <select id="selectDtos" resultType="com.Cang.dto.ChatDto">
+        SELECT tb_chat.id id, icon avatar, message, send, receive
+        FROM tb_chat
+                 JOIN
+             tb_user
+        WHERE send = tb_user.id
+          AND user_key = #{userKey}
+        ORDER BY tb_chat.create_time ASC;
     </select>
 
 </mapper>

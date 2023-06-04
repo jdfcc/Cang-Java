@@ -1,5 +1,7 @@
 package com.Cang.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.exception.SQLException;
@@ -7,7 +9,6 @@ import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -52,11 +53,16 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
         chat.setSend(userid);
+
         //TODO 加一个异常判断
         int insert = chatMapper.insert(chat);
         if (insert == 0) {
             throw new SQLException("插入失败");
         }
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat,chatDto);
+//        TODO 设置目标用户id
+//        chatDto.setId();
         redisTemplate.opsForList().rightPush(key, chat);
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
@@ -76,9 +82,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
         if (chats.isEmpty()) {
 //            从数据库中查询并重建缓存
-            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            chatLambdaQueryWrapper.eq(Chat::getUserKey, key).orderByAsc(Chat::getCreateTime);
-            List<Chat> newChats = chatMapper.selectList(chatLambdaQueryWrapper);
+            List<ChatDto> newChats = chatMapper.selectDtos(key);
             //数据库中也为空，两人第一次聊天
             if (newChats.isEmpty()) {
                 chats = new ArrayList<>();
