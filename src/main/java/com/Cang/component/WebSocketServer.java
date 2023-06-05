@@ -7,11 +7,14 @@ import com.Cang.dto.MessageDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.service.ChatService;
+import com.Cang.service.IUserService;
+
 import lombok.extern.slf4j.Slf4j;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.thymeleaf.util.StringUtils;
 
 
@@ -32,58 +35,51 @@ public class WebSocketServer {
 
     private static ChatService chatService;
 
+    private static RedisTemplate<String, Object> redisTemplate;
+    private static IUserService userService;
+
+    private Long userid;
+
     /**
      * 存储客户端session信息
      */
     public static Map<String, Session> clients = new ConcurrentHashMap<>();
+
 
     /**
      * 存储不同用户的客户端session信息集合
      */
     public static Map<String, Set<String>> connection = new ConcurrentHashMap<>();
 
-    /**
-     * 会话id
-     */
-    private String sid = null;
-
-    /**
-     * 建立连接的用户id
-     */
-    private Long userId;
-
-    private Long targetId;
 
     /**
      * 注入的时候，给类的 service 注入
      */
     @Autowired
-    public void setChatService(ChatService chatService) {
+    public void setChatService(ChatService chatService, RedisTemplate<String, Object> redisTemplate, IUserService userService) {
         WebSocketServer.chatService = chatService;
+        WebSocketServer.redisTemplate = redisTemplate;
+        WebSocketServer.userService = userService;
     }
 
-    /**
-     * @description: 当与前端的websocket连接成功时，执行该方法
-     * @PathParam 获取ServerEndpoint路径中的占位符信息类似 控制层的 @PathVariable注解
-     **/
+
+    /***
+     *  当前端用户与后台建立连接时执行此方法。
+     * @param session 前端服务器session
+     * @param id 当前用户id
+     * @throws IOException
+     */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userId") Long userId) throws IOException {
-        this.sid = UUID.randomUUID().toString();
-        this.userId = userId;
+    public void onOpen(Session session, @PathParam("userId") Long id) throws IOException {
 
-        clients.put(this.sid, session);
-        //判断该用户是否存在会话信息，不存在则添加
-        Set<String> clientSet = connection.get(userId);
 
-        if (clientSet == null) {
-            clientSet = new HashSet<>();
+//        当前用户id
+        userid = id;
+        //不管用户是否存在会话信息，都更新session
+        clients.put(String.valueOf(id), session);
+//        log.info("Session {}", session.toString());
+        log.info("用户  {} 建立连接,当前用户有 {}", id, clients.size());
 
-            connection.put(String.valueOf(userId), clientSet);
-        }
-        clientSet.add(this.sid);
-        log.info("(((( {}", clients);
-        log.info("(((( {}", clientSet);
-        log.info(this.userId + "用户建立连接，" + this.sid + "连接开启！");
     }
 
     /**
@@ -91,8 +87,8 @@ public class WebSocketServer {
      **/
     @OnClose
     public void onClose() {
-        clients.remove(this.sid);
-        log.info(this.sid + "连接断开");
+        clients.remove(String.valueOf(userid));
+        log.info(userid + "连接断开");
     }
 
     /**
@@ -100,10 +96,11 @@ public class WebSocketServer {
      **/
     @OnMessage
     public void onMessage(String message, Session session) throws IOException, EncodeException {
-        log.info("收到来自用户：" + this.userId + "的信息   " + message);
+
+//        log.info("收到来自用户：" + userid + "的信息   " + message);
         MessageDto messageDto = JSON.parseObject(message, MessageDto.class);
-        log.info("@@@ {}", messageDto.toString());
-        Long targetId = messageDto.getTargetId();
+//        log.info("@@@ {}", messageDto.toString());
+        Long id = messageDto.getUserid();
 
         //判断该次请求的消息类型是心跳检测还是获取信息
         if ("heartbeat".equals(messageDto.getType())) {
@@ -114,19 +111,34 @@ public class WebSocketServer {
             session.getBasicRemote().sendText(MessageDto.heartBeat());
         } else if ("message".equals(messageDto.getType())) {
             // TODO 向目标用户发送消息
+            Long targetId = messageDto.getTargetId();
             Chat chat = new Chat();
-            chat.setReceive(messageDto.getTargetId());
-            chat.setSend(this.userId);
+            chat.setReceive(targetId);
+            chat.setSend(id);
             chat.setMessage((String) messageDto.getData());
-            log.info("sendText");
+            chat.setMessage((String) messageDto.getData());
+//            log.info("sendText");
 //            TODO 发送消息
-//            chatService.sendMessage();
-
+            chatService.sendMessage(chat);
+//          TODO  判断目标用户是否与服务器建立连接，如何建立了，则为其也发一份.需要将chat封装为chatDto再返回
+            Session targetSession = clients.get(String.valueOf(targetId));
+            if (targetSession != null) {
+                ChatDto chatDto = new ChatDto();
+                BeanUtil.copyProperties(chat, chatDto);
+                Result avatar = userService.getAvatar(id);
+                chatDto.setAvatar((String) avatar.getData());
+//                log.info("发送消息{}", chatDto);
+                String key = chatService.getKey(targetId, userid);
+                redisTemplate.opsForList().rightPush(key, chatDto);
+                session.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
+                targetSession.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
+            }
         } else if ("query".equals(messageDto.getType())) {
+            Long targetId = messageDto.getTargetId();
+            Long myId = messageDto.getUserid();
 //            TODO 查询信息
-            Result message1 = chatService.getMessage(targetId);
+            Result message1 = chatService.getMessage(userid, targetId);
             List<ChatDto> chats = (List<ChatDto>) message1.getData();
-            log.info("Message {}", chats.size());
             session.getBasicRemote().sendText(MessageDto.query(targetId, chats));
         }
 

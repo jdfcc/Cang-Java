@@ -1,13 +1,12 @@
 package com.Cang.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
+
 import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.exception.SQLException;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
-import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +47,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Transactional(rollbackFor = Exception.class)
     public Result sendMessage(Chat chat) {
         chat.setCreateTime(LocalDateTime.now());
-        Long userid = UserHolder.getUser().getId();
+        Long userid = chat.getSend();
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
@@ -59,24 +58,20 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         if (insert == 0) {
             throw new SQLException("插入失败");
         }
-        ChatDto chatDto = new ChatDto();
-        BeanUtil.copyProperties(chat,chatDto);
-//        TODO 设置目标用户id
-//        chatDto.setId();
-        redisTemplate.opsForList().rightPush(key, chat);
+
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
 //        在当前用户与目标用户首页消息列表中添加此条消息
-        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + UserHolder.getUser(), chat, score);
-        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + chat.getReceive(), chat, score);
+        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userid, chat, score);
+        redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + targetId, chat, score);
         return Result.ok(insert);
     }
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result getMessage(Long targetId) {
-        Long userId = UserHolder.getUser().getId();
+    public Result getMessage(Long userId, Long targetId) {
+
         String key = this.getKey(userId, targetId);
         List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
 
@@ -88,6 +83,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 chats = new ArrayList<>();
 //                储存空缓存以解决缓存击穿
                 redisTemplate.opsForList().leftPush(key, null);
+                return Result.ok(chats);
             }
 //            重建缓存
             for (Object temp : newChats) {
@@ -111,23 +107,23 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
 
     @Override
-    public Result getHomeChat() {
-        Long id = UserHolder.getUser().getId();
-        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, 0, -1);
+    public Result getHomeChat(Long userId) {
+        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userId, 0, -1);
         if (chats.isEmpty()) {
 //            需要从数据库中重建缓存
             LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
 
-            chatLambdaQueryWrapper.eq(Chat::getSend, id);
-            chats = Collections.singleton(chatMapper.selectLast(UserHolder.getUser().getId()));
+            chatLambdaQueryWrapper.eq(Chat::getSend, userId);
+            chats = Collections.singleton(chatMapper.selectLast(userId));
             for (Object tem : chats) {
 //                重建缓存
                 long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);
                 double score = seconds * 1000;
-                redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, tem, score);
+                redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userId, tem, score);
             }
         }
         return Result.ok(chats);
     }
+
 
 }

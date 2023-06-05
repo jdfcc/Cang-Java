@@ -28,18 +28,19 @@ public class ChatController {
         return chatService.sendMessage(chat);
     }
 
-    @GetMapping("/get/{id}")
-    public Result getMessage(@PathVariable String id){
-        return chatService.getMessage(Long.valueOf(id));
-    }
+//    @GetMapping("/get/{id}")
+//    public Result getMessage(@PathVariable String id){
+//        return chatService.getMessage(Long.valueOf(id));
+//    }
+
 
     /**
      * 当用户进入聊天选项卡时会加载此方法。
      * @return 当前用户与所有人聊天的最后一条消息。
      */
-    @GetMapping("/home")
-    public Result getHomeChat(){
-        return chatService.getHomeChat();
+    @GetMapping("/home/{id}")
+    public Result getHomeChat(@PathVariable Long id){
+        return chatService.getHomeChat(id);
     }
 
 }

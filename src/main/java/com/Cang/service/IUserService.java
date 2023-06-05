@@ -18,9 +18,34 @@ import javax.servlet.http.HttpSession;
  */
 public interface IUserService extends IService<User> {
 
+    /**
+     * 用户注册或登录发送验证码
+     * @param phone 手机号 TODO 后期会改成邮箱
+     * @param session
+     * @return
+     */
     Result sendCode(String phone, HttpSession session);
 
+    /**
+     * 用户登录
+     * @param dto
+     * @param session
+     * @return
+     */
     Result login(LoginFormDTO dto,HttpSession session);
 
+    /**
+     * 用户登出
+     * @param request
+     * @return
+     */
+
     Result logout(HttpServletRequest request);
+
+    /**
+     * 获取用户头像
+     * @param userid
+     * @return
+     */
+    Result getAvatar(Long userid);
 }

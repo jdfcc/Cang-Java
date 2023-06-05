@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
+import javax.websocket.Session;
+
 /**
  * @author Jdfcc
  * @Description 为RedisTemplate设置序列化器
@@ -35,6 +37,8 @@ public class RedisConfig {
 //        返回
         return template;
     }
+
+
 
 
 

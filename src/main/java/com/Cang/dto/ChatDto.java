@@ -16,6 +16,7 @@ public class ChatDto {
      * 消息id
      */
     private String id;
+
     /**
      * 消息发送者的头像
      */

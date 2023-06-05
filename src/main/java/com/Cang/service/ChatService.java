@@ -28,16 +28,23 @@ public interface ChatService extends IService<Chat> {
      * @param id
      * @return
      */
-    Result getMessage(Long id);
-
-
+    Result getMessage(Long userid, Long id);
 
 
     /**
      * 查询当前用户与所有人聊天记录的最后一条消息.具体为查询该用户关联的所有Chat_KEY，然后再对key遍历。
      * 首先从redis中找此用户所关联的所有key，拿不到再从数据库中重建缓存。若都为空，该用户从未与任何人聊过天
      *
+     * @param userId
      * @return 查询当前用户与所有人聊天记录的最后一条消息
      */
-    Result getHomeChat();
+    Result getHomeChat(Long userId);
+
+    /**
+     * 获取key
+     * @param a
+     * @param b
+     * @return
+     */
+    String getKey(Long a, Long b);
 }

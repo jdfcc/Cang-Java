@@ -31,8 +31,7 @@ public class UserInfo implements Serializable {
      * TODO 开启驼峰命名有问题。
      * 主键，用户id
      */
-    @TableId(value = "user_id", type = IdType.AUTO)
-    private Long userId;
+    private Long id;
 
     /**
      * 城市名称

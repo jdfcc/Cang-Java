@@ -7,6 +7,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.Cang.service.MailService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.dto.LoginFormDTO;
 import com.Cang.dto.Result;
@@ -73,9 +74,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 //        发送验证码
 
-        mailService.sendVerFicationMail("3039898075@qq.com",code);
+        mailService.sendVerFicationMail("3039898075@qq.com", code);
 
-        log.info("验证码为: {}",code);
+        log.info("验证码为: {}", code);
 //        设置验证码过期时间
         stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
@@ -116,7 +117,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            通过雪花算法生成用户id
             user.setId(new IdGeneratorSnowflake().snowflakeId());
             user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
-            log.info("%%%%%%%%% {}",user);
+            log.info("%%%%%%%%% {}", user);
             mapper.insert(user);
         }
         UserDTO date = BeanUtil.copyProperties(user, UserDTO.class);
@@ -133,8 +134,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        将token和用户id返回给前端
         user = mapper.selectOne(wrapper);
         Long id = user.getId();
-        log.info("登录用户id为: {}",id);
-        return Result.ok(token,id);
+        log.info("登录用户id为: {}", id);
+        return Result.ok(token, id);
     }
 
     @Override
@@ -142,5 +143,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         stringRedisTemplate.delete(LOGIN_USER_KEY + request.getHeader(REQUEST_HEAD));
         UserHolder.removeUser();
         return Result.ok();
+    }
+
+    @Override
+    public Result getAvatar(Long userid) {
+        LambdaQueryWrapper<User> wrapper = Wrappers.lambdaQuery(User.class);
+        wrapper.eq(User::getId, userid);
+        User user = mapper.selectOne(wrapper);
+        String icon = user.getIcon();
+        return Result.ok(icon);
     }
 }

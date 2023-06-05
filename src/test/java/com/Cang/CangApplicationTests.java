@@ -13,6 +13,7 @@ import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +21,7 @@ import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -30,8 +32,9 @@ import java.util.stream.Collectors;
 import static com.Cang.utils.RedisConstants.*;
 import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY_LAST;
 
-@SpringBootTest
 @Slf4j
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CangApplicationTests {
     @Value("${spring.redis.host}")
     private String address;
@@ -85,6 +88,13 @@ class CangApplicationTests {
         chatService.sendMessage(chat);
     }
 
+    @Test
+    public void testHello(){
+        Object o = redisTemplate.opsForHash().get("jdfcc", "name");
+        if(o==null){
+            log.info("null");
+        }
+    }
     @Test
     public void testTime(){
         LocalDateTime dateTime = LocalDateTime.now();

@@ -3,6 +3,7 @@ package com.Cang.utils;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.Cang.dto.UserDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -18,6 +19,7 @@ import static com.Cang.utils.SystemConstants.REQUEST_HEAD;
 /**
  * @author Jdfcc
  */
+@Slf4j
 public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     private StringRedisTemplate stringRedisTemplate;
@@ -42,6 +44,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         }
         // 5.将查询到的hash数据转为UserDTO
         UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
+        log.info("当前请求用户为 {}",userDTO.getId());
         // 6.存在，保存用户信息到 ThreadLocal
         UserHolder.saveUser(userDTO);
         // 7.刷新token有效期

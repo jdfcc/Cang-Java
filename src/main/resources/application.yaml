@@ -2,7 +2,7 @@ server:
   port: 9090
 
 login:
-  authorization: false
+  authorization: true
 
 spring:
   application:

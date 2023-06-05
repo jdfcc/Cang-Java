@@ -2,6 +2,8 @@ package com.Cang.dto;
 
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -19,7 +21,11 @@ public class MessageDto {
     /**
      * 目标用户id
      */
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long targetId;
+
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long userid;
 
     /**
      * 消息类型

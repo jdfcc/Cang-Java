@@ -79,13 +79,13 @@ public class UserController {
     @GetMapping("/info/{id}")
     public Result info(@PathVariable("id") Long userId) {
         // 查询详情
-        UserInfo info = userInfoService.getById(userId);
-        if (info == null) {            // 没有详情，应该是第一次查看详情
-
+        UserInfo info = userInfoService.getById(String.valueOf(userId));
+// 没有详情，应该是第一次查看详情
+        if (info == null) {
             UserInfo userInfo = new UserInfo();
             User user = userService.getById(userId);
-            log.debug("id&&&&&&&&&&&&&&&& {} {}",userId,user.getId());
-            userInfo.setUserId(user.getId());
+            log.debug("id&&&&&&&&&&&&&&&& {} {}", userId, user.getId());
+            userInfo.setId(user.getId());
             userInfo.setCreateTime(user.getCreateTime());
             userInfo.setUpdateTime(user.getUpdateTime());
             userInfoService.save(userInfo);
