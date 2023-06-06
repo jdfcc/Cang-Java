@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketHandler;
 import org.thymeleaf.util.StringUtils;
 
 
@@ -25,13 +25,15 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 /**
  * @author Jdfcc
+ *  TODO 拆分
  */
 @Slf4j
 @Component
 @ServerEndpoint("/notice/{userId}")
-public class WebSocketServer {
+public class WebSocketServer  {
 
     private static ChatService chatService;
 
@@ -122,24 +124,34 @@ public class WebSocketServer {
             chatService.sendMessage(chat);
 //          TODO  判断目标用户是否与服务器建立连接，如何建立了，则为其也发一份.需要将chat封装为chatDto再返回
             Session targetSession = clients.get(String.valueOf(targetId));
+            ChatDto chatDto = new ChatDto();
+            BeanUtil.copyProperties(chat, chatDto);
+            Result avatar = userService.getAvatar(id);
+            chatDto.setAvatar((String) avatar.getData());
+//             为消息首页发送消息
+            session.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
+            session.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));
+            String key = chatService.getKey(targetId, userid);
+            redisTemplate.opsForList().rightPush(key, chatDto);
             if (targetSession != null) {
-                ChatDto chatDto = new ChatDto();
-                BeanUtil.copyProperties(chat, chatDto);
-                Result avatar = userService.getAvatar(id);
-                chatDto.setAvatar((String) avatar.getData());
 //                log.info("发送消息{}", chatDto);
-                String key = chatService.getKey(targetId, userid);
-                redisTemplate.opsForList().rightPush(key, chatDto);
-                session.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
+                targetSession.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));
                 targetSession.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
             }
+
         } else if ("query".equals(messageDto.getType())) {
             Long targetId = messageDto.getTargetId();
-            Long myId = messageDto.getUserid();
+
 //            TODO 查询信息
             Result message1 = chatService.getMessage(userid, targetId);
             List<ChatDto> chats = (List<ChatDto>) message1.getData();
             session.getBasicRemote().sendText(MessageDto.query(targetId, chats));
+        } else if ("list".equals(messageDto.getType())) {
+            log.info("List");
+            Long userid = messageDto.getUserid();
+            Result result = chatService.getHomeChat(userid);
+            Object data = result.getData();
+            session.getBasicRemote().sendText(MessageDto.list(userid, data));
         }
 
     }

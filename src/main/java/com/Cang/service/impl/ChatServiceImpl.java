@@ -16,10 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.Cang.utils.RedisConstants.*;
 
@@ -61,6 +58,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
+        chat.setCreateTime(null);
 //        在当前用户与目标用户首页消息列表中添加此条消息
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userid, chat, score);
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + targetId, chat, score);
@@ -105,24 +103,33 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         return CHAT_MESSAGE_USER_KEY + (a + b);
     }
 
-
     @Override
     public Result getHomeChat(Long userId) {
-        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userId, 0, -1);
-        if (chats.isEmpty()) {
-//            需要从数据库中重建缓存
-            LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<ChatDto> newChats = chatMapper.selectLast(userId);
+        return Result.ok(newChats);
+    }
 
-            chatLambdaQueryWrapper.eq(Chat::getSend, userId);
-            chats = Collections.singleton(chatMapper.selectLast(userId));
-            for (Object tem : chats) {
-//                重建缓存
-                long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);
-                double score = seconds * 1000;
-                redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userId, tem, score);
-            }
-        }
-        return Result.ok(chats);
+//    TODO 想不明白使用redis存的数据结构，日后再填坑
+//    @Override
+//    public Result getHomeChat(Long userId) {
+//        Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userId, 0, -1);
+//        Object o = redisTemplate.opsForHash().get(CHAT_MESSAGE_USER_CACHE_KEY_LAST, userId);
+//        if (chats.isEmpty()) {
+////            需要从数据库中重建缓存
+//            List<ChatDto> newChats = chatMapper.selectLast(userId);
+//            for (ChatDto tem : newChats) {
+////                重建缓存
+//                redisTemplate.opsForHash().put(CHAT_MESSAGE_USER_CACHE_KEY_LAST, userId, tem);
+//            }
+//            return Result.ok(newChats);
+//        }
+//        return Result.ok(reverseSet(chats));
+//    }
+
+    public static Set<Object> reverseSet(Set<Object> chats) {
+        List<Object> list = new ArrayList<>(chats);
+        Collections.reverse(list);
+        return new LinkedHashSet<>(list);
     }
 
 

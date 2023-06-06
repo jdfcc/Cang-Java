@@ -12,6 +12,7 @@ public class UserHolder {
     private static final ThreadLocal<UserDTO> tl = new ThreadLocal<>();
 
     public static void saveUser(UserDTO user) {
+        log.info("Saving user");
         tl.set(user);
     }
 

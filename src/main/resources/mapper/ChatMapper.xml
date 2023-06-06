@@ -3,13 +3,23 @@
 <mapper namespace="com.Cang.mapper.ChatMapper">
 
 
-    <select id="selectLast" resultType="com.Cang.entity.Chat">
-        select id, send, receive, message, max(create_time) as createTime, `like`, user_key
+    <select id="selectLast" resultType="com.Cang.dto.ChatDto">
+        select tb_chat.id                  id,
+               send,
+               receive,
+               message,
+               max(tb_chat.create_time) as createTime,
+               `like`,
+               user_key,
+               icon                        avatar,
+               nick_name                   nickName
         from tb_chat
+                 join tb_user
         where user_key in (SELECT user_key
                            FROM tb_chat
                            WHERE receive = #{userid}
-                              OR send = #{userid})
+                              OR send = #{userid}
+                           ORDER BY tb_chat.create_time ASC)
         GROUP BY user_key;
     </select>
 

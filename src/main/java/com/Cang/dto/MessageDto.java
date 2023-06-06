@@ -57,4 +57,11 @@ public class MessageDto {
         return JSON.toJSONString(new MessageDto(targetId, "query", data));
     }
 
+    public static String list(Long userId, Object data) {
+        return JSON.toJSONString(new MessageDto(userId, "list", data));
+    }
+
+    public static String receive(Long userId, Object data) {
+        return JSON.toJSONString(new MessageDto(userId, "receive", data));    }
+
 }

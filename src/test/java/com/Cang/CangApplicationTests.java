@@ -1,5 +1,6 @@
 package com.Cang;
 
+import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Blog;
 import com.Cang.entity.Chat;
@@ -146,7 +147,7 @@ class CangApplicationTests {
 
     @Test
     public void testChatSelect(){
-        List<Chat> chat = chatMapper.selectLast(1010L);
+        List<ChatDto> chat = chatMapper.selectLast(1010L);
 //        List<String> keys = chatMapper.queryChatList(1010L);
         System.out.println(chat.toString());
 //        System.out.println(keys);
@@ -162,7 +163,7 @@ class CangApplicationTests {
             LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
 
             chatLambdaQueryWrapper.eq(Chat::getSend, id);
-            List<Chat> newChat = chatMapper.selectLast(UserHolder.getUser().getId());
+            List<ChatDto> newChat = chatMapper.selectLast(UserHolder.getUser().getId());
             for (Object tem : newChat) {
 //                重建缓存
                 long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);

@@ -22,7 +22,7 @@ public interface ChatMapper extends BaseMapper<Chat> {
      * @param userid userid
      * @return List<Chat>
      */
-    List<Chat> selectLast(@Param("userid") Long userid);
+    List<ChatDto> selectLast(@Param("userid") Long userid);
 
     /**
      * 查询出指定的chatDto并返回
