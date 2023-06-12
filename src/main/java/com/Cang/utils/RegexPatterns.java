@@ -1,7 +1,7 @@
 package com.Cang.utils;
 
 /**
- * @author 虎哥
+ * @author jdfcc
  */
 public abstract class RegexPatterns {
     /**

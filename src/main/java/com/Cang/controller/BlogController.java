@@ -17,9 +17,6 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * <p>
- * 前端控制器
- * </p>
  *
  * @author jdfcc
  * @since 2023-2-7

@@ -4,6 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 /**
  * @author Jdfcc
@@ -11,6 +12,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @MapperScan("com.Cang.mapper")
 @SpringBootApplication
 @EnableAspectJAutoProxy(exposeProxy = true)
+@EnableWebSocket
 public class CangApplication {
 
     public static void main(String[] args) {

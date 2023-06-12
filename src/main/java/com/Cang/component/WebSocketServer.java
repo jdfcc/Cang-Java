@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @ServerEndpoint("/notice/{userId}")
-public class WebSocketServer  {
+public class WebSocketServer {
 
     private static ChatService chatService;
 
@@ -110,6 +110,7 @@ public class WebSocketServer  {
 //            sendMessageByUserId(this.userId, );
 //            TODO 此方法目前只能单线程，多线程时无法区别前台session。需要根据UesrId将session存储于HashMap中，可借助redis实现
 //            TODO 这样就可以区别出多个前台session
+            log.info("消息列表心跳检测 {}",userid);
             session.getBasicRemote().sendText(MessageDto.heartBeat());
         } else if ("message".equals(messageDto.getType())) {
             // TODO 向目标用户发送消息
@@ -130,7 +131,10 @@ public class WebSocketServer  {
             chatDto.setAvatar((String) avatar.getData());
 //             为消息首页发送消息
             session.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
-            session.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));
+
+//           TODO 拆分了下一条代码
+//            session.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));
+
             String key = chatService.getKey(targetId, userid);
             redisTemplate.opsForList().rightPush(key, chatDto);
             if (targetSession != null) {
