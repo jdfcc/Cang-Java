@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.KEY_PREFIX;
+import static com.Cang.constants.RedisConstants.KEY_PREFIX;
 
 /**
  * @author Jdfcc

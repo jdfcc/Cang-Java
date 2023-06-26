@@ -7,7 +7,6 @@ import com.Cang.entity.Chat;
 import com.Cang.exception.SQLException;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,7 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-import static com.Cang.utils.RedisConstants.*;
+import static com.Cang.constants.RedisConstants.*;
 
 /**
  * @author Jdfcc

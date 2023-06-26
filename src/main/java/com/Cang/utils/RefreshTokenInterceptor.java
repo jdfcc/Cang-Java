@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.LOGIN_USER_KEY;
-import static com.Cang.utils.RedisConstants.LOGIN_USER_TTL;
-import static com.Cang.utils.SystemConstants.REQUEST_HEAD;
+import static com.Cang.constants.RedisConstants.LOGIN_USER_KEY;
+import static com.Cang.constants.RedisConstants.LOGIN_USER_TTL;
+import static com.Cang.constants.SystemConstants.REQUEST_HEAD;
 
 /**
  * @author Jdfcc

@@ -3,6 +3,7 @@ package com.Cang.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.Cang.annotations.LogAnnotation;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.Cang.dto.Result;
 import com.Cang.dto.ScrollResult;
@@ -15,9 +16,8 @@ import com.Cang.service.IBlogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.service.IUserService;
 import com.Cang.utils.CacheClient;
-import com.Cang.utils.SystemConstants;
+import com.Cang.constants.SystemConstants;
 import com.Cang.utils.UserHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.Cang.utils.RedisConstants.*;
-import static com.Cang.utils.SystemConstants.*;
+import static com.Cang.constants.RedisConstants.*;
+import static com.Cang.constants.SystemConstants.*;
 
 /**
  * <p>
@@ -59,6 +59,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     }
 
     @Override
+    @LogAnnotation
     public Result queryHotblog(Integer current) {
         String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY);
         List<Blog> lists = JSONUtil.toList(json, Blog.class);

@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.Cang.dto.Result;
 import com.Cang.entity.Shop;
 import com.Cang.service.IShopService;
-import com.Cang.utils.SystemConstants;
+import com.Cang.constants.SystemConstants;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

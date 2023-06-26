@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.SECKILL_STOCK_KEY;
+import static com.Cang.constants.RedisConstants.SECKILL_STOCK_KEY;
 
 /**
  * <p>

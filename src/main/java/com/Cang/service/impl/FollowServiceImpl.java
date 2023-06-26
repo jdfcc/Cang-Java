@@ -13,7 +13,6 @@ import com.Cang.service.IFollowService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.service.IUserService;
 import com.Cang.utils.UserHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +26,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static com.Cang.utils.RedisConstants.FEED_KEY;
-import static com.Cang.utils.RedisConstants.FOLLOW_KEY;
-import static com.Cang.utils.SystemConstants.NOT_LOGIN;
+import static com.Cang.constants.RedisConstants.FEED_KEY;
+import static com.Cang.constants.RedisConstants.FOLLOW_KEY;
+import static com.Cang.constants.SystemConstants.NOT_LOGIN;
 
 /**
  * <p>

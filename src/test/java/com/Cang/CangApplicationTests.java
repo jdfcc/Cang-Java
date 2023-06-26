@@ -1,7 +1,6 @@
 package com.Cang;
 
 import com.Cang.dto.ChatDto;
-import com.Cang.dto.Result;
 import com.Cang.entity.Blog;
 import com.Cang.entity.Chat;
 import com.Cang.entity.Shop;
@@ -24,14 +23,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.Cang.utils.RedisConstants.*;
-import static com.Cang.utils.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY_LAST;
+import static com.Cang.constants.RedisConstants.*;
+import static com.Cang.constants.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY_LAST;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -65,23 +67,25 @@ class CangApplicationTests {
 
     @Autowired
     private ChatMapper chatMapper;
+
     @Test
-    void testSearch(){
+    void testSearch() {
         System.out.println(userService.getById(1010));
     }
+
     @Test
-    public void testDel(){
-        StringredisTemplate.opsForZSet().remove("jdfcc","1232");
+    public void testDel() {
+        StringredisTemplate.opsForZSet().remove("jdfcc", "1232");
     }
 
     @Test
-    public void testFollow(){
+    public void testFollow() {
         List<String> follows = followMapper.getFollowerId(2L);
-        log.info("follows: {}",follows);
+        log.info("follows: {}", follows);
     }
 
     @Test
-    public void testChat(){
+    public void testChat() {
         Chat chat = new Chat();
         chat.setMessage("Hello");
         chat.setSend(1L);
@@ -90,21 +94,23 @@ class CangApplicationTests {
     }
 
     @Test
-    public void testHello(){
+    public void testHello() {
         Object o = redisTemplate.opsForHash().get("jdfcc", "name");
-        if(o==null){
+        if (o == null) {
             log.info("null");
         }
     }
+
     @Test
-    public void testTime(){
+    public void testTime() {
         LocalDateTime dateTime = LocalDateTime.now();
         double seconds = dateTime.toEpochSecond(ZoneOffset.UTC);
         double milliseconds = seconds * 1000;
         System.out.println(milliseconds);
     }
+
     @Test
-    public void testHash(){
+    public void testHash() {
 //        Chat chat = new Chat();
 //        chat.setMessage("Hello");
 //        chat.setSend(1L);
@@ -117,13 +123,13 @@ class CangApplicationTests {
     }
 
     @Test
-    public void testIdGenerate(){
+    public void testIdGenerate() {
         long l = new IdGeneratorSnowflake().snowflakeId();
-        log.info("@@@@@@@ {}",String.valueOf(l));
+        log.info("@@@@@@@ {}", String.valueOf(l));
     }
 
     @Test
-    public void testBlog(){
+    public void testBlog() {
         Blog blog = new Blog();
         blog.setId(222L);
         blog.setCreateTime(LocalDateTime.now());
@@ -136,17 +142,58 @@ class CangApplicationTests {
 
     }
 
+    public class Student {
+        String name;
+        String sex;
+
+        Student() {
+        }
+
+        public Student init(String name, String sex) {
+            Student student = new Student();
+            student.name = name;
+            student.sex = sex;
+            return student;
+        }
+    }
+
     @Test
-    public void testInsert(){
+    public void testAnnotation() {
+        Student stu = new Student();
+        stu.init("李四", "男");
+    }
+
+    @Value("${my-log.src}")
+    private String src;
+
+    @Test
+    public void testLog() throws FileNotFoundException {
+        File file = new File((src));
+        FileOutputStream outputStream = new FileOutputStream(file);
+
+    }
+
+    @Test
+    public void testTimeOut()  {
+        LocalTime currentTime = LocalTime.now();
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        Integer minute = currentTime.getMinute();
+        Integer second = currentTime.getSecond();
+        String time = hour + ":" + minute + ":" + second+"  ";
+        log.info(time);
+    }
+    @Test
+    public void testInsert() {
         String jdfcc = "111111111111obj";
-        redisTemplate.opsForList().leftPush("1111111111",jdfcc);
-        jdfcc="2222222222222obj";
-        redisTemplate.opsForList().leftPush("22222222222",jdfcc,222);
+        redisTemplate.opsForList().leftPush("1111111111", jdfcc);
+        jdfcc = "2222222222222obj";
+        redisTemplate.opsForList().leftPush("22222222222", jdfcc, 222);
     }
 
 
     @Test
-    public void testChatSelect(){
+    public void testChatSelect() {
         List<ChatDto> chat = chatMapper.selectLast(1010L);
 //        List<String> keys = chatMapper.queryChatList(1010L);
         System.out.println(chat.toString());
@@ -154,10 +201,10 @@ class CangApplicationTests {
     }
 
     @Test
-    public void testChatsLast(){
+    public void testChatsLast() {
         Long id = 1010L;
         Set<Object> chats = redisTemplate.opsForZSet().range(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, 0, -1);
-        if (chats .isEmpty()) {
+        if (chats.isEmpty()) {
             log.info("重建缓存");
 //            需要从数据库中重建缓存
             LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -176,11 +223,12 @@ class CangApplicationTests {
 
     }
 
+
     @Test
-    public void testAddL(){
-        Long a=2L;
-        Long b=3L;
-        log.info("@@@@@@@@@@ {}",a+b);
+    public void testAddL() {
+        Long a = 2L;
+        Long b = 3L;
+        log.info("@@@@@@@@@@ {}", a + b);
     }
 
     @Test
@@ -208,33 +256,33 @@ class CangApplicationTests {
             StringredisTemplate.opsForGeo().add(key, locations);
         }
     }
+
     @Test
-    public void testRemove(){
+    public void testRemove() {
         Boolean unliked = blogMapper.unliked(23L);
-        log.info("flag: {}",unliked);
+        log.info("flag: {}", unliked);
     }
 
     @Test
-    public void test(){
-        log.info("address: {}",address);
-        log.info("password: {}",password);
+    public void test() {
+        log.info("address: {}", address);
+        log.info("password: {}", password);
     }
 
 
     @Test
-    public void  testInt(){
-        int value =1;
+    public void testInt() {
+        int value = 1;
         Integer integer = new Integer(value);
-        int s=integer;
-        log.info("@@@@@@@@@@@@ {}",integer);
-        log.info("------------------ {}",s);
+        int s = integer;
+        log.info("@@@@@@@@@@@@ {}", integer);
+        log.info("------------------ {}", s);
         Set<String> strings = new HashSet<>();
         strings.add("foo");
         strings.add("bar");
         strings.add("1");
         System.out.println(strings.toString());
     }
-
 
 
 }

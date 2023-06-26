@@ -1,4 +1,4 @@
-package com.Cang.utils;
+package com.Cang.constants;
 
 /**
  * @author Jdfcc

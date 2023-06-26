@@ -7,15 +7,14 @@ import com.Cang.entity.ShopType;
 import com.Cang.mapper.ShopTypeMapper;
 import com.Cang.service.IShopTypeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.CACHE_SHOP_TYPE_KEY;
-import static com.Cang.utils.RedisConstants.CACHE_SHOP_TYPE_TTL;
+import static com.Cang.constants.RedisConstants.CACHE_SHOP_TYPE_KEY;
+import static com.Cang.constants.RedisConstants.CACHE_SHOP_TYPE_TTL;
 
 /**
  * <p>

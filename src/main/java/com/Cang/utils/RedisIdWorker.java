@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import static com.Cang.utils.RedisConstants.REDIS_INCREASE_KEY;
+import static com.Cang.constants.RedisConstants.REDIS_INCREASE_KEY;
 
 /**
  * @author jdfcc

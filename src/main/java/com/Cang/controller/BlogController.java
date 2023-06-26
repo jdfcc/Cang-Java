@@ -8,12 +8,10 @@ import com.Cang.entity.Blog;
 import com.Cang.service.IBlogService;
 
 
-import com.Cang.utils.SystemConstants;
+import com.Cang.constants.SystemConstants;
 import com.Cang.utils.UserHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 /**

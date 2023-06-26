@@ -1,5 +1,6 @@
 package com.Cang.service;
 
+import com.Cang.annotations.LogAnnotation;
 import com.Cang.dto.Result;
 import com.Cang.entity.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -17,12 +18,9 @@ import java.util.List;
 public interface IBlogService extends IService<Blog> {
 
     Result queryBlog(String id);
-
-
     Result queryHotblog(Integer current);
 
     Result like(Long id);
-
 
     Result queryLikes(String id);
 

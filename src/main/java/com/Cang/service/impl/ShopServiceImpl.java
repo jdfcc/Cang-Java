@@ -7,13 +7,12 @@ import com.Cang.service.IShopService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.utils.CacheClient;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.*;
+import static com.Cang.constants.RedisConstants.*;
 
 /**
  * <p>

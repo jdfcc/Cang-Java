@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
-import com.Cang.service.MailService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -18,7 +17,7 @@ import com.Cang.service.IUserService;
 import com.Cang.utils.RegexUtils;
 import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.utils.RedisConstants.*;
-import static com.Cang.utils.SystemConstants.*;
+import static com.Cang.constants.RabbitMqConstants.CAPTCHAExchange;
+import static com.Cang.constants.RabbitMqConstants.CAPTCHARoutingKey;
+import static com.Cang.constants.RedisConstants.*;
+import static com.Cang.constants.SystemConstants.*;
 
 /**
  * <p>
@@ -47,38 +48,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     private final UserMapper mapper;
 
-    private final MailService mailService;
+
+
+    private RabbitTemplate rabbitTemplate;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    public UserServiceImpl(UserMapper mapper, MailService mailService) {
+    public UserServiceImpl(UserMapper mapper, RabbitTemplate rabbitTemplate) {
         this.mapper = mapper;
-        this.mailService = mailService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
     public Result sendCode(String phone, HttpSession session) {
 //        验证手机号是否合法 TODO 取消手机号注册功能，改用邮箱注册。需要实现一个校验邮箱是否合法的工具类来实现此功能
-        if (RegexUtils.isPhoneInvalid(phone)) {
-            return Result.fail("手机号格式有误");
-        }
-
-//        生成验证码
-        String code = RandomUtil.randomNumbers(4);
-
-//        String code = "1234";
-
-//        储存进redis
-        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code);
-
-//        发送验证码
-
-        mailService.sendVerFicationMail("3039898075@qq.com", code);
-
-        log.info("验证码为: {}", code);
-//        设置验证码过期时间
-        stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);
+//        if (RegexUtils.isPhoneInvalid(phone)) {
+//            return Result.fail("手机号格式有误");
+//        }
+//        发送邮箱至消息队列
+        rabbitTemplate.convertAndSend( CAPTCHAExchange,CAPTCHARoutingKey, phone);
 
 //        返回
         return Result.ok();

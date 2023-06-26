@@ -1,7 +1,6 @@
 package com.Cang.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.http.server.HttpServerResponse;
 import com.Cang.exception.EmptyUserHolderException;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.Cang.dto.Result;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -25,18 +23,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import static com.Cang.utils.RedisConstants.CACHE_VOUCHER_ORDER_KEY;
-import static com.Cang.utils.SystemConstants.*;
+import static com.Cang.constants.RedisConstants.CACHE_VOUCHER_ORDER_KEY;
+import static com.Cang.constants.SystemConstants.*;
 
 /**
  * <p>
@@ -98,7 +93,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         @Override
         public void run() {
             while (true) {
-                log.info("读取信息");
+//                log.info("读取信息");
                 try {
 //                    从消息队列中读取消息
                     List<MapRecord<String, Object, Object>> message = redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
@@ -115,7 +110,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
                     orderHandler(order);
 //                    ack确认
-                    log.info("@@@@ {}", map.getId());
+//                    log.info("@@@@ {}", map.getId());
                     redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
                 } catch (Exception e) {
                     handlePendingList();
@@ -140,7 +135,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                     VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
                     orderHandler(order);
 //                    ack确认
-                    log.info("@@@@ {}", map.getId());
+//                    log.info("@@@@ {}", map.getId());
                     redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
                 } catch (Exception e) {
 //                    log.info("unKnow Exception");
@@ -175,7 +170,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         voucherOrderWrapper.eq(VoucherOrder::getVoucherId, voucherId).eq(VoucherOrder::getUserId, userId);
         int count = voucherOrderMapper.getCount(voucherId, userId);
         if (count > 0) {
-            log.info("count>0");
+//            log.info("count>0");
             return;
         }
 
@@ -206,7 +201,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         Long orderId = redisIdWorker.nextId("secKillVoucher");
         Long result = redisTemplate.execute(VOUCHER_SCRIPT, Collections.emptyList(), id.toString(), voucherId.toString(), orderId.toString());
         if (result != 0) {
-            log.info("@@@@@@ {}", result);
+//            log.info("@@@@@@ {}", result);
             return Result.fail(VOUCHER_ERROR);
         }
         proxy = (IVoucherOrderService) AopContext.currentProxy();
