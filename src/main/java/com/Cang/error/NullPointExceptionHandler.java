@@ -16,11 +16,20 @@ import javax.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 @Slf4j
 public class NullPointExceptionHandler {
-    @ExceptionHandler(Exception.class)
-    public Result nullPointerExceptionRun(HttpServletRequest request,Throwable e){
-        String message="failed!";
-        log.error("空指针异常: {}",e.toString());
-        return Result.fail("服务器异常"+message);
+//    @ExceptionHandler(Exception.class)
+    public Result nullPointerExceptionRun(HttpServletRequest request,Throwable e) throws Throwable {
+
+        try {
+            String message=e.getMessage();
+            log.error("Exception {}",message);
+        }
+        catch (Exception e1){
+            throw e;
+        }
+        finally {
+            return Result.fail("服务器异常");
+        }
+
     }
 
 }

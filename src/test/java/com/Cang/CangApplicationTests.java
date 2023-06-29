@@ -8,6 +8,7 @@ import com.Cang.mapper.BlogMapper;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.*;
+import com.Cang.utils.HttpUtil;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,6 +24,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.Cang.constants.RedisConstants.*;
 import static com.Cang.constants.RedisConstants.CHAT_MESSAGE_USER_CACHE_KEY_LAST;
+import static java.time.ZoneOffset.UTC;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -104,7 +107,7 @@ class CangApplicationTests {
     @Test
     public void testTime() {
         LocalDateTime dateTime = LocalDateTime.now();
-        double seconds = dateTime.toEpochSecond(ZoneOffset.UTC);
+        double seconds = dateTime.toEpochSecond(UTC);
         double milliseconds = seconds * 1000;
         System.out.println(milliseconds);
     }
@@ -183,6 +186,8 @@ class CangApplicationTests {
         String time = hour + ":" + minute + ":" + second+"  ";
         log.info(time);
     }
+
+
     @Test
     public void testInsert() {
         String jdfcc = "111111111111obj";
@@ -191,6 +196,24 @@ class CangApplicationTests {
         redisTemplate.opsForList().leftPush("22222222222", jdfcc, 222);
     }
 
+    @Test
+    public void testNowTime(){
+        LocalDateTime dateTime = LocalDateTime.now();
+        Integer second = dateTime.getSecond();
+        LocalDateTime localDateTime = dateTime.plusSeconds(10);
+        long l = localDateTime.toEpochSecond(UTC);
+        log.info("toEpochSecond {}", l);
+        log.info("localDateTime {}", localDateTime);
+        log.info("Now time {}",dateTime);
+        log.info("dateTime {}",second);
+    }
+
+    @Test
+    public void testRedis() {
+        redisTemplate.opsForHash().put("j","time",LocalDateTime.now());
+//        LocalDateTime o = (LocalDateTime) redisTemplate.opsForHash().get("j", "time");
+//        System.out.println(o.toString());
+    }
 
     @Test
     public void testChatSelect() {
@@ -213,7 +236,7 @@ class CangApplicationTests {
             List<ChatDto> newChat = chatMapper.selectLast(UserHolder.getUser().getId());
             for (Object tem : newChat) {
 //                重建缓存
-                long seconds = ((Chat) tem).getCreateTime().toEpochSecond(ZoneOffset.UTC);
+                long seconds = ((Chat) tem).getCreateTime().toEpochSecond(UTC);
                 double score = seconds * 1000;
                 redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + id, tem, score);
 

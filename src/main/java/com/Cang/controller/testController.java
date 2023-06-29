@@ -1,7 +1,10 @@
 package com.Cang.controller;
 
+import com.Cang.annotations.IpCheckAnnotation;
 import com.Cang.annotations.LogAnnotation;
 import com.Cang.dto.Result;
+import com.Cang.utils.HttpUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -12,12 +15,15 @@ import org.springframework.web.bind.annotation.*;
  */
 
 @RestController
+@Slf4j
 @RequestMapping("/test")
 public class testController {
 
     @GetMapping("/name/{name}")
     @LogAnnotation
+    @IpCheckAnnotation(count = 5,time = 100)
     public Result deleteBlogImg(@PathVariable("name") String name) {
+
         return Result.ok(name);
     }
 
