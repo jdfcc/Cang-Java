@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * @author Jdfcc
- * @Description IpCheckAnnotation
+ * @Description 接口防刷
  * @DateTime 2023/6/28 10:22
  */
 

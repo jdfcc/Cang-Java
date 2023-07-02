@@ -15,7 +15,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -100,14 +99,12 @@ public class IpCheckAop {
 
         if ((lastCount ) >= limitCount && nowSec >= lastSec) {
 //            规定时间类内问次数达到上限，不能访问。考虑通过步长减少访问次数
-
             return false;
         }
 
         lastCount = lastCount > 0 ? lastCount : 0;
         redisTemplate.opsForHash().put(ip, "count", lastCount + 1);
         redisTemplate.opsForHash().put(ip, "time", nowSec);
-
         return true;
     }
 
