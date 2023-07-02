@@ -50,6 +50,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         // 7.刷新token有效期
         stringRedisTemplate.expire(key, LOGIN_USER_TTL, TimeUnit.MINUTES);
         // 8.放行
+//        div分支
         return true;
     }
 
