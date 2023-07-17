@@ -1,5 +1,6 @@
 package com.Cang.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import com.Cang.dto.Result;
 import com.Cang.entity.Mail;
 import com.Cang.entity.RespBean;
@@ -8,6 +9,7 @@ import com.Cang.mapper.MailMapper;
 import com.Cang.service.MailService;
 import com.Cang.utils.MailUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -27,6 +29,8 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
 
     private final TemplateEngine templateEngine;
 
+    @Value("${code-length}")
+    private  String CODE_LENGTH;
     public MailServiceImpl(MailUtil mailUtil, TemplateEngine templateEngine) {
         this.mailUtil = mailUtil;
         this.templateEngine = templateEngine;
@@ -88,7 +92,9 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             Context context = new Context();
             //html中填充动态属性值
             context.setVariable("nickName", user.getNickName());
-            context.setVariable("code", "9586");
+            String code= RandomUtil.randomNumbers(Integer.valueOf(CODE_LENGTH));
+//            String code = RandomUtil.randomString(Integer.valueOf(CODE_LENGTH));
+            context.setVariable("code", code);
             context.setVariable("url", "https://www.aliyun.com/?utm_content=se_1000301881");
             //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
             String emailContent = templateEngine.process("verfication", context);

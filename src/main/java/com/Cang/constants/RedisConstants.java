@@ -23,6 +23,8 @@ public class RedisConstants {
     public static final String CACHE_VOUCHER_ORDER_KEY = "Cang:cache:voucherOrder:";
     public static final Long CACHE_SHOP_TYPE_TTL = 144L;
 
+    public static final String IP_CACHE_KEY = "Cang:ip:";
+
     public static final String LOCK_KEY = "Cang:lock:";
     public static final String REDIS_INCREASE_KEY = "Cang:increaseKey:";
     public static final String FOLLOW_KEY = "Cang:follow:";

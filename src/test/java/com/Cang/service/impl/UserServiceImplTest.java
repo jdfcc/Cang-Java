@@ -1,7 +1,8 @@
 package com.Cang.service.impl;
 
-import com.Cang.dto.Result;
+import com.Cang.entity.Count;
 import com.Cang.entity.User;
+import com.Cang.mapper.CountMapper;
 import com.Cang.mapper.UserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -12,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 
 /**
  * @author Jdfcc
@@ -27,6 +30,15 @@ class UserServiceImplTest {
     @Autowired
     private UserMapper mapper;
 
+    @Autowired
+    private CountMapper countMapper;
+
+    @Test
+    void  testCount(){
+        Count count = countMapper.selectVoucher();
+        System.out.println(count);
+    }
+
     @Test
     void getAvatar() {
         LambdaQueryWrapper<User> wrapper = Wrappers.lambdaQuery(User.class);
@@ -35,4 +47,37 @@ class UserServiceImplTest {
         String icon = user.getIcon();
         log.info("icon {}", icon);
     }
+
+    static class Student {
+        public String name;
+
+        public Student(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+
+            return this.name;
+        }
+    }
+
+    @Test
+    void testArr() {
+        Student lisi = new Student("lisi");
+        Student[] students = new Student[5];
+        students[0] = lisi;
+
+        System.out.println(students[0]);
+    }
+
+    @Test
+    void testList(){
+        LinkedList<Integer> integers = new LinkedList<>();
+        integers.add(5,5);
+        ArrayList<Integer> objects = new ArrayList<>();
+        objects.add(4,3);
+
+    }
+
 }

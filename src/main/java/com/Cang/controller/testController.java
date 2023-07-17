@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @RequestMapping("/test")
+@IpCheckAnnotation(count = 5,time = 100)
 public class testController {
 
     @GetMapping("/name/{name}")
     @LogAnnotation
-    @IpCheckAnnotation(count = 5,time = 100)
+//    @IpCheckAnnotation(count = 5,time = 100)
     public Result deleteBlogImg(@PathVariable("name") String name) {
 
         return Result.ok(name);
