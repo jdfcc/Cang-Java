@@ -1,7 +1,7 @@
 package com.Cang.config;
 
-import com.Cang.utils.LoginInterceptor;
-import com.Cang.utils.RefreshTokenInterceptor;
+import com.Cang.filter.LoginInterceptor;
+import com.Cang.filter.RefreshTokenInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +23,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
 
         if (auth){
             registry.addInterceptor(new LoginInterceptor())
@@ -38,6 +39,5 @@ public class MvcConfig implements WebMvcConfigurer {
                             "/notice/*"
                     ).order(1);
         }
-        registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
     }
 }

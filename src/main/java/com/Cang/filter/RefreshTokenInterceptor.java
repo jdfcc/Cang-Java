@@ -1,8 +1,9 @@
-package com.Cang.utils;
+package com.Cang.filter;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.Cang.dto.UserDTO;
+import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -56,7 +57,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        // 移除用户
+        // 防止线程复用，移除用户
         UserHolder.removeUser();
     }
 }

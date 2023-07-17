@@ -1,12 +1,15 @@
 package com.Cang.aop;
 
 import com.Cang.annotations.IpCheckAnnotation;
+import com.Cang.annotations.LogAnnotation;
 import com.Cang.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,8 +19,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.concurrent.TimeUnit;
+
+import static com.Cang.constants.RedisConstants.IP_CACHE_KEY;
 
 
 /**
@@ -34,24 +41,36 @@ public class IpCheckAop {
 
     private RedisTemplate<String, Object> redisTemplate;
 
+    private RedissonClient redissonClient;
+
     @Autowired
-    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
+    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate, RedissonClient redissonClient) {
         this.redisTemplate = redisTemplate;
+        this.redissonClient = redissonClient;
     }
 
-    @Around("@annotation(com.Cang.annotations.IpCheckAnnotation)")
+
+
+    @Around("@annotation(com.Cang.annotations.IpCheckAnnotation) || @within(com.Cang.annotations.IpCheckAnnotation)")
     public Object checkIpCut(ProceedingJoinPoint pjp) throws Throwable {
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = servletRequestAttributes.getRequest();
         String ipAddress = HttpUtil.getIpAddress(request);
         Class<?> clazz = pjp.getTarget().getClass();
         IpCheckAnnotation annotation = clazz.getAnnotation(IpCheckAnnotation.class);
-//        判断类上是否有此注释
+
+        //        判断类上是否有此注释，如果有这个注解，则不再判断方法里是否有此注解，因为作用粒度覆盖了整个类
         if (annotation != null) {
+            RLock lock = redissonClient.getLock(ipAddress);
+            lock.lock();
+            Boolean isValid = this.validAndHandleIp(ipAddress, annotation);
+            lock.unlock();
+            if (!isValid) {
+                return null;
+            }
             return pjp.proceed();
         }
-
-        // 获取类中所有的方法
+        // 获取类中所有的方法，判断是否存在此注解
         Method[] methods = clazz.getDeclaredMethods();
         // 遍历方法数组
         for (Method method : methods) {
@@ -61,7 +80,14 @@ public class IpCheckAop {
                 annotation = method.getAnnotation(IpCheckAnnotation.class);
             }
         }
+        if (annotation == null) {
+            //        放行
+            return pjp.proceed();
+        }
+        RLock lock = redissonClient.getLock(ipAddress);
+        lock.lock();
         Boolean isValid = this.validAndHandleIp(ipAddress, annotation);
+        lock.unlock();
         if (!isValid) {
             return null;
         }
@@ -69,42 +95,46 @@ public class IpCheckAop {
     }
 
     private Boolean validAndHandleIp(String ip, IpCheckAnnotation annotation) {
-        Integer lastCount = (Integer) redisTemplate.opsForHash().get(ip, "count");
+        String key=IP_CACHE_KEY+ip;
 
-        Integer lastSec = (Integer) redisTemplate.opsForHash().get(ip, "time");
+        Integer lastCount = (Integer) redisTemplate.opsForHash().get(key, "count");
+        int limitCount = annotation.count();
+
+
+        Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, "time");
         LocalDateTime now = LocalDateTime.now();
         Long nowSec = now.toEpochSecond(ZoneOffset.UTC);
-
+        int time = annotation.time();
         if (lastCount == null || lastSec == null) {
-            redisTemplate.opsForHash().put(ip, "count", 1);
-            redisTemplate.opsForHash().put(ip, "time", nowSec);
+            redisTemplate.opsForHash().put(key, "count", 1);
+            redisTemplate.opsForHash().put(key, "time", nowSec);
+            redisTemplate.expire(key, time, TimeUnit.SECONDS);
             return true;
         }
 
-        Integer limitCount = annotation.count();
         if (limitCount <= 0) {
             throw new IllegalArgumentException("Count can not be 0 and even smaller");
         }
-        Integer time = annotation.time();
-
-        Integer step = time / limitCount;
 
         //        允许访问
+        int step = time / limitCount;
+
         long durSec = nowSec - lastSec;
 
-//            按照步长减少访问次数
-        Integer tem = Math.toIntExact((durSec / step));
+        //        按照步长减少访问次数
+        int tem = Math.toIntExact((durSec / step));
+
         lastCount -= tem;
 
-
-        if ((lastCount ) >= limitCount && nowSec >= lastSec) {
-//            规定时间类内问次数达到上限，不能访问。考虑通过步长减少访问次数
+        if ((lastCount) >= limitCount && nowSec >= lastSec) {
+//            规定时间内问次数达到上限，不能访问。过期时间为步长.
             return false;
         }
 
         lastCount = lastCount > 0 ? lastCount : 0;
-        redisTemplate.opsForHash().put(ip, "count", lastCount + 1);
-        redisTemplate.opsForHash().put(ip, "time", nowSec);
+        redisTemplate.opsForHash().put(key, "count", lastCount + 1);
+        redisTemplate.opsForHash().put(key, "time", nowSec);
+        redisTemplate.expire(key, time, TimeUnit.SECONDS);
         return true;
     }
 

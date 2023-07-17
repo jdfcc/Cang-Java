@@ -30,6 +30,7 @@ public class CorsConfig {
         // 3 设置访问源请求方法
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.setMaxAge(MAX_AGE);
+
         // 4 对接口配置跨域设置
         source.registerCorsConfiguration("/**", corsConfiguration);
         return new CorsFilter(source);

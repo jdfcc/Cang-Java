@@ -5,10 +5,6 @@ import com.Cang.entity.Chat;
 import com.Cang.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.ServletRequest;
 
 /**
  * @author Jdfcc
@@ -32,11 +28,6 @@ public class ChatController {
 
         return chatService.sendMessage(chat);
     }
-
-//    @GetMapping("/get/{id}")
-//    public Result getMessage(@PathVariable String id){
-//        return chatService.getMessage(Long.valueOf(id));
-//    }
 
 
     /**

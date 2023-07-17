@@ -11,8 +11,7 @@ import com.Cang.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.utils.RedisIdWorker;
 import com.Cang.utils.UserHolder;
-import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
+import lombok.extern.slf4j.Slf4j;import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.core.io.ClassPathResource;
@@ -29,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.Cang.constants.RedisConstants.CACHE_VOUCHER_ORDER_KEY;
 import static com.Cang.constants.SystemConstants.*;
@@ -55,7 +56,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     private static final DefaultRedisScript<Long> VOUCHER_SCRIPT;
 
     private IVoucherOrderService proxy;
-    private BlockingQueue<VoucherOrder> queue = new ArrayBlockingQueue<>(1024 * 1024);
 
 
     /*
@@ -89,61 +89,64 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      */
     private class VoucherOrderHandler implements Runnable {
         String queueName = "stream.orders";
-
         @Override
         public void run() {
+
             while (true) {
 //                log.info("读取信息");
                 try {
 //                    从消息队列中读取消息
-                    List<MapRecord<String, Object, Object>> message = redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
-                            StreamReadOptions.empty().block(Duration.ofSeconds(2)),//设置阻塞时间
-                            StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
-                    );
+                    List<MapRecord<String, Object, Object>> message = getMessage();
 //                    消息为空，继续读取
                     if (message == null || message.isEmpty()) {
                         continue;
                     }
 //                    读取成功，创建订单
-                    MapRecord<String, Object, Object> map = message.get(0);
-                    Map<Object, Object> value = map.getValue();
-                    VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
-                    orderHandler(order);
-//                    ack确认
-//                    log.info("@@@@ {}", map.getId());
-                    redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
+                    handleMessage(message);
                 } catch (Exception e) {
                     handlePendingList();
                 }
             }
+
         }
 
         private void handlePendingList() {
             while (true) {
                 try {
 //                    从消息队列中读取消息
-                    List<MapRecord<String, Object, Object>> message = redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
-                            StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
-                    );
+                    List<MapRecord<String, Object, Object>> message = getMessage();
 //                    异常消息为空，退出
                     if (message == null || message.isEmpty()) {
                         return;
                     }
                     //                    读取成功，创建订单
-                    MapRecord<String, Object, Object> map = message.get(0);
-                    Map<Object, Object> value = map.getValue();
-                    VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
-                    orderHandler(order);
-//                    ack确认
-//                    log.info("@@@@ {}", map.getId());
-                    redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
+                    handleMessage(message);
                 } catch (Exception e) {
 //                    log.info("unKnow Exception");
                     e.printStackTrace();
                 }
             }
         }
+
+        void handleMessage( List<MapRecord<String, Object, Object>> message){
+            MapRecord<String, Object, Object> map = message.get(0);
+            Map<Object, Object> value = map.getValue();
+            VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
+            orderHandler(order);
+//                    ack确认
+//                    log.info("@@@@ {}", map.getId());
+            redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
+        }
+
+        List<MapRecord<String, Object, Object>> getMessage(){
+            return redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
+                    StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
+            );
+        }
+
     }
+
+
 
 //    /**
 //     * 从消息队列里面取出信息并处理订单
@@ -262,6 +265,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 //    }
 
 
+    @Override
     @Transactional
     public void createVoucherOrder(VoucherOrder order) {
         Long voucherId = order.getVoucherId();

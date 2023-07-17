@@ -1,8 +1,6 @@
 package com.Cang.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -18,18 +16,8 @@ import static com.Cang.constants.RabbitMqConstants.*;
 @Component
 public class CAPTCHAQueueConfig {
 
-
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    public CAPTCHAQueueConfig(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
-    }
-
     /**
      * 创建消息队列
-     *
-     * @return
      */
     @Bean
     public Queue createCAPTCHAQueue() {
@@ -38,8 +26,6 @@ public class CAPTCHAQueueConfig {
 
     /**
      * 创建交换机
-     *
-     * @return
      */
     @Bean
     public DirectExchange createDirectExchange() {
