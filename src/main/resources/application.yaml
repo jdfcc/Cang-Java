@@ -10,6 +10,13 @@ my-log:
 code-length: 4 #验证码长度
 
 
+minio:
+  accessKey: jdfcc
+  secretKey: 3039jdfcc
+  bucket: jdfcc
+  endpoint: http://120.55.80.133:9000
+  readPath: http://120.55.80.133:9000
+
 
 spring:
   rabbitmq:

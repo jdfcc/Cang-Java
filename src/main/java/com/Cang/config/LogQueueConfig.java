@@ -23,7 +23,7 @@ public class LogQueueConfig {
      */
     @Bean
     public Queue createLogQueue() {
-        return QueueBuilder.durable(LogQueue).build();
+        return QueueBuilder.durable(LOG_QUEUE).build();
     }
 
     /**
@@ -31,7 +31,7 @@ public class LogQueueConfig {
      */
     @Bean
     public DirectExchange createLogExchange() {
-        return ExchangeBuilder.directExchange(LogExchange).durable(true).build();
+        return ExchangeBuilder.directExchange(LOG_EXCHANGE).durable(true).build();
     }
 
     /**
@@ -39,8 +39,8 @@ public class LogQueueConfig {
      */
     @Bean
     public Binding createLogQueueBinding(@Qualifier("createLogQueue") Queue queue,
-                                 @Qualifier("createLogExchange") DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(LogRoutingKey);
+                                         @Qualifier("createLogExchange") DirectExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(LOG_ROUTING_KEY);
     }
 
 

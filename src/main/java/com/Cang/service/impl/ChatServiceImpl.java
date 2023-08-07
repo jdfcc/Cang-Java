@@ -47,9 +47,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
-        chat.setSend(userid);
+        chat.setSend(userid);//TODO 加一个异常判断
 
-        //TODO 加一个异常判断
         int insert = chatMapper.insert(chat);
         if (insert == 0) {
             throw new SQLException("插入失败");
