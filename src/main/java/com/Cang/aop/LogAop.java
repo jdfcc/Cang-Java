@@ -20,8 +20,9 @@ import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
-import static com.Cang.constants.RabbitMqConstants.LogExchange;
-import static com.Cang.constants.RabbitMqConstants.LogRoutingKey;
+
+import static com.Cang.constants.RabbitMqConstants.LOG_EXCHANGE;
+import static com.Cang.constants.RabbitMqConstants.LOG_ROUTING_KEY;
 
 
 /**
@@ -77,7 +78,7 @@ public class LogAop {
         myLog.setTime(endTime - startTime);
         Object o = JSONObject.toJSON(myLog);
 
-        rabbitTemplate.convertAndSend(LogExchange, LogRoutingKey, o.toString());
+        rabbitTemplate.convertAndSend(LOG_EXCHANGE, LOG_ROUTING_KEY, o.toString());
 
         return obj;
 

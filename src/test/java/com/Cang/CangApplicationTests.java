@@ -1,5 +1,6 @@
 package com.Cang;
 
+import cn.hutool.core.util.RandomUtil;
 import com.Cang.dto.ChatDto;
 import com.Cang.entity.Blog;
 import com.Cang.entity.Chat;
@@ -8,10 +9,13 @@ import com.Cang.mapper.BlogMapper;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.mapper.FollowMapper;
 import com.Cang.service.*;
+import com.Cang.service.impl.MinIOFileStorageService;
 import com.Cang.utils.HttpUtil;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
@@ -110,6 +115,49 @@ class CangApplicationTests {
         double seconds = dateTime.toEpochSecond(UTC);
         double milliseconds = seconds * 1000;
         System.out.println(milliseconds);
+
+    }
+
+    @Test
+    public void testRandom(){
+        String s = RandomUtil.randomString(15);
+        System.out.println(s);
+        UUID uuid = UUID.randomUUID();
+        String fileName = uuid.toString() + ".jpg";
+        System.out.println(fileName);
+    }
+
+    @Autowired
+    MinIOFileStorageService minIOFileStorageService;
+    @Test
+    public void testMinUpload() throws FileNotFoundException {
+        FileInputStream fileInputStream =
+                new FileInputStream("C:\\Users\\Jdfcc\\Pictures\\memes.jpg");
+        String s = minIOFileStorageService.uploadImgFile("kkk", "jjj", fileInputStream);
+        System.out.println(s);
+    }
+    @Test
+    public void testMinIo()  {
+//        TODO 将minio抽象为miniostarter，学习设计模式中的策略模式？以根据不同文件类型实现上传不同文件
+
+        try {
+            FileInputStream fileInputStream =
+                    new FileInputStream("C:\\Users\\Jdfcc\\Pictures\\memes.jpg");
+
+            MinioClient client = MinioClient.builder().
+                    credentials("jdfcc", "3039jdfcc").
+                    endpoint("http://120.55.80.133:9000").build();
+            PutObjectArgs putObjectArgs =PutObjectArgs.
+                    builder().
+                    object("test.jpg").
+                    contentType("image/jpeg").
+                    stream(fileInputStream,fileInputStream.available(),-1).
+                    bucket("jdfcc").build();
+            client.putObject(putObjectArgs);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Test

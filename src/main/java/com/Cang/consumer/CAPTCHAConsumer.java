@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.constants.RabbitMqConstants.CAPTCHAQueue;
+
+import static com.Cang.constants.RabbitMqConstants.CAPTCHA_QUEUE;
 import static com.Cang.constants.RedisConstants.LOGIN_CODE_KEY;
 import static com.Cang.constants.RedisConstants.LOGIN_CODE_TTL;
 
@@ -34,7 +35,7 @@ public class CAPTCHAConsumer {
         this.mailService = mailService;
     }
 
-    @RabbitListener(queues = CAPTCHAQueue)
+    @RabbitListener(queues = CAPTCHA_QUEUE)
     public void consumer(Message message) {
         log.info("收到了消息: " + new String(message.getBody()));
         String phone = new String(message.getBody());

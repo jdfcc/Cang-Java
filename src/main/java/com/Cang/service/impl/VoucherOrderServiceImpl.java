@@ -142,6 +142,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
                     StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
             );
+//            return Collections.emptyList();
         }
 
     }

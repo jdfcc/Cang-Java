@@ -21,7 +21,7 @@ public class CAPTCHAQueueConfig {
      */
     @Bean
     public Queue createCAPTCHAQueue() {
-        return QueueBuilder.nonDurable(CAPTCHAQueue).build();
+        return QueueBuilder.nonDurable(CAPTCHA_QUEUE).build();
     }
 
     /**
@@ -29,13 +29,13 @@ public class CAPTCHAQueueConfig {
      */
     @Bean
     public DirectExchange createDirectExchange() {
-        return new DirectExchange(CAPTCHAExchange);
+        return new DirectExchange(CAPTCHA_EXCHANGE);
     }
 
     @Bean
     public Binding createCaptchaQueueBinding(@Qualifier("createCAPTCHAQueue") Queue queue,
                                  @Qualifier("createDirectExchange") DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(CAPTCHARoutingKey);
+        return BindingBuilder.bind(queue).to(exchange).with(CAPTCHA_ROUTING_KEY);
 
     }
 

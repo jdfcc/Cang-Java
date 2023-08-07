@@ -1,8 +1,7 @@
-package com.Cang.error;
+package com.Cang.handler;
 
 import com.Cang.dto.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +25,7 @@ public class NullPointExceptionHandler {
         catch (Exception e1){
             throw e;
         }
-        finally {
-            return Result.fail("服务器异常");
-        }
+          return Result.fail("服务器异常");
 
     }
 

@@ -1,4 +1,4 @@
-package com.Cang.error;
+package com.Cang.handler;
 
 import com.Cang.dto.Result;
 import com.Cang.exception.SQLException;

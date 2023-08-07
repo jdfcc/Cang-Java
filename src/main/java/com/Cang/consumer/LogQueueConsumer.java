@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-import static com.Cang.constants.RabbitMqConstants.LogQueue;
+import static com.Cang.constants.RabbitMqConstants.LOG_QUEUE;
+
 
 /**
  * @author Jdfcc
@@ -27,7 +28,7 @@ public class LogQueueConsumer {
     @Value("${my-log.src}")
     private String src;
 
-    @RabbitListener(queues = LogQueue)
+    @RabbitListener(queues = LOG_QUEUE)
     public void consume(Message message){
         String json = new String(message.getBody());
         MyLog myLog = JSONUtil.toBean(json, MyLog.class);

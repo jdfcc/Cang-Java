@@ -29,8 +29,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.Cang.constants.RabbitMqConstants.CAPTCHAExchange;
-import static com.Cang.constants.RabbitMqConstants.CAPTCHARoutingKey;
+
+
+import static com.Cang.constants.RabbitMqConstants.CAPTCHA_EXCHANGE;
+import static com.Cang.constants.RabbitMqConstants.CAPTCHA_ROUTING_KEY;
 import static com.Cang.constants.RedisConstants.*;
 import static com.Cang.constants.SystemConstants.*;
 
@@ -67,7 +69,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            return Result.fail("手机号格式有误");
 //        }
 //        发送邮箱至消息队列
-        rabbitTemplate.convertAndSend( CAPTCHAExchange,CAPTCHARoutingKey, phone);
+        rabbitTemplate.convertAndSend( CAPTCHA_EXCHANGE,CAPTCHA_ROUTING_KEY, phone);
 
 //        返回
         return Result.ok();
