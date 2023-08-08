@@ -161,6 +161,14 @@ class CangApplicationTests {
     }
 
     @Test
+    public void testInteger(){
+        Integer count=null;
+        count=0;
+        count+=1;
+        System.out.println(count);
+    }
+
+    @Test
     public void testHash() {
 //        Chat chat = new Chat();
 //        chat.setMessage("Hello");
