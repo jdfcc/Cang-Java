@@ -56,5 +56,15 @@ public class RedisConstants {
 
     public static final String CHAT_MESSAGE_USER_CACHE_KEY_LAST="Cang:message:last:";
 
+    /**
+     * 删除次数
+     */
+    public static final String DELETE_COUNT="Cang:delete:count:";
+
+    /**
+     * 删除失败允许的最大重试次数
+     */
+    public static final int MAX_RETRY_COUNT=5;
+
 
 }

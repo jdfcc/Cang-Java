@@ -1,6 +1,7 @@
 package com.Cang;
 
 
+import com.Cang.exception.DeleteException;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -25,6 +26,7 @@ public class CangApplication  {
         SpringApplication.run(CangApplication.class, args);
         InetAddress localHost = InetAddress.getLocalHost();
         log.info("CangApplication: {} ",localHost.getHostAddress());
+        throw new DeleteException("8888888888888888888");
     }
 
 }

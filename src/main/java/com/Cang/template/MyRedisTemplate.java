@@ -1,6 +1,7 @@
 package com.Cang.template;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.Cang.exception.DeleteException;
 import com.Cang.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
@@ -198,12 +199,19 @@ public class MyRedisTemplate {
      *
      * @param keys
      */
-    public static void del(String... keys) {
+    public static void del(String... keys){
         if (keys != null && keys.length > 0) {
             if (keys.length == 1) {
-
+                Long result=null;
 //                boolean result = stringRedisTemplate.delete(keys[0]);
-                Long result = stringRedisTemplate.execute(DELETE_SCRIPT, Collections.singletonList(keys[0]));
+
+                try {
+                    result = stringRedisTemplate.execute(DELETE_SCRIPT, Collections.singletonList(keys[0]));
+                }
+                catch (Exception e){
+                    throw new DeleteException(keys[0]);
+                }
+
                 switch (String.valueOf(result)) {
 //                    TODO 想好对应的删除逻辑
 //                    删除失败

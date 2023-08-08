@@ -3,6 +3,7 @@ package com.Cang.controller;
 import com.Cang.annotations.IpCheckAnnotation;
 import com.Cang.annotations.LogAnnotation;
 import com.Cang.dto.Result;
+import com.Cang.exception.DeleteException;
 import com.Cang.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,9 @@ public class testController {
     }
 
     @GetMapping("")
+
     public Result test() {
         return Result.ok();
+
     }
 }

@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class UserHolderExceptionHandler {
 
-    @ExceptionHandler(EmptyUserHolderException.class)
-    public Result UserHolderNullPointerExceptionRun(HttpServletRequest request, Throwable e) {
+    @ExceptionHandler(value = EmptyUserHolderException.class)
+    public Result userHolderNullPointerExceptionRun(HttpServletRequest request, Throwable e) {
 
         log.error("用户未登录: {}", e.toString());
         return Result.fail("用户未登录" );
