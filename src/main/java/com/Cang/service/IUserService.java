@@ -32,7 +32,7 @@ public interface IUserService extends IService<User> {
      * @param session
      * @return
      */
-    Result login(LoginFormDTO dto,HttpSession session);
+    Result login(LoginFormDTO dto,HttpSession session) throws Exception;
 
     /**
      * 用户登出

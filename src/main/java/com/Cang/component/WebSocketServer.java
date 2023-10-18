@@ -22,6 +22,8 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -129,6 +131,7 @@ public class WebSocketServer {
             BeanUtil.copyProperties(chat, chatDto);
             Result avatar = userService.getAvatar(id);
             chatDto.setAvatar((String) avatar.getData());
+            chatDto.setCreateTime(LocalDateTime.now());
 //             为消息首页发送消息
             session.getBasicRemote().sendText(MessageDto.message(targetId, chatDto));
 
@@ -136,7 +139,11 @@ public class WebSocketServer {
 //            session.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));
 
             String key = chatService.getKey(targetId, userid);
-            redisTemplate.opsForList().rightPush(key, chatDto);
+
+//            redisTemplate.opsForList().rightPush(key, chatDto);
+            long seconds = chatDto.getCreateTime().toEpochSecond(ZoneOffset.UTC);
+            double score = seconds * 1000;
+//      todo      redisTemplate.opsForZSet().add();
             if (targetSession != null) {
 //                log.info("发送消息{}", chatDto);
                 targetSession.getBasicRemote().sendText(MessageDto.receive(targetId, chatDto));

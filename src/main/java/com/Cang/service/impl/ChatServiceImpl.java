@@ -69,21 +69,23 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     public Result getMessage(Long userId, Long targetId) {
 
         String key = this.getKey(userId, targetId);
-        List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
-
+//  TODO 删除此注释     List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
+        Set<Object> chats = redisTemplate.opsForZSet().range(key, 0L, -1L);
         if (chats.isEmpty()) {
 //            从数据库中查询并重建缓存
             List<ChatDto> newChats = chatMapper.selectDtos(key);
             //数据库中也为空，两人第一次聊天
             if (newChats.isEmpty()) {
-                chats = new ArrayList<>();
 //                储存空缓存以解决缓存击穿
-                redisTemplate.opsForList().leftPush(key, null);
+                redisTemplate.opsForZSet().add(key, null);
                 return Result.ok(chats);
             }
 //            重建缓存
-            for (Object temp : newChats) {
-                redisTemplate.opsForList().rightPush(key, temp);
+            for (ChatDto temp : newChats) {
+//                redisTemplate.opsForList().rightPush(key, temp);
+                long seconds = temp.getCreateTime().toEpochSecond(ZoneOffset.UTC);
+                double score = seconds * 1000;
+                redisTemplate.opsForZSet().add(key,temp,score);
             }
             return Result.ok(newChats);
         }

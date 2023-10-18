@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.entity.DoubleToken;
+import com.Cang.service.TokenService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -30,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-
 import static com.Cang.constants.RabbitMqConstants.CAPTCHA_EXCHANGE;
 import static com.Cang.constants.RabbitMqConstants.CAPTCHA_ROUTING_KEY;
 import static com.Cang.constants.RedisConstants.*;
@@ -51,11 +52,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final UserMapper mapper;
 
 
-
     private RabbitTemplate rabbitTemplate;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private TokenService tokenService;
 
     public UserServiceImpl(UserMapper mapper, RabbitTemplate rabbitTemplate) {
         this.mapper = mapper;
@@ -69,14 +72,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            return Result.fail("手机号格式有误");
 //        }
 //        发送邮箱至消息队列
-        rabbitTemplate.convertAndSend( CAPTCHA_EXCHANGE,CAPTCHA_ROUTING_KEY, phone);
+        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, phone);
 
 //        返回
         return Result.ok();
     }
 
     @Override
-    public Result login(LoginFormDTO dto, HttpSession session) {
+    public Result login(LoginFormDTO dto, HttpSession session) throws Exception {
         //        校验手机号
         String phone = dto.getPhone();
         if (RegexUtils.isPhoneInvalid(phone)) {
@@ -111,8 +114,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             log.info("%%%%%%%%% {}", user);
             mapper.insert(user);
         }
+
         UserDTO date = BeanUtil.copyProperties(user, UserDTO.class);
-        String token = UUID.randomUUID().toString(true);
+//        双token登录实现
+//        String token = UUID.randomUUID().toString(true);
+
+        Long userid = user.getId();
+        DoubleToken doubleToken = tokenService.createAndSaveToken(userid);
+
+//        doubleToken.setRefreshToken();
+//        doubleToken.setAccessToken();
+
+//        TODO 转存到数据库
+
 //        将dto转换成map
         Map<String, Object> userMap = BeanUtil.beanToMap(date, new HashMap<>(),
                 CopyOptions.create()
@@ -120,13 +134,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                         .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
 
 //        储存进redis
-        stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + token, userMap);
-        stringRedisTemplate.expire(LOGIN_USER_KEY + token, LOGIN_USER_TTL, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + doubleToken.getAccessToken(), userMap);
+
+        stringRedisTemplate.expire(LOGIN_USER_KEY + doubleToken.getAccessToken(), LOGIN_USER_TTL, TimeUnit.SECONDS);
 //        将token和用户id返回给前端
         user = mapper.selectOne(wrapper);
         Long id = user.getId();
         log.info("登录用户id为: {}", id);
-        return Result.ok(token, id);
+        return Result.ok(doubleToken, id);
     }
 
     @Override

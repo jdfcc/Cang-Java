@@ -214,6 +214,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         blog.setUserId(user.getId());
         // 保存探店博文
         int insert = blogMapper.insert(blog);
+
         if (insert == 0)
             return Result.fail(CREATE_BLOG_FAILED);
         List<String> followsId = followMapper.getFollowerId(user.getId());

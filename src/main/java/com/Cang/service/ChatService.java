@@ -17,8 +17,8 @@ public interface ChatService extends IService<Chat> {
      * 由于key是双向的，所以对所有人都有效.
      * 还需在此用户在redis中关联的set集合中加入此条聊天key。
      *
-     * @param chat
-     * @return
+     * @param chat chat
+     * @return Result
      */
     Result sendMessage(Chat chat);
 
