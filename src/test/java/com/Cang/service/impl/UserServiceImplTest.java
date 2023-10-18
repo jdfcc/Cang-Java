@@ -40,6 +40,46 @@ class UserServiceImplTest {
     }
 
     @Test
+    void testLength(){
+        int count = 9;
+        System.out.println(count/2);
+        System.out.println(count%2);
+    }
+
+    @Test
+    void testGet(){
+        int x=1234321;
+        String xString = String.valueOf(x);
+        int len = xString.length() / 2;
+        ArrayList<String> arr = new ArrayList<String>();
+
+        for (int i = 0; i < xString.length(); i++) {
+            arr.add(String.valueOf(xString.charAt(i)));
+        }
+
+        String front;
+        String back;
+
+        boolean flag=true;
+
+        for (int i = 0; i <len; i++) {
+            front=arr.get(i);
+            back=arr.get(xString.length()-i-1);
+            if (!front.equals(back)){
+                flag=false;
+            }
+        }
+
+        System.out.println(flag) ;
+    }
+
+    @Test
+    public void testStep(){
+        for (int i=1; i<1;i++){
+            System.out.println("Step " + i);
+        }
+    }
+    @Test
     void getAvatar() {
         LambdaQueryWrapper<User> wrapper = Wrappers.lambdaQuery(User.class);
         wrapper.eq(User::getId, 1010L);

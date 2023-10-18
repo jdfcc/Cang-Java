@@ -7,7 +7,7 @@ public class RedisConstants {
     public static final String LOGIN_CODE_KEY = "Cang:login:code:";
     public static final Long LOGIN_CODE_TTL = 2L;
     public static final String LOGIN_USER_KEY = "Cang:login:token:";
-    public static final Long LOGIN_USER_TTL = 1440L;
+    public static final Long LOGIN_USER_TTL = 60L*60L;
 
     public static final Long CACHE_NULL_TTL = 2L;
 
@@ -52,7 +52,7 @@ public class RedisConstants {
 
     public static final String CHAT_MESSAGE_USER_KEY="Cang:message:user:";
 
-    public static final String CHAT_MESSAGE_USER_CACHE_KEY="Cang:message:list:";
+    public static final String CHAT_MESSAGE_USER_CACHE_KEY="Cang:message:chat:";
 
     public static final String CHAT_MESSAGE_USER_CACHE_KEY_LAST="Cang:message:last:";
 

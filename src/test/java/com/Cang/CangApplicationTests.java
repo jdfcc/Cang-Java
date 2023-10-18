@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -349,19 +349,7 @@ class CangApplicationTests {
     }
 
 
-    @Test
-    public void testInt() {
-        int value = 1;
-        Integer integer = new Integer(value);
-        int s = integer;
-        log.info("@@@@@@@@@@@@ {}", integer);
-        log.info("------------------ {}", s);
-        Set<String> strings = new HashSet<>();
-        strings.add("foo");
-        strings.add("bar");
-        strings.add("1");
-        System.out.println(strings.toString());
-    }
+
 
 
 }

@@ -30,9 +30,8 @@ public class testController {
     }
 
     @GetMapping("")
-
     public Result test() {
         return Result.ok();
-
     }
+
 }

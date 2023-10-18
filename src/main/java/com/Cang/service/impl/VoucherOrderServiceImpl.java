@@ -11,7 +11,8 @@ import com.Cang.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.utils.RedisIdWorker;
 import com.Cang.utils.UserHolder;
-import lombok.extern.slf4j.Slf4j;import org.redisson.api.RLock;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.core.io.ClassPathResource;
@@ -89,6 +90,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      */
     private class VoucherOrderHandler implements Runnable {
         String queueName = "stream.orders";
+
         @Override
         public void run() {
 
@@ -128,7 +130,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             }
         }
 
-        void handleMessage( List<MapRecord<String, Object, Object>> message){
+        void handleMessage(List<MapRecord<String, Object, Object>> message) {
             MapRecord<String, Object, Object> map = message.get(0);
             Map<Object, Object> value = map.getValue();
             VoucherOrder order = BeanUtil.fillBeanWithMap(value, new VoucherOrder(), true);
@@ -138,15 +140,15 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             redisTemplate.opsForStream().acknowledge(queueName, "g1", map.getId());
         }
 
-        List<MapRecord<String, Object, Object>> getMessage(){
-            return redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
-                    StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
-            );
-//            return Collections.emptyList();
+        List<MapRecord<String, Object, Object>> getMessage() {
+//            TODO rabbitmq实现
+//            return redisTemplate.opsForStream().read(Consumer.from("g1", "c1"),//设置订阅组以及订阅者
+//                    StreamOffset.create(queueName, ReadOffset.lastConsumed())//消息队列
+//            );
+            return Collections.emptyList();
         }
 
     }
-
 
 
 //    /**
