@@ -285,6 +285,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         voucherOrder.setId(orderId);
         voucherOrder.setUserId(userId);
 //       TODO 感觉此处可以使用redis加锁
+//        TODO 秒杀订单可以采用延迟队列+死信队列实现超时未支付自动取消
         this.save(voucherOrder);
         log.info("ok");
     }

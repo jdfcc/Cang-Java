@@ -2,7 +2,6 @@ package com.Cang.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.entity.DoubleToken;
 import com.Cang.service.TokenService;
@@ -72,8 +71,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //            return Result.fail("手机号格式有误");
 //        }
 //        发送邮箱至消息队列
+//        UserDTO userDTO = new UserDTO();
+//        userDTO.setId(114514L);
+//        userDTO.setIcon("user1e2e");
+//        UserHolder.saveUser(userDTO);
         rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, phone);
-
 //        返回
         return Result.ok();
     }

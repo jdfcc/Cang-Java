@@ -36,11 +36,12 @@ public class RetryQueueConsumer {
     @RabbitListener(queues = RETRY_QUEUE)
     public void consume(Message message) {
         String key = new String(message.getBody());
+        String deleteKey = DELETE_COUNT + key;
         try {
             MyRedisTemplate.del(key);
+            redisTemplate.delete(deleteKey);
         } catch (Exception e) {
 //            将删除时发生异常则将删除的key重新入队删除，需要判断是否到达最大重试次数，如果到达则不再入队转而发送消息提醒异常
-            String deleteKey = DELETE_COUNT + key;
             String temCount = (String) redisTemplate.opsForValue().get(deleteKey);
             Integer count = temCount == null ? 0 : Integer.parseInt(temCount);
             if (count < MAX_RETRY_COUNT) {

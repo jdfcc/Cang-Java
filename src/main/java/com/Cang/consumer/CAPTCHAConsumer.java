@@ -1,7 +1,9 @@
 package com.Cang.consumer;
 
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.dto.UserDTO;
 import com.Cang.service.MailService;
+import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -37,6 +39,10 @@ public class CAPTCHAConsumer {
 
     @RabbitListener(queues = CAPTCHA_QUEUE)
     public void consumer(Message message) {
+
+//        UserDTO user = UserHolder.getUser();
+//        System.out.println("************"+user.getId());
+
         log.info("收到了消息: " + new String(message.getBody()));
         String phone = new String(message.getBody());
         //    生成验证码
