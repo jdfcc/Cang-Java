@@ -82,7 +82,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         log.info("线程启动");
         Thread thread = new Thread(new VoucherOrderHandler());
         thread.start();
-        log.info("线程启动");
     }
 
     /**
@@ -285,6 +284,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         voucherOrder.setId(orderId);
         voucherOrder.setUserId(userId);
 //       TODO 感觉此处可以使用redis加锁
+//        TODO 秒杀订单可以采用延迟队列+死信队列实现超时未支付自动取消
         this.save(voucherOrder);
         log.info("ok");
     }

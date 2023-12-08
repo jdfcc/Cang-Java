@@ -25,6 +25,7 @@ public class UserHolder {
 //            return userDTO;
 //            TODO 开发完成后删除此条注释
 //            throw new EmptyUserHolderException("User is null，It has been automatically filled with values");
+            return new UserDTO();
         }
         return tl.get();
     }

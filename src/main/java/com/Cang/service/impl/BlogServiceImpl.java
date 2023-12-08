@@ -289,8 +289,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         }
         Long id = user.getId();
         Double score = redisTemplate.opsForZSet().score(key, String.valueOf(id));
-        if (score == null)
+        if (score == null) {
             return false;
+        }
         return true;
     }
 

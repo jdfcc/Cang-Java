@@ -27,33 +27,32 @@ public class MailUtil {
 
     private final JavaMailSender javaMailSender;//注入QQ发送邮件的bean
 
-    private Logger logger = LoggerFactory.getLogger(MailUtil.class);
+    private final Logger logger = LoggerFactory.getLogger(MailUtil.class);
 
     public MailUtil(JavaMailSender javaMailSender) {
         this.javaMailSender = javaMailSender;
     }
 
+    private static final String SEND_EMAIL_FAILED = "邮件发送失败";
+
     /**
      * 发送文本邮件
-     *
-     * @param mailBean
      */
     public void sendSimpleMail(Mail mailBean) {
         try {
-            SimpleMailMessage mailMessage= new SimpleMailMessage();
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setFrom(MAIL_SENDER);//发送者
             mailMessage.setTo(mailBean.getRecipient());//接收者
             mailMessage.setSubject(mailBean.getSubject());//邮件标题
             mailMessage.setText(mailBean.getContent());//邮件内容
             javaMailSender.send(mailMessage);//发送邮箱
         } catch (Exception e) {
-            logger.error("邮件发送失败", e.getMessage());
+            logger.error(SEND_EMAIL_FAILED + "{}", e.getMessage());
         }
     }
 
     /**
      * 发送HTML模板
-     * @param mailBean
      */
     public void sendHTMLMail(Mail mailBean) {
         MimeMessage mimeMailMessage = null;
@@ -70,7 +69,7 @@ public class MailUtil {
             //邮件抄送
             javaMailSender.send(mimeMailMessage);//发送邮件
         } catch (Exception e) {
-            logger.error("邮件发送失败", e.getMessage());
+            logger.error(SEND_EMAIL_FAILED + "{}", e.getMessage());
         }
     }
 

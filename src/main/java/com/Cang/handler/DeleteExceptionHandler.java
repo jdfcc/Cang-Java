@@ -2,13 +2,9 @@ package com.Cang.handler;
 
 import com.Cang.exception.DeleteException;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static com.Cang.constants.RabbitMqConstants.RETRY_EXCHANGE;
 import static com.Cang.constants.RabbitMqConstants.RETRY_ROUTING_KEY;

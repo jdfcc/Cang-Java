@@ -22,6 +22,7 @@ if(redis.call('sismember',orderKey,userId)==1) then
     return 2
 end
 
+
 -- 库存减一
 redis.call('incrby',stockKey,-1)
 -- 将用户加至购买列表

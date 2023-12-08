@@ -53,10 +53,11 @@ public class IpCheckAop {
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = servletRequestAttributes.getRequest();
         String ipAddress = HttpUtil.getIpAddress(request);
+
         Class<?> clazz = pjp.getTarget().getClass();
         IpCheckAnnotation annotation = clazz.getAnnotation(IpCheckAnnotation.class);
 
-        //        判断类上是否有此注释，如果有这个注解，则不再判断方法里是否有此注解，因为作用粒度覆盖了整个类
+        // 判断类上是否有此注释，如果有这个注解，则不再判断方法里是否有此注解，因为作用粒度覆盖了整个类
         if (annotation != null) {
             RLock lock = redissonClient.getLock(ipAddress);
             lock.lock();
@@ -67,6 +68,7 @@ public class IpCheckAop {
             }
             return pjp.proceed();
         }
+
         // 获取类中所有的方法，判断是否存在此注解
         Method[] methods = clazz.getDeclaredMethods();
         // 遍历方法数组
@@ -101,7 +103,9 @@ public class IpCheckAop {
         Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, "time");
         LocalDateTime now = LocalDateTime.now();
         Long nowSec = now.toEpochSecond(ZoneOffset.UTC);
+
         int time = annotation.time();
+
         if (lastCount == null || lastSec == null) {
             redisTemplate.opsForHash().put(key, "count", 1);
             redisTemplate.opsForHash().put(key, "time", nowSec);

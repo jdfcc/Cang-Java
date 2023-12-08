@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Cang.mapper.TestMapper">
+    <update id="createTable">
+        CREATE TABLE IF NOT EXISTS ${name}(
+        `detail_table_id` varchar(19) DEFAULT NULL COMMENT '多行表关联字段'
+        )
+    </update>
+
+    <select id="selectAll"  resultType="java.util.HashMap">
+        select * from tb_seckill_voucher
+    </select>
+
+</mapper>
