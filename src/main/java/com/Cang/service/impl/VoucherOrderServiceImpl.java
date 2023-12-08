@@ -82,7 +82,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         log.info("线程启动");
         Thread thread = new Thread(new VoucherOrderHandler());
         thread.start();
-        log.info("线程启动");
     }
 
     /**

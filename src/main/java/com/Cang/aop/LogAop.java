@@ -2,6 +2,7 @@ package com.Cang.aop;
 
 
 import cn.hutool.json.JSONUtil;
+import com.Cang.entity.Blog;
 import com.Cang.entity.MyLog;
 import com.Cang.utils.FileUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -45,9 +46,9 @@ public class LogAop {
     }
 
 
-
     @Around("@annotation(com.Cang.annotations.LogAnnotation)")
     public Object logPointCut(ProceedingJoinPoint pjp) {
+
 //        String filePath = "folder/example.txt";
         long startTime = System.currentTimeMillis();
         Object obj = null;
@@ -61,20 +62,21 @@ public class LogAop {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         LocalTime currentTime = LocalTime.now();
-        Integer minute = currentTime.getMinute();
-        Integer second = currentTime.getSecond();
+        int minute = currentTime.getMinute();
+        int second = currentTime.getSecond();
 
         Signature signature = pjp.getSignature();
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
 
+
         String time = hour + ":" + minute + ":" + second + "  ";
-        String value = time +"method: "+methodName+ " inputArgs" + ": " + JSONObject.toJSONString(pjp.getArgs()) + " " + " " + " outputArgs" + ": " + obj.toString();
+        String value = time + "method: " + methodName + " inputArgs" + ": " + JSONObject.toJSONString(pjp.getArgs()) + " " + " " + " outputArgs" + ": " + obj.toString();
 //        writeFile(JSONObject.toJSONString(pjp.getArgs()),obj.toString());
 
 
         MyLog myLog = new MyLog();
         myLog.setValue(value);
-        Long endTime = System.currentTimeMillis();
+        long endTime = System.currentTimeMillis();
         myLog.setTime(endTime - startTime);
         Object o = JSONObject.toJSON(myLog);
 

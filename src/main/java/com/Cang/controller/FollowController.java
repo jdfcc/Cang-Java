@@ -6,6 +6,8 @@ import com.Cang.service.IFollowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+
 /**
  * @author jdfcc
  * @since 2023-2-8
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/follow")
 public class FollowController {
 
-    @Autowired
+    @Resource
     private IFollowService followService;
 
     /**

@@ -2,17 +2,18 @@ package com.Cang.consumer;
 
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.dto.UserDTO;
+import com.Cang.entity.Blog;
 import com.Cang.service.MailService;
 import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
-
 
 import static com.Cang.constants.RabbitMqConstants.CAPTCHA_QUEUE;
 import static com.Cang.constants.RedisConstants.LOGIN_CODE_KEY;
@@ -26,6 +27,7 @@ import static com.Cang.constants.RedisConstants.LOGIN_CODE_TTL;
 
 @Component
 @Slf4j
+@RabbitListener(queues = CAPTCHA_QUEUE)
 public class CAPTCHAConsumer {
 
     private final StringRedisTemplate stringRedisTemplate;
@@ -37,26 +39,30 @@ public class CAPTCHAConsumer {
         this.mailService = mailService;
     }
 
-    @RabbitListener(queues = CAPTCHA_QUEUE)
-    public void consumer(Message message) {
+    @RabbitHandler
+    public void consumer(@Payload String message) {
 
-//        UserDTO user = UserHolder.getUser();
-//        System.out.println("************"+user.getId());
+        UserDTO user = UserHolder.getUser();
+        System.out.println("************"+user.getId());
+        Thread thread = Thread.currentThread();
+        long id = thread.getId();
+        System.out.println("消费者"+id);
 
-        log.info("收到了消息: " + new String(message.getBody()));
-        String phone = new String(message.getBody());
         //    生成验证码
         String code = RandomUtil.randomNumbers(4);
 
         //    储存进redis
-        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code);
+        stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + message, code);
         log.info("验证码为: {}", code);
-        //    设置验证码过期时间
-        stringRedisTemplate.expire(LOGIN_CODE_KEY + phone, LOGIN_CODE_TTL, TimeUnit.MINUTES);
+        //    设置验 证码过期时间
+        stringRedisTemplate.expire(LOGIN_CODE_KEY + message, LOGIN_CODE_TTL, TimeUnit.MINUTES);
         //    发送验证码
-        mailService.sendVerFicationMail(phone, code);
+        mailService.sendVerFicationMail(message, code);
 
     }
 
-
+    @RabbitHandler
+    void handleBlog(@Payload Blog blog) {
+        log.info("**** {}", blog);
+    }
 }

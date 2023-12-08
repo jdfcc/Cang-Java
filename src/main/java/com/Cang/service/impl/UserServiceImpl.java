@@ -3,6 +3,7 @@ package com.Cang.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.entity.Blog;
 import com.Cang.entity.DoubleToken;
 import com.Cang.service.TokenService;
 import com.Cang.utils.IdGeneratorSnowflake;
@@ -59,23 +60,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Resource
     private TokenService tokenService;
 
+    private static final String WRONG_PATTERN_EMAIL = "错误的邮箱格式";
+
     public UserServiceImpl(UserMapper mapper, RabbitTemplate rabbitTemplate) {
         this.mapper = mapper;
         this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
-    public Result sendCode(String phone, HttpSession session) {
+    public Result sendCode(String email, HttpSession session) {
 //        验证手机号是否合法 TODO 取消手机号注册功能，改用邮箱注册。需要实现一个校验邮箱是否合法的工具类来实现此功能
 //        if (RegexUtils.isPhoneInvalid(phone)) {
 //            return Result.fail("手机号格式有误");
 //        }
-//        发送邮箱至消息队列
-//        UserDTO userDTO = new UserDTO();
-//        userDTO.setId(114514L);
-//        userDTO.setIcon("user1e2e");
-//        UserHolder.saveUser(userDTO);
-        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, phone);
+
+        if (RegexUtils.isEmailInvalid(email)) {
+            return Result.fail(WRONG_PATTERN_EMAIL);
+        }
+        //        发送邮箱至消息队列
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(114514L);
+        userDTO.setIcon("user1e2e");
+        UserHolder.saveUser(userDTO);
+
+        Thread thread = Thread.currentThread();
+        long id = thread.getId();
+        System.out.println("生产者" + id);
+        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, email);
 //        返回
         return Result.ok();
     }
@@ -83,12 +94,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public Result login(LoginFormDTO dto, HttpSession session) throws Exception {
         //        校验手机号
-        String phone = dto.getPhone();
-        if (RegexUtils.isPhoneInvalid(phone)) {
+        String email = dto.getEmail();
+        if (RegexUtils.isPhoneInvalid(email)) {
             return Result.fail("手机号格式有误");
         }
         //校验验证码
-        String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + phone);
+        String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + email);
         String code = dto.getCode();
         if (cacheCode == null || !cacheCode.equals(code)) {
             return Result.fail("验证码有误");
@@ -96,7 +107,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getPhone, phone);
+
+        wrapper.eq(User::getEmail, email);
         User user = mapper.selectOne(wrapper);
 
 //        校验密码
@@ -109,7 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        TODO 注册用户
         if (user == null) {
             user = new User();
-            user.setPhone(phone);
+            user.setEmail(email);
 //            通过雪花算法生成用户id
             user.setId(new IdGeneratorSnowflake().snowflakeId());
             user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
@@ -130,10 +142,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        TODO 转存到数据库
 
 //        将dto转换成map
-        Map<String, Object> userMap = BeanUtil.beanToMap(date, new HashMap<>(),
-                CopyOptions.create()
-                        .setIgnoreNullValue(true)
-                        .setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
+        Map<String, Object> userMap = BeanUtil.beanToMap(date, new HashMap<>(), CopyOptions.create()
+                .setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
 
 //        储存进redis
         stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + doubleToken.getAccessToken(), userMap);

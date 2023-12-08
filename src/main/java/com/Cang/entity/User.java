@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author jdfcc
@@ -62,6 +62,9 @@ public class User implements Serializable {
      */
     private LocalDateTime updateTime;
 
+    /**
+     * 郵箱
+     */
     private String email;
 
 }
