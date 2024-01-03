@@ -1,12 +1,14 @@
 package com.Cang.utils;
 
 import com.Cang.constants.TokenConstant;
+import com.Cang.exception.InvalidTokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -17,6 +19,7 @@ import java.util.Date;
  * @Description TokenUtil
  * @DateTime 2023/10/17 21:37
  */
+@Slf4j
 public class TokenUtil {
 
     /**
@@ -33,6 +36,7 @@ public class TokenUtil {
         //第二个参数为自定义的常量Constant，token过期时间，为60*60=1小时
         calendar.add(Calendar.SECOND, TokenConstant.EXPIRE_TIME_60_60);
 
+
         // 生成含userId的token,以后登录都只通过Header携带的token解析出userId进行业务
         return JWT.create().withKeyId(String.valueOf(userId))
                 .withIssuer(TokenConstant.ISSUER)
@@ -46,8 +50,8 @@ public class TokenUtil {
      * @param token 需要验证的token
      * @return 合法则返回用户id
      */
-    public static Long verifyToken(String token) throws Exception {
-        Algorithm algorithm = null;
+    public static Long verifyToken(String token) {
+        Algorithm algorithm;
         try {
             algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
             JWTVerifier verifier = JWT.require(algorithm).build();
@@ -55,13 +59,11 @@ public class TokenUtil {
             String userId = jwt.getKeyId();
             return Long.valueOf(userId);
         } catch (JWTVerificationException e) {
-//            todo 实现自己的异常token处理器
-//            throw new ConditionException(CodeConstant.TOKEN_OVERDUE, "token已过期！");
-            throw e;
+            log.info("token验证出错");
+            throw new InvalidTokenException("token验证出错！");
         } catch (Exception e) {
-//            todo 实现自己的异常token处理器
-//            throw new ConditionException("非法用户token！");
-            throw e;
+            log.info("非法用户token");
+            throw new InvalidTokenException("非法用户token！");
         }
     }
 

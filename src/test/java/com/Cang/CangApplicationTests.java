@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.extern.slf4j.Slf4j;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -289,7 +290,7 @@ class CangApplicationTests {
             LambdaQueryWrapper<Chat> chatLambdaQueryWrapper = new LambdaQueryWrapper<>();
 
             chatLambdaQueryWrapper.eq(Chat::getSend, id);
-            List<ChatDto> newChat = chatMapper.selectLast(UserHolder.getUser().getId());
+            List<ChatDto> newChat = chatMapper.selectLast(UserHolder.getUser());
             for (Object tem : newChat) {
 //                重建缓存
                 long seconds = ((Chat) tem).getCreateTime().toEpochSecond(UTC);

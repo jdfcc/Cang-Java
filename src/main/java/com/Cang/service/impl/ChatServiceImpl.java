@@ -9,7 +9,10 @@ import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +36,23 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
     public ChatServiceImpl(ChatMapper chatMapper, RedisTemplate<String, Object> redisTemplate) {
         this.chatMapper = chatMapper;
         this.redisTemplate = redisTemplate;
     }
 
+
+    /**
+     * 保存消息
+     *
+     * @param chat 消息实体
+     */
+
+    @Override
+    public void saveMessage(Chat chat) {
+        save(chat);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -48,26 +63,20 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
         chat.setSend(userid);//TODO 加一个异常判断
-
-        int insert = chatMapper.insert(chat);
-        if (insert == 0) {
-            throw new SQLException("插入失败");
-        }
-
+        this.saveMessage(chat);
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
         chat.setCreateTime(null);
 //        在当前用户与目标用户首页消息列表中添加此条消息
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userid, chat, score);
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + targetId, chat, score);
-        return Result.ok(insert);
+        return Result.ok();
     }
 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result getMessage(Long userId, Long targetId) {
-
         String key = this.getKey(userId, targetId);
 //  TODO 删除此注释     List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
         Set<Object> chats = redisTemplate.opsForZSet().range(key, 0L, -1L);
@@ -77,7 +86,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             //数据库中也为空，两人第一次聊天
             if (newChats.isEmpty()) {
 //                储存空缓存以解决缓存击穿
-                redisTemplate.opsForZSet().add(key, null);
+                redisTemplate.opsForZSet().add(key, new HashSet<>());
                 return Result.ok(chats);
             }
 //            重建缓存
@@ -85,7 +94,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 //                redisTemplate.opsForList().rightPush(key, temp);
                 long seconds = temp.getCreateTime().toEpochSecond(ZoneOffset.UTC);
                 double score = seconds * 1000;
-                redisTemplate.opsForZSet().add(key,temp,score);
+                redisTemplate.opsForZSet().add(key, temp, score);
             }
             return Result.ok(newChats);
         }
@@ -99,6 +108,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      * @param b 目标用户id
      * @return {a+b} 由于两个参数均为雪花算法生成，故不存在相加后作为全局id重复的可能性
      */
+    @Override
     public String getKey(Long a, Long b) {
         return CHAT_MESSAGE_USER_KEY + (a + b);
     }

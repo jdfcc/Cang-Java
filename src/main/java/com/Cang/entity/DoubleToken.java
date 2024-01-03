@@ -17,6 +17,12 @@ import lombok.ToString;
 public class DoubleToken {
     private Long id;
     private Long userId;
+    /**
+     * 刷新token，accessToken过期时靠此Token获取到新的accessToken
+     */
     private String refreshToken;
+    /**
+     * 日常请求使用此token
+     */
     private String accessToken;
 }

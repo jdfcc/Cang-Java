@@ -199,12 +199,13 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     public Result SecKillVoucher(Long voucherId) {
         Long id = null;
         try {
-            id = UserHolder.getUser().getId();
+            id = UserHolder.getUser();
         } catch (EmptyUserHolderException e) {
             e.printStackTrace();
         }
         Long orderId = redisIdWorker.nextId("secKillVoucher");
         Long result = redisTemplate.execute(VOUCHER_SCRIPT, Collections.emptyList(), id.toString(), voucherId.toString(), orderId.toString());
+        assert result != null;
         if (result != 0) {
 //            log.info("@@@@@@ {}", result);
             return Result.fail(VOUCHER_ERROR);

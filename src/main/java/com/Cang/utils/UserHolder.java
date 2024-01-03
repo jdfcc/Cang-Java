@@ -9,23 +9,20 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class UserHolder {
-    private static final ThreadLocal<UserDTO> tl = new ThreadLocal<>();
+    private static final ThreadLocal<Long> tl = new ThreadLocal<>();
 
-    public static void saveUser(UserDTO user) {
+    public static void saveUser(Long  userId) {
         log.info("Saving user");
-        tl.set(user);
+        tl.set(userId);
     }
 
-    public static UserDTO getUser() throws EmptyUserHolderException {
+    public static Long getUser() throws EmptyUserHolderException {
         if (tl.get() == null) {
-//            TODO: 为了开发需要当UserHolder为空时会为其自动填充值.开发完成后记得删除这一危险操作并删除下面的注释
-//            UserDTO userDTO = new UserDTO();
-//            userDTO.setId(1010L);
-//            userDTO.setNickName("user_k30vd");
-//            return userDTO;
 //            TODO 开发完成后删除此条注释
 //            throw new EmptyUserHolderException("User is null，It has been automatically filled with values");
-            return new UserDTO();
+//            return new UserDTO();
+            log.info("当前用户为空，此用户为系统生成");
+            return 1011L;
         }
         return tl.get();
     }

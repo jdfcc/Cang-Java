@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 
+/**
+ * @author Jdfcc
+ */
 @Data
 @Component
 public class RedisData {

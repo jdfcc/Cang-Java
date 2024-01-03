@@ -3,6 +3,7 @@ package com.Cang.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
+import com.Cang.constants.TokenConstant;
 import com.Cang.entity.Blog;
 import com.Cang.entity.DoubleToken;
 import com.Cang.service.TokenService;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -69,92 +71,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public Result sendCode(String email, HttpSession session) {
-//        验证手机号是否合法 TODO 取消手机号注册功能，改用邮箱注册。需要实现一个校验邮箱是否合法的工具类来实现此功能
-//        if (RegexUtils.isPhoneInvalid(phone)) {
-//            return Result.fail("手机号格式有误");
+//        TODO 邮箱验证有问题
+//        if (RegexUtils.isEmailInvalid(email)) {
+//            return Result.fail(WRONG_PATTERN_EMAIL);
 //        }
-
-        if (RegexUtils.isEmailInvalid(email)) {
-            return Result.fail(WRONG_PATTERN_EMAIL);
-        }
-        //        发送邮箱至消息队列
-        UserDTO userDTO = new UserDTO();
-        userDTO.setId(114514L);
-        userDTO.setIcon("user1e2e");
-        UserHolder.saveUser(userDTO);
-
-        Thread thread = Thread.currentThread();
-        long id = thread.getId();
-        System.out.println("生产者" + id);
+//        UserDTO userDTO = new UserDTO();
+//        userDTO.setId(114514L);
+//        userDTO.setIcon("user1e2e");
+//        UserHolder.saveUser(userDTO);
+//
+//        Thread thread = Thread.currentThread();
+//        long id = thread.getId();
+//        System.out.println("生产者" + id);
         rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, email);
 //        返回
         return Result.ok();
     }
 
+
     @Override
     public Result login(LoginFormDTO dto, HttpSession session) throws Exception {
-        //        校验手机号
-        String email = dto.getEmail();
-        if (RegexUtils.isPhoneInvalid(email)) {
-            return Result.fail("手机号格式有误");
-        }
+
+        //    TODO 實現手機密碼登錄功能
+
+        //        校验郵箱
+        String email = dto.getPhone();
+//        TODO 邮箱校验有误
+//        if (RegexUtils.isEmailInvalid(email)) {
+//            return Result.fail("邮箱格式有误");
+//        }
         //校验验证码
         String cacheCode = stringRedisTemplate.opsForValue().get(LOGIN_CODE_KEY + email);
         String code = dto.getCode();
         if (cacheCode == null || !cacheCode.equals(code)) {
-            return Result.fail("验证码有误");
+            return Result.fail("验证码有误" + dto.toString() + cacheCode + LOGIN_CODE_KEY + email);
         }
-
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-
         wrapper.eq(User::getEmail, email);
         User user = mapper.selectOne(wrapper);
-
-//        校验密码
-//        String password=dto.getPassword();
-//
-//        if((!user.getPassword().equals(password))&&password!=null)
-//            return Result.fail("密码错误");
-
-        //        判断用户是否存在，不存在则注册
-//        TODO 注册用户
         if (user == null) {
-            user = new User();
-            user.setEmail(email);
-//            通过雪花算法生成用户id
-            user.setId(new IdGeneratorSnowflake().snowflakeId());
-            user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
-            log.info("%%%%%%%%% {}", user);
-            mapper.insert(user);
+            user = createUser(email);
         }
-
-        UserDTO date = BeanUtil.copyProperties(user, UserDTO.class);
-//        双token登录实现
-//        String token = UUID.randomUUID().toString(true);
-
         Long userid = user.getId();
         DoubleToken doubleToken = tokenService.createAndSaveToken(userid);
 
-//        doubleToken.setRefreshToken();
-//        doubleToken.setAccessToken();
-
-//        TODO 转存到数据库
-
-//        将dto转换成map
-        Map<String, Object> userMap = BeanUtil.beanToMap(date, new HashMap<>(), CopyOptions.create()
-                .setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
-
 //        储存进redis
-        stringRedisTemplate.opsForHash().putAll(LOGIN_USER_KEY + doubleToken.getAccessToken(), userMap);
-
-        stringRedisTemplate.expire(LOGIN_USER_KEY + doubleToken.getAccessToken(), LOGIN_USER_TTL, TimeUnit.SECONDS);
-//        将token和用户id返回给前端
-        user = mapper.selectOne(wrapper);
+        stringRedisTemplate.opsForValue().
+                set(LOGIN_USER_KEY + doubleToken.getAccessToken(), String.valueOf(userid));
+        stringRedisTemplate.expire(LOGIN_USER_KEY + doubleToken.getAccessToken(), TokenConstant.EXPIRE_TIME_60_60, TimeUnit.SECONDS);
+        //        将token和用户id返回给前端
         Long id = user.getId();
         log.info("登录用户id为: {}", id);
         return Result.ok(doubleToken, id);
     }
+
+    /**
+     * 注冊用戶
+     */
+    User createUser(String email) {
+        //         創建用户
+        User user = new User();
+        user.setEmail(email);
+//            通过雪花算法生成用户id
+        user.setId(new IdGeneratorSnowflake().snowflakeId());
+        user.setNickName(USER_NICK_NAME_PREFIX + RandomUtil.randomString(5));
+        log.info("%%%%%%%%% {}", user);
+        mapper.insert(user);
+        return user;
+    }
+
 
     @Override
     public Result logout(HttpServletRequest request) {

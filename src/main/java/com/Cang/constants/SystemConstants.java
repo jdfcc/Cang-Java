@@ -17,10 +17,7 @@ public class SystemConstants {
     public static final String NOT_LOGIN = "please login first";
     public static final String CREATE_BLOG_FAILED = "Add failed";
 
-    public static final String VOUCHER_ERROR="Voucher is no longer available";
-    public static final String VOUCHER_ERROR_ALREADY_BUY="You have already bought this Voucher";
+    public static final String VOUCHER_ERROR = "Voucher is no longer available";
 
-    public static final String VOUCHER_ERROR_WAIT="please wait some time to buy this Voucher";
-//    public static final String VERIFICATION_CODE="code";
-//    public static final String USER="user";
+    public static final int TOKEN_EXPIRE = 40004;
 }

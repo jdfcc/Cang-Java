@@ -26,7 +26,6 @@ public class CangApplication  {
         SpringApplication.run(CangApplication.class, args);
         InetAddress localHost = InetAddress.getLocalHost();
         log.info("CangApplication: {} ",localHost.getHostAddress());
-        throw new DeleteException("8888888888888888888");
     }
 
 }

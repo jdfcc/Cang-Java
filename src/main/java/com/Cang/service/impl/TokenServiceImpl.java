@@ -42,7 +42,7 @@ public class TokenServiceImpl extends ServiceImpl<TokenMapper, DoubleToken> impl
         wrapper.eq(DoubleToken::getUserId, userId);
         int count = tokenMapper.selectCount(wrapper);
         if (count > 0) {
-           remove(userId);
+            remove(userId);
         }
         add(doubleToken);
         return doubleToken;
@@ -58,6 +58,26 @@ public class TokenServiceImpl extends ServiceImpl<TokenMapper, DoubleToken> impl
         tokenMapper.insert(token);
     }
 
+
+    /**
+     * 刷新accessToken
+     *
+     * @param refreshToken 刷新令牌
+     */
+    @Override
+    public String refreshAccessToken(Long userId, String refreshToken) throws Exception {
+        LambdaQueryWrapper<DoubleToken> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DoubleToken::getUserId, userId);
+        queryWrapper.eq(DoubleToken::getRefreshToken, refreshToken);
+        DoubleToken doubleToken = tokenMapper.selectOne(queryWrapper);
+        String token = "";
+        if (doubleToken != null) {
+            token = TokenUtil.generateToken(userId);
+            doubleToken.setAccessToken(token);
+            tokenMapper.update(doubleToken, queryWrapper);
+        }
+        return token;
+    }
 
     /**
      * 删除对应用户的token

@@ -41,13 +41,11 @@ public class CAPTCHAConsumer {
 
     @RabbitHandler
     public void consumer(@Payload String message) {
-
-        UserDTO user = UserHolder.getUser();
-        System.out.println("************"+user.getId());
+        Long userId = UserHolder.getUser();
+        System.out.println("************" + userId);
         Thread thread = Thread.currentThread();
         long id = thread.getId();
-        System.out.println("消费者"+id);
-
+        System.out.println("消费者" + id);
         //    生成验证码
         String code = RandomUtil.randomNumbers(4);
 
@@ -58,7 +56,6 @@ public class CAPTCHAConsumer {
         stringRedisTemplate.expire(LOGIN_CODE_KEY + message, LOGIN_CODE_TTL, TimeUnit.MINUTES);
         //    发送验证码
         mailService.sendVerFicationMail(message, code);
-
     }
 
     @RabbitHandler

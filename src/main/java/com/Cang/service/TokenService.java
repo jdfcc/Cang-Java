@@ -13,6 +13,7 @@ public interface TokenService extends IService<DoubleToken> {
 
     /**
      * 创建并保存根据用户id生成的token
+     *
      * @param userId 用户id
      * @return 创建好的token
      */
@@ -21,13 +22,23 @@ public interface TokenService extends IService<DoubleToken> {
 
     /**
      * 添加token
+     *
      * @param token 实体类
      */
     void add(DoubleToken token);
 
     /**
+     * 刷新accessToken
+     *
+     * @param refreshToken 刷新令牌
+     */
+    String refreshAccessToken(Long userid, String refreshToken) throws Exception;
+
+
+    /**
      * 删除对应用户的token
+     *
      * @param userId 用户id
      */
-    void remove(Long  userId);
+    void remove(Long userId);
 }

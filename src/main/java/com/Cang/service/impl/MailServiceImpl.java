@@ -3,7 +3,6 @@ package com.Cang.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.dto.Result;
 import com.Cang.entity.Mail;
-import com.Cang.entity.RespBean;
 import com.Cang.entity.User;
 import com.Cang.mapper.MailMapper;
 import com.Cang.service.MailService;
@@ -38,12 +37,12 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
 
     /**
      * 发送验证码
+     *
      * @param email
      * @param code
-     * @return
      */
     @Override
-    public Result sendVerFicationMail(String email,String code) {
+    public void sendVerFicationMail(String email, String code) {
 
             //注意：Context 类是在org.thymeleaf.context.Context包下的。
             Context context = new Context();
@@ -57,11 +56,7 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             mailBean.setRecipient(email);
             mailBean.setSubject("验证你的邮箱");
             mailBean.setContent(emailContent);
-
             mailUtil.sendHTMLMail(mailBean);
-            return Result.ok("发送成功");
-
-
     }
 
     @Override
