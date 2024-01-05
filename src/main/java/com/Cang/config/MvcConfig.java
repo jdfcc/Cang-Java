@@ -31,10 +31,12 @@ public class MvcConfig implements WebMvcConfigurer {
                     "/user/login",
                     "/shop/**",
                     "/voucher/**",
-                    "/shop-type/**",
+// TODO 测试用，开发完成删除
+//                    "/shop-type/**",
                     "/upload/**",
-                    "/blog/hot",
-                    "/blog/{id}",
+//                    "/blog/hot",
+//                    "/blog/{id}",
+                    "/token/*",
                     "/notice/*"
             ).order(Ordered.HIGHEST_PRECEDENCE);
 //            registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
@@ -48,6 +50,7 @@ public class MvcConfig implements WebMvcConfigurer {
                             "/upload/**",
                             "/blog/hot",
                             "/blog/{id}",
+                            "/token/*",
                             "/notice/*"
                     ).order(Ordered.LOWEST_PRECEDENCE);
         }

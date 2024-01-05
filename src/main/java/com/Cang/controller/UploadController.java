@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequestMapping("upload")
 public class UploadController {
     @Autowired
-    public MinIOFileStorageService minIOFileStorageService;
+    public MinIOFileStorageService minIoFileStorageService;
 
 //    TODO 重写文件保存逻辑，判断文件是否存在，之后再传
     @PostMapping("/blog")
@@ -41,7 +41,7 @@ public class UploadController {
             String filename=uuid.toString()+".jpg";
 
             InputStream inputStream = image.getInputStream();
-            String fileUrl = minIOFileStorageService.uploadImgFile("", filename, inputStream);
+            String fileUrl = minIoFileStorageService.uploadImgFile("", filename, inputStream);
             // 保存文件
 //            image.transferTo(new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName));
             // 返回结果

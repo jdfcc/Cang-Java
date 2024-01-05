@@ -149,8 +149,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 1.获取当前用户
 
         Long userId = UserHolder.getUser();
-        if (userId == null)
+        if (userId == null) {
             return Result.fail(NOT_LOGIN);
+        }
         // 2.查询收件箱 ZREVRANGEBYSCORE key Max Min LIMIT offset count
         String key = FEED_KEY + userId;
         Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.opsForZSet()

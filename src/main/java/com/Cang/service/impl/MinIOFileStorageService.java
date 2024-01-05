@@ -74,11 +74,9 @@ public class MinIOFileStorageService implements FileStorageService {
                     .bucket(minIOConfigProperties.getBucket()).stream(inputStream,inputStream.available(),-1)
                     .build();
             minioClient.putObject(putObjectArgs);
-            StringBuilder urlPath = new StringBuilder(minIOConfigProperties.getReadPath());
-            urlPath.append(separator+minIOConfigProperties.getBucket());
-            urlPath.append(separator);
-            urlPath.append(filePath);
-            return urlPath.toString();
+            return minIOConfigProperties.getReadPath() + separator + minIOConfigProperties.getBucket() +
+                    separator +
+                    filePath;
         }catch (Exception ex){
             log.error("minio put file error.",ex);
             throw new RuntimeException("上传文件失败");
@@ -102,11 +100,9 @@ public class MinIOFileStorageService implements FileStorageService {
                     .bucket(minIOConfigProperties.getBucket()).stream(inputStream,inputStream.available(),-1)
                     .build();
             minioClient.putObject(putObjectArgs);
-            StringBuilder urlPath = new StringBuilder(minIOConfigProperties.getReadPath());
-            urlPath.append(separator+minIOConfigProperties.getBucket());
-            urlPath.append(separator);
-            urlPath.append(filePath);
-            return urlPath.toString();
+            return minIOConfigProperties.getReadPath() + separator + minIOConfigProperties.getBucket() +
+                    separator +
+                    filePath;
         }catch (Exception ex){
             log.error("minio put file error.",ex);
             ex.printStackTrace();
@@ -160,7 +156,10 @@ public class MinIOFileStorageService implements FileStorageService {
         int rc = 0;
         while (true) {
             try {
-                if (!((rc = inputStream.read(buff, 0, 100)) > 0)) break;
+                assert inputStream != null;
+                if (!((rc = inputStream.read(buff, 0, 100)) > 0)) {
+                    break;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

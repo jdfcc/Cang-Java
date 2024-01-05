@@ -20,8 +20,9 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
         if (UserHolder.getUser() == null) {
-            response.setStatus(SC_UNAUTHORIZED);
+//            response.setStatus(SC_UNAUTHORIZED);
             log.info("SC_UNAUTHORIZED");
+            // 直接返回
             return false;
         }
         log.info("放行");

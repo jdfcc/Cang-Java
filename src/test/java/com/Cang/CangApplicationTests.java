@@ -46,7 +46,6 @@ import static java.time.ZoneOffset.UTC;
 
 @Slf4j
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CangApplicationTests {
     @Value("${spring.redis.host}")
     private String address;
