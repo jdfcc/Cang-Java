@@ -14,13 +14,13 @@ import static com.Cang.constants.RabbitMqConstants.*;
  */
 
 @Component
-public class CAPTCHAQueueConfig {
+public class CaptchaQueueConfig {
 
     /**
      * 创建消息队列
      */
     @Bean
-    public Queue createCAPTCHAQueue() {
+    public Queue createCaptchaQueue() {
         return QueueBuilder.nonDurable(CAPTCHA_QUEUE).build();
     }
 
@@ -33,7 +33,7 @@ public class CAPTCHAQueueConfig {
     }
 
     @Bean
-    public Binding createCaptchaQueueBinding(@Qualifier("createCAPTCHAQueue") Queue queue,
+    public Binding createCaptchaQueueBinding(@Qualifier("createCaptchaQueue") Queue queue,
                                  @Qualifier("createDirectExchange") DirectExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(CAPTCHA_ROUTING_KEY);
 

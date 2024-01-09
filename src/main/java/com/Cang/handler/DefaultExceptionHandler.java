@@ -1,10 +1,9 @@
 package com.Cang.handler;
 
+import com.Cang.consumer.MessageQueueConsumer;
 import com.Cang.dto.Result;
-import com.Cang.exception.DeleteException;
-import com.Cang.exception.EmptyUserHolderException;
-import com.Cang.exception.InvalidTokenException;
-import com.Cang.exception.SQLException;
+import com.Cang.entity.MessageQueueEntity;
+import com.Cang.exception.*;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -44,7 +43,14 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(value = DeleteException.class)
     public void handle(Throwable e) {
         String key = e.getMessage();
-        rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, key);
+        rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.retryQueueConsumer,key));
+    }
+
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ExceptionHandler(MessageException.class)
+    public Result handleMessageException(Throwable e) {
+        e.printStackTrace();
+        return Result.fail(e.getMessage());
     }
 
     @Order(Ordered.HIGHEST_PRECEDENCE)

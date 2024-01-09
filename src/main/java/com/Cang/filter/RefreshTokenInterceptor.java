@@ -94,7 +94,6 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
 
         // 8.放行
-//        div分支
         return true;
     }
 

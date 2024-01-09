@@ -1,5 +1,7 @@
-package com.Cang.consumer;
+package com.Cang.strategy;
 
+import com.Cang.consumer.MessageQueueConsumer;
+import com.Cang.entity.MessageQueueEntity;
 import com.Cang.template.MyRedisTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -47,9 +49,9 @@ public class RetryQueueConsumer {
             if (count < MAX_RETRY_COUNT) {
 //            入队，重试次数加一
                 count += 1;
-                rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, key);
+                rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.retryQueueConsumer, key));
                 redisTemplate.opsForValue().set(deleteKey, String.valueOf(count));
-                redisTemplate.expire(deleteKey,5L, TimeUnit.SECONDS);
+                redisTemplate.expire(deleteKey, 5L, TimeUnit.SECONDS);
             } else {
                 log.error("删除消息异常，消息key为 {} ,请手动查看", key);
             }

@@ -3,12 +3,11 @@ package com.Cang.controller;
 import com.Cang.dto.Result;
 import com.Cang.entity.Comment;
 import com.Cang.service.CommentService;
-import org.apache.ibatis.annotations.Param;
+import com.Cang.utils.UserHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
 
 /**
  * @author Jdfcc
@@ -24,6 +23,9 @@ public class CommentController {
 
     @PostMapping("/send")
     Result comment(@RequestBody @Valid Comment comment) {
+        if (!comment.getId().equals(UserHolder.getUser())) {
+            return Result.fail("当前id与当前用户不是同一用户");
+        }
         commentService.saveComment(comment);
         return Result.ok();
     }
@@ -37,5 +39,29 @@ public class CommentController {
     Result list(@PathVariable Long postId) {
         return Result.ok(commentService.listComments(postId));
     }
+
+    /**
+     * 查询当前用户的所有评论
+     *
+     * @return Result
+     */
+    @GetMapping("/ofMe")
+    Result myComment() {
+        return Result.ok(commentService.getMyComment(UserHolder.getUser()));
+    }
+
+
+    /**
+     * 删除评论
+     */
+    @DeleteMapping("/del/commentId/{commentId}/send/{send}")
+    Result del(@PathVariable("commentId") String commentId, @PathVariable("send") String send) {
+        if (!Long.valueOf(send).equals(UserHolder.getUser())) {
+            return Result.fail("当前id与当前用户不是同一用户");
+        }
+        commentService.deleteComment(Long.valueOf(commentId));
+        return Result.ok();
+    }
+
 
 }

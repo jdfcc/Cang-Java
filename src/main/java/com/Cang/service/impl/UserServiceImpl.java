@@ -4,8 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.constants.TokenConstant;
+import com.Cang.consumer.MessageQueueConsumer;
 import com.Cang.entity.Blog;
 import com.Cang.entity.DoubleToken;
+import com.Cang.entity.MessageQueueEntity;
 import com.Cang.service.TokenService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -83,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        Thread thread = Thread.currentThread();
 //        long id = thread.getId();
 //        System.out.println("生产者" + id);
-        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, email);
+        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.captchaConsumer, email));
 //        返回
         return Result.ok();
     }

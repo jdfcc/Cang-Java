@@ -11,7 +11,6 @@ import java.util.List;
  * @DateTime 2024/1/5 9:25
  */
 @Data
-
 public class GamePic {
     private String url;
     private List<String> detailUrls;

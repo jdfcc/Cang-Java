@@ -24,6 +24,9 @@ public class MessageDto {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long targetId;
 
+    /**
+     * 发送者id
+     */
     @JsonSerialize(using = ToStringSerializer.class)
     private Long userid;
 
@@ -62,6 +65,7 @@ public class MessageDto {
     }
 
     public static String receive(Long userId, Object data) {
-        return JSON.toJSONString(new MessageDto(userId, "receive", data));    }
+        return JSON.toJSONString(new MessageDto(userId, "receive", data));
+    }
 
 }

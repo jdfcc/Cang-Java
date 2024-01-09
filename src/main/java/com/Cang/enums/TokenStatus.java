@@ -6,6 +6,7 @@ package com.Cang.enums;
  * @Description TokenStatus
  * @DateTime 2024/1/5 16:12
  */
+@SuppressWarnings("unused")
 public enum TokenStatus {
     ACCESS_TOKEN_EXPIRED,
     REFRESH_TOKEN_EXPIRED,

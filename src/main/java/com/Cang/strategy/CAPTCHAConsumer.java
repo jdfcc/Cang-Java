@@ -1,7 +1,6 @@
-package com.Cang.consumer;
+package com.Cang.strategy;
 
 import cn.hutool.core.util.RandomUtil;
-import com.Cang.dto.UserDTO;
 import com.Cang.entity.Blog;
 import com.Cang.service.MailService;
 import com.Cang.utils.UserHolder;
@@ -59,6 +58,7 @@ public class CAPTCHAConsumer {
     }
 
     @RabbitHandler
+        // TODO 添加至枚举类
     void handleBlog(@Payload Blog blog) {
         log.info("**** {}", blog);
     }

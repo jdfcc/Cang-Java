@@ -1,7 +1,6 @@
-package com.Cang.consumer;
+package com.Cang.strategy;
 
 import cn.hutool.json.JSONUtil;
-import com.Cang.annotations.LogAnnotation;
 import com.Cang.entity.MyLog;
 import com.Cang.utils.FileUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +29,16 @@ public class LogQueueConsumer {
 
     @RabbitListener(queues = LOG_QUEUE)
     public void consume(Message message){
+
         String json = new String(message.getBody());
         MyLog myLog = JSONUtil.toBean(json, MyLog.class);
 
         String value=myLog.getValue();
 
         LocalDate currentDate = LocalDate.now();
-        Integer month = currentDate.getMonthValue();
+        int month = currentDate.getMonthValue();
         Integer year = currentDate.getYear();
-        Integer day = currentDate.getDayOfMonth();
+        int day = currentDate.getDayOfMonth();
 
         String path = src + year + "/" + month + "/";
         String fileName = year + "-" + month + "-" + day;

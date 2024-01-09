@@ -22,8 +22,18 @@ public interface CommentService extends IService<Comment> {
      List<Comment>  listComments(Long postId);
 
     /**
+     * 获取当前用户的所有评论
+     */
+     List<Comment> getMyComment(Long userId);
+     /**
      * 保存评论
      * @param comment commentEntity
      */
     void saveComment(Comment comment);
+
+    /**
+     * 根据评论id删除评论
+     * @param commentId 评论id
+     */
+    void deleteComment(Long  commentId);
 }

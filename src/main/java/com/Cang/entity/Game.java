@@ -2,6 +2,7 @@ package com.Cang.entity;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  */
 
 @Data
-public class Game {
+public class Game implements Serializable {
 
     private String url;
     private String reviews_url;
