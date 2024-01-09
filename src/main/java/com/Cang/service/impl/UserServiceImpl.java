@@ -1,13 +1,10 @@
 package com.Cang.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.constants.TokenConstant;
-import com.Cang.consumer.MessageQueueConsumer;
-import com.Cang.entity.Blog;
 import com.Cang.entity.DoubleToken;
 import com.Cang.entity.MessageQueueEntity;
+import com.Cang.enums.BusinessType;
 import com.Cang.service.TokenService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,29 +12,23 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.Cang.dto.LoginFormDTO;
 import com.Cang.dto.Result;
-import com.Cang.dto.UserDTO;
 import com.Cang.entity.User;
 import com.Cang.mapper.UserMapper;
 import com.Cang.service.IUserService;
-import com.Cang.utils.RegexUtils;
 import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-import static com.Cang.constants.RabbitMqConstants.CAPTCHA_EXCHANGE;
-import static com.Cang.constants.RabbitMqConstants.CAPTCHA_ROUTING_KEY;
+import static com.Cang.constants.RabbitMqConstants.*;
 import static com.Cang.constants.RedisConstants.*;
 import static com.Cang.constants.SystemConstants.*;
 
@@ -85,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        Thread thread = Thread.currentThread();
 //        long id = thread.getId();
 //        System.out.println("生产者" + id);
-        rabbitTemplate.convertAndSend(CAPTCHA_EXCHANGE, CAPTCHA_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.captchaConsumer, email));
+        rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.CAPTCHA, email));
 //        返回
         return Result.ok();
     }

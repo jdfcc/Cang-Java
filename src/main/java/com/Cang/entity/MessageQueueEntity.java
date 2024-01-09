@@ -1,6 +1,6 @@
 package com.Cang.entity;
 
-import com.Cang.consumer.MessageQueueConsumer;
+import com.Cang.enums.BusinessType;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -16,12 +16,12 @@ public class MessageQueueEntity implements Serializable {
     /**
      * 业务类型
      */
-    private final String businessType;
+    private final BusinessType businessType;
 
     private final Object data;
 
-    public static MessageQueueEntity build(MessageQueueConsumer businessType, Object data) {
-        return new MessageQueueEntity(businessType.name(), data);
+    public static MessageQueueEntity build(BusinessType businessType, Object data) {
+        return new MessageQueueEntity(businessType, data);
     }
 
 }

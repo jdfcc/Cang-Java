@@ -1,10 +1,10 @@
 package com.Cang.handler;
 
-import com.Cang.consumer.MessageQueueConsumer;
+
 import com.Cang.dto.Result;
 import com.Cang.entity.MessageQueueEntity;
+import com.Cang.enums.BusinessType;
 import com.Cang.exception.*;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.annotation.Order;
@@ -19,8 +19,7 @@ import org.springframework.core.Ordered;
 
 import java.util.List;
 
-import static com.Cang.constants.RabbitMqConstants.RETRY_EXCHANGE;
-import static com.Cang.constants.RabbitMqConstants.RETRY_ROUTING_KEY;
+import static com.Cang.constants.RabbitMqConstants.*;
 
 
 /**
@@ -43,7 +42,7 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(value = DeleteException.class)
     public void handle(Throwable e) {
         String key = e.getMessage();
-        rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.retryQueueConsumer,key));
+        rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.LOG,key));
     }
 
     @Order(Ordered.HIGHEST_PRECEDENCE)

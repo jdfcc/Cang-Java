@@ -1,9 +1,9 @@
 package com.Cang.aop;
 
 
-import com.Cang.consumer.MessageQueueConsumer;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.entity.MyLog;
+import com.Cang.enums.BusinessType;
 import com.alibaba.fastjson.JSONObject;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalTime;
 import java.util.Calendar;
 
-
-import static com.Cang.constants.RabbitMqConstants.LOG_EXCHANGE;
-import static com.Cang.constants.RabbitMqConstants.LOG_ROUTING_KEY;
+import static com.Cang.constants.RabbitMqConstants.*;
 
 
 /**
@@ -72,7 +70,7 @@ public class LogAop {
         myLog.setValue(value);
         long endTime = System.currentTimeMillis();
         myLog.setTime(endTime - startTime);
-        rabbitTemplate.convertAndSend(LOG_EXCHANGE, LOG_ROUTING_KEY, MessageQueueEntity.build(MessageQueueConsumer.LogQueueConsumer, myLog));
+        rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.LOG, myLog));
 
         return obj;
 
