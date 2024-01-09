@@ -15,6 +15,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class MyLog implements Serializable {
 
+
     /**
      * 日志内容
      */

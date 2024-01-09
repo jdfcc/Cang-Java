@@ -20,7 +20,7 @@ public interface IUserService extends IService<User> {
 
     /**
      * 用户注册或登录发送验证码
-     * @param email 手机号 TODO 后期会改成邮箱
+     * @param email 邮箱
      * @param session
      * @return
      */

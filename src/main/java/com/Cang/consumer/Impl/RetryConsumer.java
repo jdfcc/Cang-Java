@@ -1,10 +1,12 @@
-package com.Cang.consumer;
+package com.Cang.consumer.Impl;
 
+import com.Cang.entity.MessageQueueEntity;
+import com.Cang.enums.BusinessType;
+import com.Cang.consumer.CommonQueueConsumer;
 import com.Cang.template.MyRedisTemplate;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,25 +19,31 @@ import static com.Cang.constants.RedisConstants.MAX_RETRY_COUNT;
 /**
  * @author Jdfcc
  * @HomePage <a href="https://github.com/Jdfcc">Jdfcc</a>
- * @Description RetryQueueConsumer
- * @DateTime 2023/8/7 15:13
+ * @Description RetryConsumer
+ * @DateTime 2024/1/9 11:20
  */
-@Component
 @Slf4j
-public class RetryQueueConsumer {
+@Component
+public class RetryConsumer extends CommonQueueConsumer {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     private final RabbitTemplate rabbitTemplate;
 
-    public RetryQueueConsumer(RedisTemplate<String, Object> redisTemplate, RabbitTemplate rabbitTemplate) {
+    @Autowired
+    public RetryConsumer(RedisTemplate<String, Object> redisTemplate, RabbitTemplate rabbitTemplate) {
         this.redisTemplate = redisTemplate;
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    @RabbitListener(queues = RETRY_QUEUE)
-    public void consume(Message message) {
-        String key = new String(message.getBody());
+    /**
+     * 根据消息实体类型执行对应业务
+     *
+     * @param entity 消息实体
+     */
+    @Override
+    public void consume(MessageQueueEntity entity) {
+        String key = (String) entity.getData();
         String deleteKey = DELETE_COUNT + key;
         try {
             MyRedisTemplate.del(key);
@@ -47,14 +55,20 @@ public class RetryQueueConsumer {
             if (count < MAX_RETRY_COUNT) {
 //            入队，重试次数加一
                 count += 1;
-                rabbitTemplate.convertAndSend(RETRY_EXCHANGE, RETRY_ROUTING_KEY, key);
+                rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.RETRY, key));
                 redisTemplate.opsForValue().set(deleteKey, String.valueOf(count));
-                redisTemplate.expire(deleteKey,5L, TimeUnit.SECONDS);
+                redisTemplate.expire(deleteKey, 5L, TimeUnit.SECONDS);
             } else {
                 log.error("删除消息异常，消息key为 {} ,请手动查看", key);
             }
         }
-
     }
 
+    /**
+     * 设置此消费队列被匹配到的名称
+     */
+    @Override
+    protected BusinessType getConsumerName() {
+        return BusinessType.RETRY;
+    }
 }

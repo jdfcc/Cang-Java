@@ -23,6 +23,12 @@ public interface ChatService extends IService<Chat> {
     Result sendMessage(Chat chat);
 
     /**
+     * 保存消息
+     * @param chat 消息实体
+     */
+    void saveMessage(Chat chat);
+
+    /**
      * 获取到储存在UserHold中储存的用户与此id用户的所有对话
      *
      * @param id

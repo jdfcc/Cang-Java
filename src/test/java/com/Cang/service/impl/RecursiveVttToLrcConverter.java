@@ -3,7 +3,7 @@ package com.Cang.service.impl;
 /**
  * @author Jdfcc
  * @HomePage <a href="https://github.com/Jdfcc">Jdfcc</a>
- * @Description TODO
+ * @Description RecursiveVttToLrcConverter
  * @DateTime 2023/9/6 14:55
  */
 import java.io.File;

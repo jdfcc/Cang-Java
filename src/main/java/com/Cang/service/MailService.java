@@ -15,5 +15,5 @@ public interface MailService extends IService<Mail> {
 
     Result sendMail(User user);
 
-    Result sendVerFicationMail(String email,String code);
+    void sendVerFicationMail(String email, String code);
 }

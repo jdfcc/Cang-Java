@@ -29,10 +29,27 @@ public class CorsConfig {
         corsConfiguration.addAllowedHeader("*");
         // 3 设置访问源请求方法
         corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.addExposedHeader("jdfcc"); // 暴露响应头
         corsConfiguration.setMaxAge(MAX_AGE);
+
 
         // 4 对接口配置跨域设置
         source.registerCorsConfiguration("/**", corsConfiguration);
         return new CorsFilter(source);
     }
+
+//    @Bean
+//    public CorsFilter corsFilter() {
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        CorsConfiguration corsConfiguration = new CorsConfiguration();
+//        corsConfiguration.addAllowedOrigin("http://localhost:8080"); // 允许访问的域名
+//        corsConfiguration.addAllowedHeader("*");
+//        corsConfiguration.addAllowedMethod("*");
+//        corsConfiguration.setMaxAge(MAX_AGE);
+//        corsConfiguration.addExposedHeader("jdfcc"); // 暴露响应头
+//
+//        source.registerCorsConfiguration("/**", corsConfiguration);
+//        return new CorsFilter(source);
+//    }
+
 }

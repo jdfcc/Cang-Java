@@ -4,8 +4,10 @@ import com.Cang.annotations.IpCheckAnnotation;
 import com.Cang.annotations.LogAnnotation;
 import com.Cang.dto.Result;
 import com.Cang.exception.DeleteException;
+import com.Cang.exception.InvalidTokenException;
 import com.Cang.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -30,8 +32,14 @@ public class testController {
     }
 
     @GetMapping("")
+//    @ResponseStatus(code= HttpStatus.INTERNAL_SERVER_ERROR,reason="server error")
     public Result test() {
         return Result.ok();
+    }
+
+    @GetMapping("/token")
+    public Result testToken() {
+        throw new InvalidTokenException("Token is not valid");
     }
 
 }

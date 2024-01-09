@@ -26,7 +26,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
+@SuppressWarnings({"unused"})
 public class MyRedisTemplate {
+
     public RedisTemplate redisTemplate;
 
     private static StringRedisTemplate stringRedisTemplate;

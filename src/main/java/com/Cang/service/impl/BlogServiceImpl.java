@@ -51,6 +51,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     private CacheClient cacheClient;
     private final FollowMapper followMapper;
 
+    public void testMethod() {
+        System.out.println("Testing method");
+    }
+
     public BlogServiceImpl(StringRedisTemplate redisTemplate, IUserService userService, BlogMapper blogMapper, FollowMapper followMapper) {
         this.redisTemplate = redisTemplate;
         this.userService = userService;
@@ -144,10 +148,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 //        return Result.ok(r);
         // 1.获取当前用户
 
-        UserDTO user = UserHolder.getUser();
-        if (user == null)
+        Long userId = UserHolder.getUser();
+        if (userId == null) {
             return Result.fail(NOT_LOGIN);
-        Long userId = user.getId();
+        }
         // 2.查询收件箱 ZREVRANGEBYSCORE key Max Min LIMIT offset count
         String key = FEED_KEY + userId;
         Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.opsForZSet()
@@ -182,7 +186,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             // 5.1.查询blog有关的用户
             queryBlogUser(blog);
             // 5.2.查询blog是否被点赞
-            Boolean liked = this.isLiked(key, user.getId());
+            Boolean liked = this.isLiked(key, userId);
             blog.setIsLike(liked);
         }
 
@@ -207,17 +211,17 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Transactional
     @Override
     public Result saveBlog(Blog blog) {
-        if(blog.getShopId()==null){
+        if (blog.getShopId() == null) {
             return Result.fail("shop id can't be null");
         }
-        UserDTO user = UserHolder.getUser();
-        blog.setUserId(user.getId());
+        Long userId = UserHolder.getUser();
+        blog.setUserId(userId);
         // 保存探店博文
         int insert = blogMapper.insert(blog);
 
         if (insert == 0)
             return Result.fail(CREATE_BLOG_FAILED);
-        List<String> followsId = followMapper.getFollowerId(user.getId());
+        List<String> followsId = followMapper.getFollowerId(userId);
         for (String followId : followsId) {
             String key = FEED_KEY + followId;
 //            发布消息
@@ -252,10 +256,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Transactional
     @Override
     public Result like(Long id) {
-        UserDTO user = UserHolder.getUser();
-        if (user == null)
+        Long userId = UserHolder.getUser();
+        if (userId == null)
             return Result.fail(NOT_LOGIN);
-        Long userId = user.getId();
         String key = BLOG_LIKED_KEY + id;
 //        查询是否点赞
         Boolean isMember = this.isLiked(key, userId);
@@ -282,13 +285,15 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     }
 
 
+    /**
+     * 查询当前用户是否点赞
+     *
+     * @param key    前缀
+     * @param userId 要查询的用户id
+     * @return 是否点赞
+     */
     public Boolean isLiked(String key, Long userId) {
-        UserDTO user = UserHolder.getUser();
-        if (user == null){
-            return false;
-        }
-        Long id = user.getId();
-        Double score = redisTemplate.opsForZSet().score(key, String.valueOf(id));
+        Double score = redisTemplate.opsForZSet().score(key, String.valueOf(userId));
         if (score == null) {
             return false;
         }

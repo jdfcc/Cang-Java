@@ -2,7 +2,7 @@ server:
   port: 9090
 
 login:
-  authorization: false
+  authorization: true # 开启验证
 
 my-log:
   src: ./log/
@@ -18,23 +18,19 @@ minio:
   readPath: http://120.55.80.133:9000
 
 
-
-
-
-
 spring:
   rabbitmq:
     host: 120.55.80.133
     port: 5672
     username: jdfcc
     password: 1234
-  #    publisherConfirmType: correlated #交换机开启发布确认模式
-  #    publisherReturns: true #发布回退模式，若消息路由失败，回退给生产者
+    publisherConfirmType: correlated #交换机开启发布确认模式
+    publisherReturns: true #发布回退模式，若消息路由失败，回退给生产者
   application:
     name: Cang
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://192.168.159.1:3306/hmdp?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://192.168.159.1:3306/cang?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 1234
   redis:

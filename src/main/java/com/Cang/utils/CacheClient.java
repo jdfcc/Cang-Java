@@ -15,6 +15,9 @@ import java.util.function.Function;
 
 import static com.Cang.constants.RedisConstants.*;
 
+/**
+ * @author Jdfcc
+ */
 @Component
 public class CacheClient {
 

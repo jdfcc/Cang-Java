@@ -36,7 +36,7 @@ public class UserController {
     /**
      * 发送手机验证码
      */
-    @PostMapping("code")
+    @PostMapping("/code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
 
         return userService.sendCode(phone, session);
@@ -53,6 +53,7 @@ public class UserController {
         return userService.login(loginForm, session);
     }
 
+
     /**
      * 登出功能
      *
@@ -64,12 +65,14 @@ public class UserController {
         return userService.logout(request);
     }
 
+    // TODO 完善查询个人消息接口
     @GetMapping("/me")
     public Result me() {
         //  获取当前登录的用户并返回
-        UserDTO user = UserHolder.getUser();
-        log.info("User {}", user);
-        return Result.ok(user);
+        Long userId = UserHolder.getUser();
+        log.info("User {}", userId);
+//        return Result.ok(user);
+        return null;
     }
 
     @GetMapping("/info/{id}")

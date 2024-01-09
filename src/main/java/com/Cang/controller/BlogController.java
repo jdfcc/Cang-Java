@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- *
  * @author jdfcc
  * @since 2023-2-7
  */
@@ -31,12 +30,13 @@ public class BlogController {
 
     /**
      * 保存博客并推送给粉丝
+     *
      * @param blog
      * @return
      */
     @PostMapping
     public Result saveBlog(@RequestBody Blog blog) {
-      return blogService.saveBlog(blog);
+        return blogService.saveBlog(blog);
 
     }
 
@@ -62,10 +62,10 @@ public class BlogController {
     @GetMapping("/of/me")
     public Result queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 获取登录用户
-        UserDTO user = UserHolder.getUser();
+        Long userId=UserHolder.getUser();
         // 根据用户查询
         Page<Blog> page = blogService.query()
-                .eq("user_id", user.getId()).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+                .eq("user_id",userId).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         // 获取当前页数据
         List<Blog> records = page.getRecords();
         return Result.ok(records);
@@ -84,7 +84,7 @@ public class BlogController {
     }
 
     @GetMapping("/likes/{id}")
-    public Result queryLikes(@PathVariable("id") Long id){
+    public Result queryLikes(@PathVariable("id") Long id) {
         return blogService.queryLikes(String.valueOf(id));
     }
 
@@ -102,7 +102,7 @@ public class BlogController {
 
     @GetMapping("/of/follow")
     public Result queryFollow(@RequestParam("lastId") Long max
-            , @RequestParam(value = "offset",defaultValue = "0") Integer offset) {
+            , @RequestParam(value = "offset", defaultValue = "0") Integer offset) {
         return blogService.queryFollow(max, offset);
     }
 
