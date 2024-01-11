@@ -1,7 +1,9 @@
 package com.Cang.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.Cang.constants.TokenConstant;
+import com.Cang.dto.UserDTO;
 import com.Cang.entity.DoubleToken;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
@@ -143,11 +145,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result getAvatar(Long userid) {
+    public String getAvatar(Long userid) {
         LambdaQueryWrapper<User> wrapper = Wrappers.lambdaQuery(User.class);
         wrapper.eq(User::getId, userid);
         User user = mapper.selectOne(wrapper);
-        String icon = user.getIcon();
-        return Result.ok(icon);
+        return user.getIcon();
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @param userid 用户id
+     * @return 用户信息
+     */
+    @Override
+    public UserDTO getUserInfo(Long userid) {
+        UserDTO userDTO = new UserDTO();
+        LambdaQueryWrapper<User> wrapper = Wrappers.lambdaQuery(User.class);
+        wrapper.eq(User::getId, userid);
+        User user = mapper.selectOne(wrapper);
+        BeanUtil.copyProperties(user, userDTO, true);
+        return userDTO;
     }
 }

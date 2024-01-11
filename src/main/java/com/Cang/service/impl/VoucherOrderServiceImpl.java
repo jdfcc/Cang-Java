@@ -196,7 +196,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
      * 生成订单id并往消息队列里面发送订单信息
      */
     @Override
-    public Result SecKillVoucher(Long voucherId) {
+    public Result secKillVoucher(Long voucherId) {
         Long id = null;
         try {
             id = UserHolder.getUser();

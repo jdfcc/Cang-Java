@@ -1,9 +1,9 @@
 package com.Cang.strategy;
 
 
-import com.Cang.consumer.CommonQueueConsumer;
+import com.Cang.consumer.CommonQueueHandler;
 import com.Cang.entity.MessageQueueEntity;
-import com.Cang.repo.CommonQueueConsumerRepo;
+import com.Cang.repo.child.CommonQueueConsumerRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -23,14 +23,14 @@ import static com.Cang.constants.RabbitMqConstants.COMMON_QUEUE;
  * @DateTime 2024/1/8 17:12
  */
 @Component
-@RabbitListener(queues = COMMON_QUEUE)
 @Slf4j
-public class CommonQueueStrategy {
+@RabbitListener(queues = COMMON_QUEUE)
+public class CommonQueueConsumeStrategy {
 
     @RabbitHandler
-    public void consumer(@Payload MessageQueueEntity entity) {
-        List<CommonQueueConsumer> queueConsumers = CommonQueueConsumerRepo.getQueueConsumer(entity.getBusinessType());
-        for (CommonQueueConsumer queueConsumer : queueConsumers) {
+    public void consume(@Payload MessageQueueEntity entity) {
+        List<CommonQueueHandler> queueConsumers = CommonQueueConsumerRepo.getQueueConsumer(entity.getBusinessType());
+        for (CommonQueueHandler queueConsumer : queueConsumers) {
             queueConsumer.consume(entity);
         }
     }

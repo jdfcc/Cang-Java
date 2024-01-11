@@ -3,7 +3,7 @@ package com.Cang.consumer.Impl;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.entity.MyLog;
 import com.Cang.enums.BusinessType;
-import com.Cang.consumer.CommonQueueConsumer;
+import com.Cang.consumer.CommonQueueHandler;
 import com.Cang.utils.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
  * @DateTime 2024/1/9 11:18
  */
 @Component
-public class LogConsumer extends CommonQueueConsumer {
+public class LogHandler extends CommonQueueHandler {
 
     @Value("${my-log.src}")
     private String src;

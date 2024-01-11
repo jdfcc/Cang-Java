@@ -1,8 +1,11 @@
 package com.Cang.service;
 
+import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @author Jdfcc
@@ -34,7 +37,7 @@ public interface ChatService extends IService<Chat> {
      * @param id
      * @return
      */
-    Result getMessage(Long userid, Long id);
+    List<Object> getMessage(Long userid, Long id);
 
 
     /**
@@ -44,7 +47,7 @@ public interface ChatService extends IService<Chat> {
      * @param userId
      * @return 查询当前用户与所有人聊天记录的最后一条消息
      */
-    Result getHomeChat(Long userId);
+    List<ChatDto> getHomeChat(Long userId);
 
     /**
      * 获取key

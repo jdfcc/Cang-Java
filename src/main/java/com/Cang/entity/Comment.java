@@ -30,9 +30,16 @@ public class Comment implements Serializable {
     @NotEmpty(message = "发送的内容不能为空")
     private String content;
 
-    private Integer liked;
+    private Boolean liked;
 
     private Long postId;
+
+    private Integer response;
+
+    /**
+     * 点赞数
+     */
+    private Integer likeCount;
 
     @JsonIgnore
     private Integer status;
