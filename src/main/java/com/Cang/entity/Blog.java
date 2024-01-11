@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -33,9 +35,12 @@ public class Blog implements Serializable {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
     /**
      * 商户id
      */
+    @NotNull(message = "内容不能为空")
+    @NotEmpty(message = "内容不能为空")
     private Long shopId;
     /**
      * 用户id

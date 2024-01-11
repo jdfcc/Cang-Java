@@ -37,7 +37,7 @@ public class ChatController {
      */
     @GetMapping("/home/{id}")
     public Result getHomeChat(@PathVariable Long id) {
-        return chatService.getHomeChat(id);
+        return Result.ok( chatService.getHomeChat(id));
     }
 
 }

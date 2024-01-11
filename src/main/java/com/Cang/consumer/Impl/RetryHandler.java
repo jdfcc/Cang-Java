@@ -2,7 +2,7 @@ package com.Cang.consumer.Impl;
 
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
-import com.Cang.consumer.CommonQueueConsumer;
+import com.Cang.consumer.CommonQueueHandler;
 import com.Cang.template.MyRedisTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,14 +24,14 @@ import static com.Cang.constants.RedisConstants.MAX_RETRY_COUNT;
  */
 @Slf4j
 @Component
-public class RetryConsumer extends CommonQueueConsumer {
+public class RetryHandler extends CommonQueueHandler {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     private final RabbitTemplate rabbitTemplate;
 
     @Autowired
-    public RetryConsumer(RedisTemplate<String, Object> redisTemplate, RabbitTemplate rabbitTemplate) {
+    public RetryHandler(RedisTemplate<String, Object> redisTemplate, RabbitTemplate rabbitTemplate) {
         this.redisTemplate = redisTemplate;
         this.rabbitTemplate = rabbitTemplate;
     }

@@ -1,5 +1,6 @@
 package com.Cang.service;
 
+import com.Cang.dto.UserDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.Cang.dto.LoginFormDTO;
 import com.Cang.dto.Result;
@@ -21,31 +22,32 @@ public interface IUserService extends IService<User> {
     /**
      * 用户注册或登录发送验证码
      * @param email 邮箱
-     * @param session
-     * @return
      */
     Result sendCode(String email, HttpSession session);
 
     /**
      * 用户登录
-     * @param dto
-     * @param session
-     * @return
      */
     Result login(LoginFormDTO dto,HttpSession session) throws Exception;
 
     /**
      * 用户登出
-     * @param request
-     * @return
      */
 
     Result logout(HttpServletRequest request);
 
     /**
      * 获取用户头像
-     * @param userid
-     * @return
+     * @param userid 用户昵称
+     * @return 用户id
      */
-    Result getAvatar(Long userid);
+    String getAvatar(Long userid);
+
+    /**
+     * 获取用户信息
+     * @param userid 用户id
+     * @return 用户信息
+     */
+    UserDTO getUserInfo(Long userid);
+
 }

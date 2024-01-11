@@ -1,11 +1,14 @@
 package com.Cang.aop;
 
 import com.Cang.annotations.IpCheckAnnotation;
+import com.Cang.annotations.RedisCache;
 import com.Cang.utils.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +50,6 @@ public class IpCheckAop {
     }
 
 
-
     @Around("@annotation(com.Cang.annotations.IpCheckAnnotation) || @within(com.Cang.annotations.IpCheckAnnotation)")
     public Object checkIpCut(ProceedingJoinPoint pjp) throws Throwable {
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -56,7 +58,6 @@ public class IpCheckAop {
 
         Class<?> clazz = pjp.getTarget().getClass();
         IpCheckAnnotation annotation = clazz.getAnnotation(IpCheckAnnotation.class);
-
         // 判断类上是否有此注释，如果有这个注解，则不再判断方法里是否有此注解，因为作用粒度覆盖了整个类
         if (annotation != null) {
             RLock lock = redissonClient.getLock(ipAddress);
@@ -68,16 +69,10 @@ public class IpCheckAop {
             }
             return pjp.proceed();
         }
-
-        // 获取类中所有的方法，判断是否存在此注解
-        Method[] methods = clazz.getDeclaredMethods();
-        // 遍历方法数组
-        for (Method method : methods) {
-            // 判断方法是否有注解
-            if (method.isAnnotationPresent(IpCheckAnnotation.class)) {
-                // 获取方法上的注解
-                annotation = method.getAnnotation(IpCheckAnnotation.class);
-            }
+        MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+        Method method = methodSignature.getMethod();
+        if (method.isAnnotationPresent(IpCheckAnnotation.class)) {
+            annotation = method.getAnnotation(IpCheckAnnotation.class);
         }
         if (annotation == null) {
             //        放行
@@ -94,7 +89,7 @@ public class IpCheckAop {
     }
 
     private Boolean validAndHandleIp(String ip, IpCheckAnnotation annotation) {
-        String key=IP_CACHE_KEY+ip;
+        String key = IP_CACHE_KEY + ip;
 
         Integer lastCount = (Integer) redisTemplate.opsForHash().get(key, "count");
         int limitCount = annotation.count();

@@ -12,6 +12,7 @@ import com.Cang.constants.SystemConstants;
 import com.Cang.utils.UserHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -35,16 +36,15 @@ public class BlogController {
      * @return
      */
     @PostMapping
-    public Result saveBlog(@RequestBody Blog blog) {
-        return blogService.saveBlog(blog);
-
+    public Result saveBlog(@RequestBody @Valid Blog blog) {
+        return Result.ok(blogService.saveBlog(blog));
     }
 
     @PutMapping("/like/{id}")
     public Result likeBlog(@PathVariable("id") Long id) {
         // 修改点赞数量
-        return blogService.like(id);
-
+        blogService.like(id);
+        return Result.ok();
     }
 
 //    @GetMapping("/of/me")
@@ -62,10 +62,10 @@ public class BlogController {
     @GetMapping("/of/me")
     public Result queryMyBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 获取登录用户
-        Long userId=UserHolder.getUser();
+        Long userId = UserHolder.getUser();
         // 根据用户查询
         Page<Blog> page = blogService.query()
-                .eq("user_id",userId).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
+                .eq("user_id", userId).page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         // 获取当前页数据
         List<Blog> records = page.getRecords();
         return Result.ok(records);
@@ -75,17 +75,17 @@ public class BlogController {
     @GetMapping("/hot")
     public Result queryHotBlog(@RequestParam(value = "current", defaultValue = "1") Integer current) {
         // 根据用户查询
-        return blogService.queryHotblog(current);
+        return Result.ok(blogService.queryHotblog(current));
     }
 
     @GetMapping("/{id}")
     public Result queryBlog(@PathVariable("id") String id) {
-        return blogService.queryBlog(id);
+        return Result.ok(blogService.queryBlog(id));
     }
 
     @GetMapping("/likes/{id}")
     public Result queryLikes(@PathVariable("id") Long id) {
-        return blogService.queryLikes(String.valueOf(id));
+        return Result.ok(blogService.queryLikes(String.valueOf(id)));
     }
 
     @GetMapping("/of/user")
@@ -103,7 +103,7 @@ public class BlogController {
     @GetMapping("/of/follow")
     public Result queryFollow(@RequestParam("lastId") Long max
             , @RequestParam(value = "offset", defaultValue = "0") Integer offset) {
-        return blogService.queryFollow(max, offset);
+        return Result.ok(blogService.queryFollow(max, offset));
     }
 
 }

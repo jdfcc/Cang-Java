@@ -2,6 +2,8 @@ package com.Cang.service;
 
 import com.Cang.annotations.LogAnnotation;
 import com.Cang.dto.Result;
+import com.Cang.dto.ScrollResult;
+import com.Cang.dto.UserDTO;
 import com.Cang.entity.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -17,16 +19,16 @@ import java.util.List;
  */
 public interface IBlogService extends IService<Blog> {
 
-    Result queryBlog(String id);
-    Result queryHotblog(Integer current);
+    Blog queryBlog(String id);
+    List<Blog> queryHotblog(Integer current);
 
-    Result like(Long id);
+    void like(Long id);
 
-    Result queryLikes(String id);
+    List<UserDTO> queryLikes(String id);
 
-    Result saveBlog(Blog blog);
+    Long saveBlog(Blog blog);
 
-    Result queryFollow(Long max, Integer offset);
+    ScrollResult queryFollow(Long max, Integer offset);
 
     List<String> getIds(Long id);
 }

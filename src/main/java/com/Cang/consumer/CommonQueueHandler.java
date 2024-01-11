@@ -1,6 +1,6 @@
 package com.Cang.consumer;
 
-import com.Cang.repo.CommonQueueConsumerRepo;
+import com.Cang.repo.child.CommonQueueConsumerRepo;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
 
@@ -14,11 +14,11 @@ import javax.annotation.PostConstruct;
  * @DateTime 2024/1/9 9:05
  */
 
-public abstract class CommonQueueConsumer {
+public abstract class CommonQueueHandler {
 
 
     /**
-     * 根据消息实体类型执行对应业务
+     * 根据消息实体类型执行对应消费者
      *
      * @param entity 消息实体
      */

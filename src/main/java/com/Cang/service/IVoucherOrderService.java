@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2023-1-15
  */
 public interface IVoucherOrderService extends IService<VoucherOrder> {
-    Result SecKillVoucher(Long voucherId);
+    Result secKillVoucher(Long voucherId);
 
     void createVoucherOrder(VoucherOrder order);
 }

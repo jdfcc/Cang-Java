@@ -1,18 +1,16 @@
 package com.Cang.service.impl;
 
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
-import com.Cang.exception.SQLException;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,29 +74,28 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result getMessage(Long userId, Long targetId) {
+    public List<Object> getMessage(Long userId, Long targetId) {
         String key = this.getKey(userId, targetId);
 //  TODO 删除此注释     List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
         Set<Object> chats = redisTemplate.opsForZSet().range(key, 0L, -1L);
-        if (chats.isEmpty()) {
+        if (CollectionUtil.isEmpty(chats)) {
 //            从数据库中查询并重建缓存
-            List<ChatDto> newChats = chatMapper.selectDtos(key);
+            List<Object> newChats = Collections.singletonList(chatMapper.selectDtos(key));
             //数据库中也为空，两人第一次聊天
-            if (newChats.isEmpty()) {
+            if (CollectionUtil.isEmpty(newChats)) {
 //                储存空缓存以解决缓存击穿
                 redisTemplate.opsForZSet().add(key, new HashSet<>());
-                return Result.ok(chats);
+                return new ArrayList<>();
             }
 //            重建缓存
-            for (ChatDto temp : newChats) {
-//                redisTemplate.opsForList().rightPush(key, temp);
-                long seconds = temp.getCreateTime().toEpochSecond(ZoneOffset.UTC);
+            for (Object temp : newChats) {
+                long seconds = ((ChatDto) temp).getCreateTime().toEpochSecond(ZoneOffset.UTC);
                 double score = seconds * 1000;
                 redisTemplate.opsForZSet().add(key, temp, score);
             }
-            return Result.ok(newChats);
+            return newChats;
         }
-        return Result.ok(chats);
+        return new ArrayList<>(chats);
     }
 
     /**
@@ -114,9 +111,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     }
 
     @Override
-    public Result getHomeChat(Long userId) {
-        List<ChatDto> newChats = chatMapper.selectLast(userId);
-        return Result.ok(newChats);
+    public List<ChatDto> getHomeChat(Long userId) {
+        return   chatMapper.selectLast(userId);
+
     }
 
 //    TODO 想不明白使用redis存的数据结构，日后再填坑

@@ -64,11 +64,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     @Override
     @LogAnnotation
-    public Result queryHotblog(Integer current) {
+    public List<Blog> queryHotblog(Integer current) {
         String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY);
         List<Blog> lists = JSONUtil.toList(json, Blog.class);
-        if (!lists.isEmpty())
-            return Result.ok(lists);
+        if (!lists.isEmpty()) {
+            return lists;
+        }
         Page<Blog> page = this.query()
                 .orderByDesc("liked")
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
@@ -86,30 +87,31 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             blog.setIsLike(liked);
         });
         cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
-        return Result.ok(records);
+        return records;
     }
 
     @Override
-    public Result queryBlog(String id) {
+    public Blog queryBlog(String id) {
         String json = redisTemplate.opsForValue().get(BLOG_KEY + id);
         Blog b = JSONUtil.toBean(json, Blog.class);
         if (!(b.getId() == null))
-            return Result.ok(b);
+            return b;
         Blog blog = this.getById(id);
         String key = BLOG_LIKED_KEY + id;
-        if (blog == null)
-            return Result.fail("blog exists");
+        if (blog == null) {
+            throw new NullPointerException("blog is null");
+        }
         Long userId = blog.getUserId();
         User user = userService.getById(userId);
         blog.setName(user.getNickName());
         blog.setIcon(user.getIcon());
         blog.setIsLike(this.isLiked(key, userId));
         cacheClient.set(BLOG_KEY + id, blog, BLOG_KEY_TTL, TimeUnit.SECONDS);
-        return Result.ok(blog);
+        return blog;
     }
 
     @Override
-    public Result queryFollow(Long max, Integer offset) {
+    public ScrollResult queryFollow(Long max, Integer offset) {
 //        UserDTO user = UserHolder.getUser();
 //        if (user == null)
 //            return Result.fail(NOT_LOGIN);
@@ -149,9 +151,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 1.获取当前用户
 
         Long userId = UserHolder.getUser();
-        if (userId == null) {
-            return Result.fail(NOT_LOGIN);
-        }
         // 2.查询收件箱 ZREVRANGEBYSCORE key Max Min LIMIT offset count
         String key = FEED_KEY + userId;
         Set<ZSetOperations.TypedTuple<String>> typedTuples = redisTemplate.opsForZSet()
@@ -159,7 +158,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
         // 3.非空判断
         if (typedTuples == null || typedTuples.isEmpty()) {
-            return Result.ok();
+            return new ScrollResult();
         }
         // 4.解析数据：blogId、minTime（时间戳）、offset
         List<Long> ids = new ArrayList<>(typedTuples.size());
@@ -195,7 +194,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         r.setList(blogs);
         r.setOffset(os);
         r.setMinTime(minTime);
-        return Result.ok(r);
+        return r;
     }
 
     public List<String> getIds(Long id) {
@@ -210,17 +209,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
      */
     @Transactional
     @Override
-    public Result saveBlog(Blog blog) {
-        if (blog.getShopId() == null) {
-            return Result.fail("shop id can't be null");
-        }
+    public Long saveBlog(Blog blog) {
         Long userId = UserHolder.getUser();
         blog.setUserId(userId);
         // 保存探店博文
-        int insert = blogMapper.insert(blog);
+        blogMapper.insert(blog);
 
-        if (insert == 0)
-            return Result.fail(CREATE_BLOG_FAILED);
         List<String> followsId = followMapper.getFollowerId(userId);
         for (String followId : followsId) {
             String key = FEED_KEY + followId;
@@ -228,37 +222,34 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             redisTemplate.opsForZSet()
                     .add(key, String.valueOf(blog.getId()), System.currentTimeMillis());
         }
-        return Result.ok(blog.getId());
+        return blog.getId();
     }
 
     @Override
-    public Result queryLikes(String id) {
+    public List<UserDTO> queryLikes(String id) {
 
         String key = BLOG_LIKED_KEY + id;
         // 1.查询top5的点赞用户 zrange key 0 4
         Set<String> top5 = redisTemplate.opsForZSet().range(key, 0, 4);
         if (top5 == null || top5.isEmpty()) {
-            return Result.ok(Collections.emptyList());
+            return Collections.emptyList();
         }
         // 2.解析出其中的用户id
         List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
         String idStr = StrUtil.join(",", ids);
         // 3.根据用户id查询用户 WHERE id IN ( 5 , 1 ) ORDER BY FIELD(id, 5, 1)
-        List<UserDTO> userDTOS = userService.query()
+        // 4.返回
+        return userService.query()
                 .in("id", ids).last("ORDER BY FIELD(id," + idStr + ")").list()
                 .stream()
                 .map(user -> BeanUtil.copyProperties(user, UserDTO.class))
                 .collect(Collectors.toList());
-        // 4.返回
-        return Result.ok(userDTOS);
     }
 
     @Transactional
     @Override
-    public Result like(Long id) {
+    public void like(Long id) {
         Long userId = UserHolder.getUser();
-        if (userId == null)
-            return Result.fail(NOT_LOGIN);
         String key = BLOG_LIKED_KEY + id;
 //        查询是否点赞
         Boolean isMember = this.isLiked(key, userId);
@@ -281,7 +272,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         redisTemplate.opsForValue().getAndDelete(BLOG_KEY + id);
         redisTemplate.opsForValue().getAndDelete(BLOG_HOT_KEY);
 //        cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
-        return Result.ok();
     }
 
 

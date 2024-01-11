@@ -4,7 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
 import com.Cang.service.MailService;
-import com.Cang.consumer.CommonQueueConsumer;
+import com.Cang.consumer.CommonQueueHandler;
 import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +24,12 @@ import static com.Cang.constants.RedisConstants.LOGIN_CODE_TTL;
  */
 @Slf4j
 @Component
-public class CaptchaConsumer extends CommonQueueConsumer {
+public class CaptchaHandler extends CommonQueueHandler {
     private final StringRedisTemplate stringRedisTemplate;
     private final MailService mailService;
 
     @Autowired
-    public CaptchaConsumer(StringRedisTemplate stringRedisTemplate, MailService mailService) {
+    public CaptchaHandler(StringRedisTemplate stringRedisTemplate, MailService mailService) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.mailService = mailService;
     }
