@@ -9,12 +9,14 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.jdfcc</groupId>
-    <artifactId>Cang</artifactId>
-    <version>1.0</version>
+    <artifactId>cang</artifactId>
+    <version>2.0</version>
     <name>Cang</name>
     <description>Demo project for Spring Boot</description>
+
     <properties>
         <java.version>1.8</java.version>
+        <repository.directory>E:\apache-maven-3.8.6\apache-maven-3.8.6\mvn_repo\com\jdfcc\Cang</repository.directory>
     </properties>
     <dependencies>
 
@@ -39,24 +41,24 @@
             </exclusions>
         </dependency>
 
-<!--        爬虫抓取steam用到-->
+        <!--        爬虫抓取steam用到-->
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
             <version>1.14.3</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework</groupId>-->
-<!--            <artifactId>spring-context</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework</groupId>-->
+        <!--            <artifactId>spring-context</artifactId>-->
+        <!--        </dependency>-->
 
 
         <!--  解决报错"Spring Boot Configuration Annotation Processor not configured"       -->
         <dependency>
-            <groupId> org.springframework.boot </groupId>
-            <artifactId> spring-boot-configuration-processor </artifactId>
-            <optional> true </optional>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -69,7 +71,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
-
 
 
         <!--        webSocket依赖-->
@@ -93,7 +94,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-
 
 
         <dependency>
@@ -221,7 +221,16 @@
 
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/jdfcc/Cang-Java</url>
+        </repository>
+    </distributionManagement>
+
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -234,7 +243,8 @@
                         </exclude>
                     </excludes>
                     <mainClass>
-                        com.Cang.CangApplication</mainClass>
+                        com.Cang.CangApplication
+                    </mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -246,8 +256,45 @@
                 </configuration>
             </plugin>
 
+<!--            &lt;!&ndash;github上传插件,用于修改后的发布,执行mvn clean deploy自动打包上传到github&ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-deploy-plugin</artifactId>-->
+<!--                <version>2.8.2</version>-->
+<!--                <configuration>-->
+<!--                    <altDeploymentRepository>internal.repo::default::file://${repository.directory}/Cang</altDeploymentRepository>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
+<!--            <plugin>-->
+<!--                <groupId>com.github.github</groupId>-->
+<!--                <artifactId>site-maven-plugin</artifactId>-->
+<!--                <version>0.12</version>-->
+<!--                <configuration>-->
+<!--                    <message>Maven artifacts for ${project.artifactId}-${project.version}</message>-->
+<!--                    <noJekyll>true</noJekyll>-->
+<!--                    <outputDirectory>${repository.directory}/Cang</outputDirectory>-->
+<!--                    <branch>refs/heads/master</branch>-->
+<!--                    <merge>true</merge>-->
+<!--                    <includes>-->
+<!--                        <include>**/*</include>-->
+<!--                    </includes>-->
+<!--                    <repositoryName>Cang</repositoryName>-->
+<!--                    <repositoryOwner>jdfcc</repositoryOwner>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>site</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>deploy</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
         </plugins>
     </build>
+
+
 
 </project>
