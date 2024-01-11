@@ -99,6 +99,6 @@ jobs:
           java-version: '17'
           distribution: 'jdfcc'
       - name: Publish package
-        run: mvn --batch-mode -DskipTests deploy
+        run: mvn --batch-mode  deploy
         env:
           GITHUB_TOKEN: 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
