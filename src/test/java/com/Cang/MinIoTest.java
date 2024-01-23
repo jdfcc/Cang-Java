@@ -1,11 +1,8 @@
 package com.Cang;
 
-import com.Cang.entity.Game;
 import com.Cang.service.impl.MinIOFileStorageService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+
 
 /**
  * @author Jdfcc
@@ -55,10 +47,12 @@ public class MinIoTest {
 
     @Test
     public void contextLoads() throws FileNotFoundException {
-        FileInputStream fileInputStream =
-                new FileInputStream("C:\\Users\\Jdfcc\\Pictures\\memes.jpg");
-        String s = minIoFileStorageService.uploadImgFile("kkk", "jjj", fileInputStream);
-        System.out.println(s);
+        for (int i = 0; i < 500; i++) {
+            FileInputStream fileInputStream =
+                    new FileInputStream("C:\\Users\\Jdfcc\\Pictures\\memes.jpg");
+            String s = minIoFileStorageService.uploadImgFile("kkk", "jjj"+String.valueOf(i), fileInputStream);
+            System.out.println(s);
+        }
     }
 
     @Test

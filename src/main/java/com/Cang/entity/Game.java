@@ -1,36 +1,48 @@
 package com.Cang.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Jdfcc
  * @HomePage <a href="https://github.com/Jdfcc">Jdfcc</a>
- * @Description TODO
+ * @Description Game
  * @DateTime 2024/1/4 16:23
  * <p>
  * Copyright 2024 json.cn
  */
 
 @Data
+@TableName("game")
 public class Game implements Serializable {
-
     private String url;
-    private String reviews_url;
-    private String id;
+    private String reviewsUrl;
+    private Long id;
     private String title;
-    private List<String> genres;
+    private String genres;
     private String developer;
     private String publisher;
-    private String release_date;
-    private String app_name;
-    private List<String> tags;
-    private String discount_price;
-    private String price;
+    private String releaseDate;
+    private String appName;
+    private String tags;
+    private String discountPrice;
+    private Float price;
+    private String unit;
     private String sentiment;
-    private boolean early_access;
+    private boolean earlyAccess;
+
+    public void setGenres(List<String> genre) {
+        this.genres = genre.toString();
+    }
+
+    public void setTags(List<String> tag) {
+        this.tags = tag.toString();
+    }
 
 }

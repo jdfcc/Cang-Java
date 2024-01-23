@@ -5,15 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Jdfcc
- * @Description TODO
+ * @Description JsonUtils
  * @DateTime 2023/8/7 13:11
  */
 public class JsonUtils {
-    private static final ObjectMapper jsonMapper = new ObjectMapper();
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     public static <T> T toObj(String str, Class<T> clz) {
         try {
-            return jsonMapper.readValue(str, clz);
+            return JSON_MAPPER.readValue(str, clz);
         } catch (JsonProcessingException e) {
             throw new UnsupportedOperationException(e);
         }
@@ -21,7 +21,7 @@ public class JsonUtils {
 
     public static String toStr(Object t) {
         try {
-            return jsonMapper.writeValueAsString(t);
+            return JSON_MAPPER.writeValueAsString(t);
         } catch (Exception e) {
             throw new UnsupportedOperationException(e);
         }
