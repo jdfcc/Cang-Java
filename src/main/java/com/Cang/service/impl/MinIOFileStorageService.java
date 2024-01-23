@@ -40,22 +40,22 @@ public class MinIOFileStorageService implements FileStorageService {
 
     private final static String separator = "/";
 
-    /**
-     * @param dirPath
-     * @param filename  yyyy/mm/dd/file.jpg
-     * @return
-     */
-    public String builderFilePath(String dirPath,String filename) {
-        StringBuilder stringBuilder = new StringBuilder(50);
-        if(!StringUtils.isEmpty(dirPath)){
-            stringBuilder.append(dirPath).append(separator);
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        String todayStr = sdf.format(new Date());
-        stringBuilder.append(todayStr).append(separator);
-        stringBuilder.append(filename);
-        return stringBuilder.toString();
-    }
+//    /**
+//     * @param dirPath
+//     * @param filename  yyyy/mm/dd/file.jpg
+//     * @return
+//     */
+//    public String builderFilePath(String dirPath,String filename) {
+//        StringBuilder stringBuilder = new StringBuilder(50);
+//        if(!StringUtils.isEmpty(dirPath)){
+//            stringBuilder.append(dirPath).append(separator);
+//        }
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+//        String todayStr = sdf.format(new Date());
+//        stringBuilder.append(todayStr).append(separator);
+//        stringBuilder.append(filename);
+//        return stringBuilder.toString();
+//    }
 
     /**
      *  上传图片文件
@@ -66,17 +66,17 @@ public class MinIOFileStorageService implements FileStorageService {
      */
     @Override
     public String uploadImgFile(String prefix, String filename,InputStream inputStream) {
-        String filePath = builderFilePath(prefix, filename);
+//        String filePath = builderFilePath(prefix, filename);
         try {
             PutObjectArgs putObjectArgs = PutObjectArgs.builder()
-                    .object(filePath)
+                    .object(prefix+filename)
                     .contentType("image/jpg")
                     .bucket(minIOConfigProperties.getBucket()).stream(inputStream,inputStream.available(),-1)
                     .build();
             minioClient.putObject(putObjectArgs);
             return minIOConfigProperties.getReadPath() + separator + minIOConfigProperties.getBucket() +
                     separator +
-                    filePath;
+                    prefix+filename;
         }catch (Exception ex){
             log.error("minio put file error.",ex);
             throw new RuntimeException("上传文件失败");
@@ -92,17 +92,17 @@ public class MinIOFileStorageService implements FileStorageService {
      */
     @Override
     public String uploadHtmlFile(String prefix, String filename,InputStream inputStream) {
-        String filePath = builderFilePath(prefix, filename);
+//        String filePath = builderFilePath(prefix, filename);
         try {
             PutObjectArgs putObjectArgs = PutObjectArgs.builder()
-                    .object(filePath)
+                    .object(prefix)
                     .contentType("text/html")
                     .bucket(minIOConfigProperties.getBucket()).stream(inputStream,inputStream.available(),-1)
                     .build();
             minioClient.putObject(putObjectArgs);
             return minIOConfigProperties.getReadPath() + separator + minIOConfigProperties.getBucket() +
                     separator +
-                    filePath;
+                    prefix;
         }catch (Exception ex){
             log.error("minio put file error.",ex);
             ex.printStackTrace();

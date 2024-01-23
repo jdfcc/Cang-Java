@@ -1,12 +1,11 @@
 package com.Cang.controller;
 
+
 import com.Cang.dto.Result;
 import com.Cang.entity.Game;
 import com.Cang.service.GameService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -20,6 +19,7 @@ import javax.annotation.Resource;
 @RequestMapping("/game")
 public class GameController {
 
+    private static final int PAGE_SIZE = 20;
     @Resource
     private GameService gameService;
 
@@ -27,5 +27,12 @@ public class GameController {
     public Result addGame(@RequestBody Game game) {
         gameService.save(game);
         return Result.ok();
+    }
+
+    @GetMapping("/list/")
+    public Result listGame(@RequestParam(value = "index", defaultValue = "1") Integer index) {
+        Page<Game> page = gameService.query()
+                .page(new Page<>(index, PAGE_SIZE));
+        return Result.ok(page);
     }
 }

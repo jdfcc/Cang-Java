@@ -18,7 +18,11 @@ public abstract class BaseConsumerRepo {
     public static final Map<BusinessType, List<CommonQueueHandler>> QUEUE_CONSUMERS = new ConcurrentHashMap<>();
 
     public static List<CommonQueueHandler> getQueueConsumer(BusinessType businessType) {
-        return QUEUE_CONSUMERS.get(businessType);
+        if (QUEUE_CONSUMERS.get(businessType) == null) {
+            throw new NullPointerException("please be sure that the business handler has been injected");
+        } else {
+            return QUEUE_CONSUMERS.get(businessType);
+        }
     }
 
     public static void setQueueConsumer(BusinessType businessType, CommonQueueHandler queueConsumer) {

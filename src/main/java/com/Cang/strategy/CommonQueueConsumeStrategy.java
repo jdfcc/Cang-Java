@@ -4,7 +4,6 @@ package com.Cang.strategy;
 import com.Cang.consumer.CommonQueueHandler;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.repo.child.CommonQueueConsumerRepo;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -23,7 +22,6 @@ import static com.Cang.constants.RabbitMqConstants.COMMON_QUEUE;
  * @DateTime 2024/1/8 17:12
  */
 @Component
-@Slf4j
 @RabbitListener(queues = COMMON_QUEUE)
 public class CommonQueueConsumeStrategy {
 
