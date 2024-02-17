@@ -35,4 +35,5 @@ public class GameController {
                 .page(new Page<>(index, PAGE_SIZE));
         return Result.ok(page);
     }
+
 }

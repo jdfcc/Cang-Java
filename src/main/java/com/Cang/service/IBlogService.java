@@ -19,6 +19,11 @@ import java.util.List;
  */
 public interface IBlogService extends IService<Blog> {
 
+    /**
+     * 通过博客id查询博客
+     * @param id 博客id
+     * @return blog
+     */
     Blog queryBlog(String id);
     List<Blog> queryHotblog(Integer current);
 
@@ -30,5 +35,19 @@ public interface IBlogService extends IService<Blog> {
 
     ScrollResult queryFollow(Long max, Integer offset);
 
+    /**
+     * 获取此用户id下的所有博客id
+     * @param id 用户id
+     * @return 所有的博客id
+     */
     List<String> getIds(Long id);
+
+    List<Blog> getMyBlogs();
+
+    /**
+     * 查询此用户下的所有博客
+     * @param userId 用户id
+     * @return 博客集合
+     */
+    List<Blog> showBlogs(Long userId);
 }

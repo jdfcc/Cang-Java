@@ -7,6 +7,7 @@ import com.Cang.dto.UserDTO;
 import com.Cang.entity.DoubleToken;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
+import com.Cang.service.IBlogService;
 import com.Cang.service.TokenService;
 import com.Cang.utils.IdGeneratorSnowflake;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -49,13 +50,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final UserMapper mapper;
 
 
-    private RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     @Resource
     private TokenService tokenService;
+    @Resource
+    private IBlogService blogService;
 
     private static final String WRONG_PATTERN_EMAIL = "错误的邮箱格式";
 
@@ -165,6 +168,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         wrapper.eq(User::getId, userid);
         User user = mapper.selectOne(wrapper);
         BeanUtil.copyProperties(user, userDTO, true);
+        userDTO.setBlog(blogService.getMyBlogs());
+        blogService.getMyBlogs();
         return userDTO;
     }
 }
