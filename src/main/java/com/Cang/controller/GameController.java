@@ -29,11 +29,10 @@ public class GameController {
         return Result.ok();
     }
 
-    @GetMapping("/list/")
+    @GetMapping("/list")
     public Result listGame(@RequestParam(value = "index", defaultValue = "1") Integer index) {
         Page<Game> page = gameService.query()
                 .page(new Page<>(index, PAGE_SIZE));
         return Result.ok(page);
     }
-
 }

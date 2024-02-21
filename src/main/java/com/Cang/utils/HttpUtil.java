@@ -14,7 +14,6 @@ public class HttpUtil {
      * 获取ip地址
      */
     public static String getIpAddress(HttpServletRequest request) {
-
         String ipAddress = request.getHeader("X-Forwarded-For");
         if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = request.getHeader("Proxy-Client-IP");
@@ -31,11 +30,9 @@ public class HttpUtil {
         if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
             ipAddress = request.getRemoteAddr();
         }
-
         if("0:0:0:0:0:0:0:1".equals(ipAddress)) {
             ipAddress = "127.0.0.1";
         }
-
         return ipAddress;
     }
 }
