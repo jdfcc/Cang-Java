@@ -10,15 +10,17 @@ import java.util.List;
 /**
  * @author Jdfcc
  * @HomePage <a href="https://github.com/Jdfcc">Jdfcc</a>
- * @Description GameService
- * @DateTime 2024/1/10 16:59
+ * @Description TagService
+ * @DateTime 2024/2/22 19:04
  */
-public interface GameService extends IService<Game> {
+public interface TagService extends IService<Tag> {
     /**
      * 获取游戏tag
-     * @return tags of the game
+     *
+     * @param index    当前地址
+     * @param pageSize 获取数量
+     * @return list
      */
-    List<String> getTags(Integer index,Integer pageSize);
+    Page<Tag> getTags(Integer index, Integer pageSize);
 
-    List<Game> getGameByTag(Integer index, int pageSize, String tagName);
 }
