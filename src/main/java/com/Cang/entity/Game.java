@@ -37,12 +37,12 @@ public class Game implements Serializable {
     private String sentiment;
     private boolean earlyAccess;
 
-    public void setGenres(List<String> genre) {
-        this.genres = genre.toString();
-    }
-
-    public void setTags(List<String> tag) {
-        this.tags = tag.toString();
-    }
+//    public void setGenres(List<String> genre) {
+//        this.genres = genre.toString();
+//    }
+//
+//    public void setTags(List<String> tag) {
+//        this.tags = tag.toString();
+//    }
 
 }

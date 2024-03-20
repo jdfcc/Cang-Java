@@ -93,7 +93,7 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     public Result isFollow(Long id) {
         Long userId = UserHolder.getUser();
 
-        LambdaQueryWrapper<Follow> followWrapper = new LambdaQueryWrapper();
+        LambdaQueryWrapper<Follow> followWrapper = new LambdaQueryWrapper<>();
         followWrapper.eq(Follow::getUserId, userId).eq(Follow::getFollowUserId, id);
         Follow follow = mapper.selectOne(followWrapper);
         if (follow == null) {

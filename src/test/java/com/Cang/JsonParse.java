@@ -54,13 +54,11 @@ public class JsonParse {
                 Game game = convertJsonToGame(objectMapper.readValue(jsonObject, Map.class));
                 gameList.add(game);
             }
-            gameService.saveBatch(gameList);
-
             // 打印结果
             for (Game game : gameList) {
                 System.out.println(game);
             }
-
+            gameService.saveBatch(gameList);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -86,7 +84,7 @@ public class JsonParse {
         game.setTitle((String) jsonMap.get("title"));
         List<String> genres = (List<String>) jsonMap.get("genres");
         if (genres != null) {
-            game.setGenres(genres);
+//            game.setGenres(genres);
         }
         game.setDeveloper((String) jsonMap.get("developer"));
         game.setPublisher((String) jsonMap.get("publisher"));
@@ -95,7 +93,7 @@ public class JsonParse {
         game.setAppName((String) jsonMap.get("app_name"));
         List<String> tags = (List<String>) jsonMap.get("tags");
         if (tags != null) {
-            game.setTags(tags);
+//            game.setTags(tags);
         }
         String discount = (String) jsonMap.get("discount_price");
         if (discount != null) {

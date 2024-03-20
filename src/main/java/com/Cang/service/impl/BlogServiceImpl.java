@@ -4,8 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.Cang.annotations.LogAnnotation;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.Cang.dto.Result;
 import com.Cang.dto.ScrollResult;
 import com.Cang.dto.UserDTO;
 import com.Cang.entity.Blog;
@@ -65,7 +65,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Override
     @LogAnnotation
     public List<Blog> queryHotblog(Integer current) {
-        String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY);
+        String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY+ current);
         List<Blog> lists = JSONUtil.toList(json, Blog.class);
         if (!lists.isEmpty()) {
             return lists;
@@ -86,7 +86,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
             Boolean liked = this.isLiked(key, userId);
             blog.setIsLike(liked);
         });
-        cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
+        cacheClient.set(BLOG_HOT_KEY+current, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
         return records;
     }
 
@@ -94,8 +94,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     public Blog queryBlog(String id) {
         String json = redisTemplate.opsForValue().get(BLOG_KEY + id);
         Blog b = JSONUtil.toBean(json, Blog.class);
-        if (!(b.getId() == null))
+        if (!(b.getId() == null)) {
             return b;
+        }
         Blog blog = this.getById(id);
         String key = BLOG_LIKED_KEY + id;
         if (blog == null) {
@@ -197,6 +198,27 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         return r;
     }
 
+    /**
+     * @return List<Blog>
+     */
+    @Override
+    public List<Blog> getMyBlogs() {
+      return this.showBlogs(UserHolder.getUser());
+    }
+
+    /**
+     * 查询此用户下的所有博客
+     *
+     * @param userId 用户id
+     * @return 博客集合
+     */
+    @Override
+    public List<Blog> showBlogs(Long userId) {
+        LambdaQueryWrapper<Blog> blogLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        blogLambdaQueryWrapper.eq(Blog::getUserId, userId);
+        return list(blogLambdaQueryWrapper);    }
+
+    @Override
     public List<String> getIds(Long id) {
         return blogMapper.getIds(String.valueOf(id));
     }

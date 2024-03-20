@@ -17,11 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jdfcc
@@ -38,11 +37,19 @@ public class GameMainPicGetTest {
     @Autowired
     public GameShowService gameShowService;
     private static final String SAVE_PATH = "D:\\resource\\detailPic\\";
+    private static final String SAVE_PATH_ROUND = "D:\\resource\\roundPic\\";
     private static final String FILE_PREFIX = "Games/";
 
 
-    private String downloadPicture(String targetUr, String filePath, String gameName) {
-        String imgUrl = null;
+    /**
+     * 根据url下载图片至本地
+     *
+     * @param targetUr 要下载的图片url
+     * @param filePath 保存路径
+     * @param dir      要保存的目录
+     * @param filename 保存的文件名
+     */
+    private void downloadPicture(String targetUr, String filePath, String dir, String filename) {
         try {
             URL url = new URL(targetUr);
 
@@ -57,14 +64,14 @@ public class GameMainPicGetTest {
             }
 
             // 创建游戏文件夹
-            String gameFolderPath = filePath + gameName + "/";
+            String gameFolderPath = filePath + dir + "/";
             File gameFolder = new File(gameFolderPath);
             if (!gameFolder.exists()) {
                 gameFolder.mkdirs(); // 创建目录，包括父目录
             }
 
             // 创建带后缀的文件名
-            String fileNameWithExtension = gameName + "." + fileExtension;
+            String fileNameWithExtension = filename + "." + fileExtension;
 
             // 创建输出文件
             FileOutputStream fileOutputStream = new FileOutputStream(new File(gameFolderPath + fileNameWithExtension));
@@ -78,25 +85,17 @@ public class GameMainPicGetTest {
                 output.write(buffer, 0, length);
             }
             fileOutputStream.write(output.toByteArray());
-
-            // 上传图片到minio
-            FileInputStream fileInputStream =
-                    new FileInputStream(gameFolderPath + fileNameWithExtension);
-            imgUrl = minIoFileStorageService.uploadImgFile(FILE_PREFIX + gameName + "/", fileNameWithExtension, fileInputStream);
-            System.out.println(imgUrl);
             dataInputStream.close();
             fileOutputStream.close();
-            fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return imgUrl;
     }
 
     @Test
     public void testDownload() {
         downloadPicture("https://cdn.akamai.steamstatic.com/steam/apps/202200/capsule_616x353.jpg?t=1693335277",
-                "C:\\Users\\Jdfcc\\Pictures\\", "EverQuest_II");
+                "C:\\Users\\Jdfcc\\Pictures\\", "EverQuest_II", "EverQuest_II");
         writeToLocal(new ArrayList<GameShow>() {{
             add(new GameShow() {{
                 setId(1L);
@@ -138,9 +137,20 @@ public class GameMainPicGetTest {
         for (GameShow game : gameList) {
             String url = game.getSteamPic();
             try {
-                String res = downloadPicture(url, SAVE_PATH, game.getName());
+                String name = game.getName();
+                downloadPicture(url, SAVE_PATH, name, name);
+
+                String gameFolderPath = SAVE_PATH + name + "/";
+                // 上传图片到minio
+                FileInputStream fileInputStream =
+                        new FileInputStream(gameFolderPath + name + ".jpg");
+
+                String res = minIoFileStorageService.
+                        uploadImgFile(FILE_PREFIX + name + "/", name + ".jpg", fileInputStream);
+
                 game.setMyPic(res);
                 successGames.add(game);
+                fileInputStream.close();
             } catch (Exception e) {
                 errorGames.add(game);
                 System.out.println("Error downloading" + game.getName());
@@ -151,11 +161,21 @@ public class GameMainPicGetTest {
         gameShowService.saveBatch(successGames);
     }
 
+    private static ArrayList<String> convertToArrayList(String imageUrlData) {
+        // Remove brackets and split the string by ","
+        String[] imageUrlArray = imageUrlData.substring(1, imageUrlData.length() - 1).split(", ");
+
+        // Convert the array to ArrayList
+        ArrayList<String> imageUrlList = new ArrayList<>();
+        Collections.addAll(imageUrlList, imageUrlArray);
+        return imageUrlList;
+    }
+
     /**
      * 获取游戏轮播图上传并写入本地
      */
     @Test
-    public void getRoundPic() throws JsonProcessingException {
+    public void getRoundPic() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         List<GameRoundPic> gameList = new ArrayList<>();
 
@@ -172,13 +192,55 @@ public class GameMainPicGetTest {
 
         for (GameRoundPic game : gameList) {
             String steamImages = game.getSteamImages();
-            ArrayList<String> list = CollectionUtil.toList(steamImages);
-            for(String steamImage : list) {
-                // TODO
+//            List<String> list = Collections.singletonList(steamImages);
+            ArrayList<String> list = convertToArrayList(steamImages);
+            int index = 1;
+            if(!CollectionUtil.isEmpty(list)){
+                for (String steamImage : list) {
+                    if(steamImage.isEmpty()){
+                        continue;
+                    }
+                    String fileExtension = getFileNameWithExtension(steamImage);
+                    // TODO
 //                downloadPicture(steamImage,FILE_PREFIX,)
+                    String fileName = game.getName() + "_" + index;
+                    downloadPicture(steamImage, SAVE_PATH, game.getName(), fileName);
+
+                    String gameFolderPath = SAVE_PATH + game.getName() + "/";
+
+                    // 上传图片到minio
+                    FileInputStream fileInputStream =
+                            new FileInputStream(gameFolderPath + fileName + fileExtension);
+
+                    String res = minIoFileStorageService.
+                            uploadImgFile(FILE_PREFIX + game.getName() + "/", fileName + fileExtension, fileInputStream);
+                    index += 1;
+                    System.out.println(res);
+                }
+
             }
         }
+    }
 
+    /**
+     * 拿到文件后缀
+     *
+     * @param fileUrl 要获取后缀的url
+     * @return 例如 ".jpg",".mp3"
+     */
+    public static String getFileNameWithExtension(String fileUrl) throws IOException {
+        URL url = new URL(fileUrl);
+
+        // 获取URLConnection以便获取文件类型
+        URLConnection connection = url.openConnection();
+        String contentType = connection.getContentType();
+
+        // 获取文件后缀
+        String fileExtension = "";
+        if (contentType != null && contentType.contains("/")) {
+            fileExtension = contentType.substring(contentType.lastIndexOf("/") + 1);
+        }
+        return "." + fileExtension;
     }
 
     private static String readFromFile(String filePath) {

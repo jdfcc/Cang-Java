@@ -48,8 +48,9 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
         wrapper.orderByAsc(ShopType::getSort);
         List<ShopType> shopTypeList = mapper.selectList(wrapper);
 
-        if (shopTypeList == null)
+        if (shopTypeList == null) {
             return Result.fail("No store list yet");
+        }
         stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shopTypeList));
         stringRedisTemplate.expire(key,CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
         return Result.ok(shopTypeList);

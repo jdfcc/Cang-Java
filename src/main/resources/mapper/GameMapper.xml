@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Cang.mapper.GameMapper">
+
+    <select id="getTags" resultType="java.lang.String">
+        select tags from game
+    </select>
+
+    <select id="getByTag" resultType="com.Cang.entity.Game">
+        select * from game where tags like CONCAT('%', #{tag}, '%') limit ${index}, ${pageSize}
+    </select>
+</mapper>

@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 9986
 
 login:
   authorization: true # 开启验证
@@ -70,7 +70,7 @@ mybatis-plus:
 
 mybatis:
   configuration:
-    map-underscore-to-camel-case: true #开启驼峰命名转换原则 TODO 开启驼峰命名有问题。
+    map-underscore-to-camel-case: true #开启驼峰命名转换原则
 
 logging:
   level:

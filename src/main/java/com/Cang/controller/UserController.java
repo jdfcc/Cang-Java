@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.time.LocalDateTime;
 
 /**
  * @author jdfcc
@@ -72,8 +71,11 @@ public class UserController {
         Long userId = UserHolder.getUser();
         log.info("User {}", userId);
 //        return Result.ok(user);
-        return null;
+        UserDTO userInfo = userService.getUserInfo(userId);
+        return Result.ok(userInfo);
+
     }
+
 
     @GetMapping("/info/{id}")
     public Result info(@PathVariable("id") Long userId) {
