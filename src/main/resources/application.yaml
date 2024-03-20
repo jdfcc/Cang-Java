@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 9986
 
 login:
   authorization: true # 开启验证
