@@ -6,7 +6,6 @@ import cn.hutool.json.JSONUtil;
 import com.Cang.annotations.LogAnnotation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.Cang.dto.Result;
 import com.Cang.dto.ScrollResult;
 import com.Cang.dto.UserDTO;
 import com.Cang.entity.Blog;

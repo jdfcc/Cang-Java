@@ -51,6 +51,23 @@ class GameMapperTest {
         }
     }
 
+    @Test
+    void testList(){
+        ArrayList<Integer> integers = new ArrayList<>();
+        integers.add(2);
+        integers.add(3);
+        integers.add(1);
+        integers.add(7);
+        integers.sort(Comparator.naturalOrder());
+        System.out.println(integers);
+        ListIterator<Integer> iterator =integers.listIterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+            iterator.set(9);
+        }
+        System.out.println(integers);
+    }
+
     public static List<String> removeDuplicatesByFrequency(List<String> originalList) {
         Map<String, Integer> frequencyMap = new HashMap<>();
 
