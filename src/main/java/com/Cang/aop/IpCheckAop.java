@@ -42,6 +42,8 @@ public class IpCheckAop {
     private RedisTemplate<String, Object> redisTemplate;
 
     private RedissonClient redissonClient;
+    private static final String HASH_KEY_COUNT = "count";
+    private static final String HASH_KEY_TIME = "time";
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate, RedissonClient redissonClient) {
@@ -91,19 +93,19 @@ public class IpCheckAop {
     private Boolean validAndHandleIp(String ip, IpCheckAnnotation annotation) {
         String key = IP_CACHE_KEY + ip;
 
-        Integer lastCount = (Integer) redisTemplate.opsForHash().get(key, "count");
+        Integer lastCount = (Integer) redisTemplate.opsForHash().get(key, HASH_KEY_COUNT);
         int limitCount = annotation.count();
 
 
-        Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, "time");
+        Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, HASH_KEY_TIME);
         LocalDateTime now = LocalDateTime.now();
         Long nowSec = now.toEpochSecond(ZoneOffset.UTC);
 
         int time = annotation.time();
 
         if (lastCount == null || lastSec == null) {
-            redisTemplate.opsForHash().put(key, "count", 1);
-            redisTemplate.opsForHash().put(key, "time", nowSec);
+            redisTemplate.opsForHash().put(key, HASH_KEY_COUNT, 1);
+            redisTemplate.opsForHash().put(key, HASH_KEY_TIME, nowSec);
             redisTemplate.expire(key, time, TimeUnit.SECONDS);
             return true;
         }
@@ -128,8 +130,8 @@ public class IpCheckAop {
         }
 
         lastCount = lastCount > 0 ? lastCount : 0;
-        redisTemplate.opsForHash().put(key, "count", lastCount + 1);
-        redisTemplate.opsForHash().put(key, "time", nowSec);
+        redisTemplate.opsForHash().put(key, HASH_KEY_COUNT, lastCount + 1);
+        redisTemplate.opsForHash().put(key, HASH_KEY_TIME, nowSec);
         redisTemplate.expire(key, time, TimeUnit.SECONDS);
         return true;
     }

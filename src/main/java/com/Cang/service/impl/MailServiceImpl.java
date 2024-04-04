@@ -29,7 +29,7 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
     private final TemplateEngine templateEngine;
 
     @Value("${code-length}")
-    private  String CODE_LENGTH;
+    private  String codeLength;
     public MailServiceImpl(MailUtil mailUtil, TemplateEngine templateEngine) {
         this.mailUtil = mailUtil;
         this.templateEngine = templateEngine;
@@ -38,8 +38,8 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
     /**
      * 发送验证码
      *
-     * @param email
-     * @param code
+     * @param email 邮箱
+     * @param code 验证码
      */
     @Override
     public void sendVerFicationMail(String email, String code) {
@@ -48,9 +48,8 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             Context context = new Context();
             //html中填充动态属性值
             context.setVariable("code", code);
-            context.setVariable("url", "https://www.aliyun.com/?utm_content=se_1000301881");
             //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
-            String emailContent = templateEngine.process("verfication", context);
+            String emailContent = templateEngine.process("verification", context);
 
             Mail mailBean = new Mail();
             mailBean.setRecipient(email);
@@ -87,12 +86,12 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             Context context = new Context();
             //html中填充动态属性值
             context.setVariable("nickName", user.getNickName());
-            String code= RandomUtil.randomNumbers(Integer.valueOf(CODE_LENGTH));
+            String code= RandomUtil.randomNumbers(Integer.valueOf(codeLength));
 //            String code = RandomUtil.randomString(Integer.valueOf(CODE_LENGTH));
             context.setVariable("code", code);
             context.setVariable("url", "https://www.aliyun.com/?utm_content=se_1000301881");
             //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
-            String emailContent = templateEngine.process("verfication", context);
+            String emailContent = templateEngine.process("verification", context);
 
             Mail mailBean = new Mail();
             mailBean.setRecipient(user.getEmail());
