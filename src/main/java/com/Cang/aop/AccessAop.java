@@ -29,7 +29,7 @@ public class AccessAop {
     public Result changeStatus(JoinPoint pjp, Result result) throws Throwable {
         if (StatusHolder.getStatus().equals(TokenStatus.ACCESS_TOKEN_EXPIRED)) {
             // 更新状态码，让前端发送请求查询获取token
-            result.setStatusCode(999);
+//       TODO 改为更新响应码     result.setStatusCode(999);
         }
         return result;
     }

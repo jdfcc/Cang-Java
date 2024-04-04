@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.core.Ordered;
 
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static com.Cang.constants.RabbitMqConstants.*;
@@ -42,7 +43,7 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(value = DeleteException.class)
     public void handle(Throwable e) {
         String key = e.getMessage();
-        rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.LOG,key));
+        rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.LOG, key));
     }
 
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -85,15 +86,15 @@ public class DefaultExceptionHandler {
 
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ExceptionHandler({InvalidTokenException.class})
-    public Result tokenExceptionHandler() {
-        return Result.failAndReLogin("身份验证已失效，请重新登录");
+    public Result tokenExceptionHandler(HttpServletResponse response) {
+        return Result.failAndReLogin("身份验证已失效，请重新登录",response);
     }
 
     @ExceptionHandler(Exception.class)
     @Order()
     public Result defaultExceptionHandler(Throwable e) {
         e.printStackTrace();
-        return Result.fail("服务器异常");
+        return Result.fail(e.getMessage());
     }
 
 }
