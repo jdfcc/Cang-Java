@@ -38,7 +38,8 @@ public class MvcConfig implements WebMvcConfigurer {
 //                    "/blog/hot",
 //                    "/blog/{id}",
                     "/token/*",
-                    "/notice/*"
+                    "/notice/*",
+                    "/ali/**"
             ).order(Ordered.HIGHEST_PRECEDENCE);
 //            registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
             registry.addInterceptor(new LoginInterceptor())
@@ -52,7 +53,8 @@ public class MvcConfig implements WebMvcConfigurer {
                             "/blog/hot",
                             "/blog/{id}",
                             "/token/*",
-                            "/notice/*"
+                            "/notice/*",
+                            "/ali/**"
                     ).order(Ordered.LOWEST_PRECEDENCE);
         }
     }

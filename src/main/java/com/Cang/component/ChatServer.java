@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 @Component
 @SuppressWarnings("unused")
-@ServerEndpoint("/home/{userId}")
+@ServerEndpoint("/websocket/{userId}")
 public class ChatServer {
 
 
@@ -47,6 +47,7 @@ public class ChatServer {
 
 
     @OnOpen
+    // TODO token建立连接
     public void onOpen(Session session, @PathParam("userId") String id) throws IOException {
         String sessionId = session.getId();
         ChatSessions.addClient(String.valueOf(id), session);
@@ -108,7 +109,7 @@ public class ChatServer {
             }
         } catch (Exception e) {
             session.getBasicRemote().sendText("消息发送失败，请刷新页面重试");
-            throw new MessageException("消息发送失败，请刷新页面重试");
+            throw new MessageException(e.getMessage());
         }
     }
 
@@ -136,7 +137,7 @@ public class ChatServer {
      **/
     @OnError
     public void onError(Throwable error) {
-        log.info("系统错误");
+        log.info("系统错误 {}",error.getMessage());
         error.printStackTrace();
     }
 
