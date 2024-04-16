@@ -90,6 +90,15 @@ public class DefaultExceptionHandler {
         return Result.failAndReLogin("身份验证已失效，请重新登录",response);
     }
 
+    /**
+     * refreshToken失效，需要用户重新登录
+     */
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ExceptionHandler({InvalidRefreshTokenException.class})
+    public Result refreshTokenExceptionHandler(HttpServletResponse response) {
+        return Result.failAndReLogin("身份验证已失效，请重新登录",response);
+    }
+
     @ExceptionHandler(Exception.class)
     @Order()
     public Result defaultExceptionHandler(Throwable e) {

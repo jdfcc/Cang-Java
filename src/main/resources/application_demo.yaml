@@ -66,7 +66,9 @@ spring:
             enable: true
             required: true
 mybatis-plus:
-  type-aliases-package: com.Cang.entity # 别名扫描包
+  type-aliases-package: com.Cang.entity # 别名
+
+  wqe扫描包
 
 mybatis:
   configuration:

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -38,7 +37,8 @@ public class MvcConfig implements WebMvcConfigurer {
 //                    "/blog/hot",
 //                    "/blog/{id}",
                     "/token/*",
-                    "/notice/*"
+                    "/notice/*",
+                    "/ali/**"
             ).order(Ordered.HIGHEST_PRECEDENCE);
 //            registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
             registry.addInterceptor(new LoginInterceptor())
@@ -52,7 +52,8 @@ public class MvcConfig implements WebMvcConfigurer {
                             "/blog/hot",
                             "/blog/{id}",
                             "/token/*",
-                            "/notice/*"
+                            "/notice/*",
+                            "/ali/**"
                     ).order(Ordered.LOWEST_PRECEDENCE);
         }
     }

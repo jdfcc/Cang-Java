@@ -1,6 +1,7 @@
 package com.Cang.utils;
 
 import com.Cang.constants.TokenConstant;
+import com.Cang.exception.InvalidRefreshTokenException;
 import com.Cang.exception.InvalidTokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -49,7 +50,7 @@ public class TokenUtil {
      * @param token 需要验证的token
      * @return 合法则返回用户id
      */
-    public static Long verifyToken(String token) {
+    private static Long verifyToken(String token) {
         Algorithm algorithm;
         try {
             algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
@@ -63,6 +64,34 @@ public class TokenUtil {
         } catch (Exception e) {
             log.info("非法用户token");
             throw new InvalidTokenException("非法用户token！");
+        }
+    }
+
+    /**
+     * 验证AccessToken
+     * @param accessToken the access token
+     * @return userId
+     */
+    public static Long verifyAccessToken(String accessToken){
+        try {
+            return verifyToken(accessToken);
+        } catch (Exception e) {
+            // 抛出InvalidAccessTokenException
+            throw new InvalidTokenException(e.getMessage());
+        }
+    }
+
+    /**
+     * 验证RefreshToken
+     * @param refreshToken the refresh token
+     * @return userId
+     */
+    public static Long verifyRefreshToken(String refreshToken){
+        try {
+            return verifyToken(refreshToken);
+        } catch (Exception e) {
+            // 抛出InvalidRefreshTokenException
+            throw new InvalidRefreshTokenException(e.getMessage());
         }
     }
 

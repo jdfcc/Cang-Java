@@ -1,8 +1,10 @@
 package com.Cang.dto;
 
+import com.Cang.bulider.TokenResponseTypeBulider;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -13,7 +15,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Component
 public class Result {
+
+
 
 
     /**
@@ -44,10 +49,21 @@ public class Result {
         return new Result( false, errorMsg, null, null);
     }
 
+    /**
+     * accessToken过期，需要客户端发起请求验证refreshToken
+     */
+    public static Result failAndValidToken(String errorMsg, HttpServletResponse response) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        TokenResponseTypeBulider.ResponseEntity accessTokenInvalidType = TokenResponseTypeBulider.createAccessTokenInvalidType();
+        return new Result( false, errorMsg, accessTokenInvalidType, null);
+    }
 
     public static Result failAndReLogin(String errorMsg, HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        return new Result( false, errorMsg, null, null);
+        TokenResponseTypeBulider.ResponseEntity refreshTokenInvalidType = TokenResponseTypeBulider.createRefreshTokenInvalidType();
+        return new Result( false, errorMsg, refreshTokenInvalidType, null);
     }
+
+
 
 }
