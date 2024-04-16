@@ -72,7 +72,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
         Long userId = null;
         try {
-            userId = TokenUtil.verifyToken(accessToken);
+            userId = TokenUtil.verifyAccessToken(accessToken);
         } catch (TokenExpiredException e) {
             // accessToken过期，校验refreshToken是否也过期,设置状态码要求前端发送请求到tokenController验证refreshToken是否过期。
             StatusHolder.setStatus(TokenStatus.ACCESS_TOKEN_EXPIRED);

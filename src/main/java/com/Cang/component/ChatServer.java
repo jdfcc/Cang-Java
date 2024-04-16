@@ -8,6 +8,7 @@ import com.Cang.exception.MessageException;
 import com.Cang.repo.child.ChatSessions;
 import com.Cang.service.ChatService;
 import com.Cang.service.IUserService;
+import com.Cang.utils.TokenUtil;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ import java.util.List;
 @Slf4j
 @Component
 @SuppressWarnings("unused")
-@ServerEndpoint("/websocket/{userId}")
+@ServerEndpoint("/websocket/{token}")
 public class ChatServer {
 
 
@@ -48,10 +49,13 @@ public class ChatServer {
 
     @OnOpen
     // TODO token建立连接
-    public void onOpen(Session session, @PathParam("userId") String id) throws IOException {
+    public void onOpen(Session session, @PathParam("token") String token) throws IOException {
         String sessionId = session.getId();
-        ChatSessions.addClient(String.valueOf(id), session);
-        ChatSessions.Session2IdMapping.addMapping(sessionId, id);
+        // TODO 若AccessToken不可用，则验证RefreshToken的操作不应在此处进行，由统一controller进行续签管理从而减少与代码的耦合性
+        Long userid = TokenUtil.verifyAccessToken(token);
+
+        ChatSessions.addClient(String.valueOf(userid), session);
+        ChatSessions.Session2IdMapping.addMapping(sessionId, String.valueOf(userid));
         log.info("首页有新连接加入：{} ,当前连接数为 {}", session.getId(), ChatSessions.getSize());
     }
 
