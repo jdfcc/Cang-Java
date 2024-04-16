@@ -1,9 +1,8 @@
 package com.Cang.filter;
 
-import cn.hutool.core.bean.BeanUtil;
+
 import cn.hutool.core.util.StrUtil;
 import com.Cang.constants.TokenConstant;
-import com.Cang.dto.UserDTO;
 import com.Cang.enums.TokenStatus;
 import com.Cang.utils.StatusHolder;
 import com.Cang.utils.TokenUtil;
@@ -16,14 +15,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.Cang.constants.RedisConstants.LOGIN_USER_KEY;
-import static com.Cang.constants.RedisConstants.LOGIN_USER_TTL;
 import static com.Cang.constants.SystemConstants.REQUEST_HEAD;
 
 /**
