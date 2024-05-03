@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 public class demo {
     @GetMapping("/1")
     public Result demo1(HttpServletResponse response) {
-        return Result.failAndReLogin("1", response);
+        return Result.failAndReLogin(response);
     }
 
 }

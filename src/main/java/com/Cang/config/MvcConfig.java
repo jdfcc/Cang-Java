@@ -26,19 +26,20 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(@NotNull InterceptorRegistry registry) {
         if (auth) {
-            registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).excludePathPatterns(
+            registry.addInterceptor(new RefreshTokenInterceptor()).excludePathPatterns(
                     "/user/code",
                     "/user/login",
                     "/shop/**",
                     "/voucher/**",
 // TODO 测试用，开发完成删除
-//                    "/shop-type/**",
+                    "/shop-type/**",
                     "/upload/**",
-//                    "/blog/hot",
-//                    "/blog/{id}",
-                    "/token/*",
+                    "/blog/hot",
+                    "/blog/{id}",
+                    "/token/**",
                     "/notice/*",
-                    "/ali/**"
+                    "/ali/**",
+                    "/game/**"
             ).order(Ordered.HIGHEST_PRECEDENCE);
 //            registry.addInterceptor(new RefreshTokenInterceptor(redisTemplate)).addPathPatterns("/**").order(0);
             registry.addInterceptor(new LoginInterceptor())
@@ -50,10 +51,12 @@ public class MvcConfig implements WebMvcConfigurer {
                             "/shop-type/**",
                             "/upload/**",
                             "/blog/hot",
+
                             "/blog/{id}",
-                            "/token/*",
+                            "/token/**",
                             "/notice/*",
-                            "/ali/**"
+                            "/ali/**",
+                            "/game/**"
                     ).order(Ordered.LOWEST_PRECEDENCE);
         }
     }

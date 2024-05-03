@@ -39,7 +39,6 @@ public class Blog implements Serializable {
      * 商户id
      */
     @NotNull(message = "内容不能为空")
-    @NotEmpty(message = "内容不能为空")
     private Long shopId;
     /**
      * 用户id

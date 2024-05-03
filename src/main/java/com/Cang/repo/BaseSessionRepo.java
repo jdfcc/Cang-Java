@@ -31,9 +31,10 @@ public abstract class BaseSessionRepo {
 
     public static void removeClient(String userId, Session session) throws IOException {
         List<Session> sessions = CLIENTS.get(userId);
-        assert sessions != null;
-        sessions.remove(session);
-        if (sessions.size() == 0) {
+        if (sessions!=null){
+            sessions.remove(session);
+        }
+        if (sessions!=null && sessions.size() == 0) {
             CLIENTS.remove(userId);
         } else {
             CLIENTS.put(userId, sessions);

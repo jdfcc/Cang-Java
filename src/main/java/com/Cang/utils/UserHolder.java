@@ -17,11 +17,11 @@ public class UserHolder {
 
     public static Long getUser() throws EmptyUserHolderException {
         if (TL.get() == null) {
-//            TODO 开发完成后删除此条注释
+//            TODO 通过websocket来获取REFRESH_TOKEN，验证成功后再返回数据给客户端
 //            throw new EmptyUserHolderException("User is null，It has been automatically filled with values");
 //            return new UserDTO();
-            log.info("当前用户为空，此用户为系统生成");
-            return 1011L;
+//            log.info("当前用户为空，此用户为系统生成");
+//            return 1011L;
         }
         return TL.get();
     }

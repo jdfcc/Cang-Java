@@ -49,7 +49,7 @@ public class ChatServer {
 
     @OnOpen
     // TODO token建立连接
-    public void onOpen(Session session, @PathParam("token") String token) throws IOException {
+    public void onOpen(Session session, @PathParam("token") String token) throws Exception {
         String sessionId = session.getId();
         // TODO 若AccessToken不可用，则验证RefreshToken的操作不应在此处进行，由统一controller进行续签管理从而减少与代码的耦合性
         Long userid = TokenUtil.verifyAccessToken(token);
@@ -62,9 +62,12 @@ public class ChatServer {
     @OnClose
     public void onClose(Session session) throws IOException {
         String userId = ChatSessions.Session2IdMapping.getUserId(session.getId());
-        ChatSessions.removeClient(String.valueOf(userId), session);
-        ChatSessions.Session2IdMapping.removeMapping(session.getId(), userId);
-        log.info("首页有连接断开：{},当前连接数为 {}", userId,ChatSessions.getSize());
+        if(userId!=null){
+            ChatSessions.removeClient(String.valueOf(userId), session);
+            ChatSessions.Session2IdMapping.removeMapping(session.getId(), userId);
+            log.info("首页有连接断开：{},当前连接数为 {}", userId, ChatSessions.getSize());
+        }
+
     }
 
     @OnMessage

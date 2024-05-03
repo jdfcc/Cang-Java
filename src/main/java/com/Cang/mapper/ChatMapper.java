@@ -27,8 +27,8 @@ public interface ChatMapper extends BaseMapper<Chat> {
     /**
      * 查询出指定的chatDto并返回
      *
-     * @param userKey userKey
+     * @param receive received
      * @return List<ChatDto>
      */
-    List<ChatDto> selectDtos(@Param("userKey") String userKey);
+    List<ChatDto> selectDtos(@Param("send") String send,@Param("receive") String receive);
 }

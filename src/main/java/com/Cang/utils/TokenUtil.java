@@ -1,12 +1,14 @@
 package com.Cang.utils;
 
 import com.Cang.constants.TokenConstant;
+import com.Cang.exception.InvalidAccessTokenException;
 import com.Cang.exception.InvalidRefreshTokenException;
 import com.Cang.exception.InvalidTokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,49 +52,47 @@ public class TokenUtil {
      * @param token 需要验证的token
      * @return 合法则返回用户id
      */
-    private static Long verifyToken(String token) {
+    private static Long verifyToken(String token) throws Exception {
         Algorithm algorithm;
+        String userId = null;
         try {
             algorithm = Algorithm.RSA256(RSAUtil.getPublicKey(), RSAUtil.getPrivateKey());
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT jwt = verifier.verify(token);
-            String userId = jwt.getKeyId();
+            userId = jwt.getKeyId();
             return Long.valueOf(userId);
+        } catch (TokenExpiredException e) {
+            log.info("用户 {} token过期，续签", userId);
+            throw  e;
         } catch (JWTVerificationException e) {
-            log.info("token验证出错");
-            throw new InvalidTokenException("token验证出错！");
-        } catch (Exception e) {
             log.info("非法用户token");
-            throw new InvalidTokenException("非法用户token！");
-        }
-    }
-
-    /**
-     * 验证AccessToken
-     * @param accessToken the access token
-     * @return userId
-     */
-    public static Long verifyAccessToken(String accessToken){
-        try {
-            return verifyToken(accessToken);
-        } catch (Exception e) {
-            // 抛出InvalidAccessTokenException
             throw new InvalidTokenException(e.getMessage());
         }
     }
 
     /**
+     * 验证AccessToken
+     *
+     * @param accessToken the access token
+     * @return userId
+     */
+    public static Long verifyAccessToken(String accessToken) throws Exception {
+        try {
+            return verifyToken(accessToken);
+        } catch (InvalidTokenException e) {
+            // 抛出InvalidAccessTokenException
+            throw new InvalidAccessTokenException(e.getMessage());
+        }
+    }
+
+    /**
      * 验证RefreshToken
+     *
      * @param refreshToken the refresh token
      * @return userId
      */
-    public static Long verifyRefreshToken(String refreshToken){
-        try {
-            return verifyToken(refreshToken);
-        } catch (Exception e) {
-            // 抛出InvalidRefreshTokenException
-            throw new InvalidRefreshTokenException(e.getMessage());
-        }
+    public static Long verifyRefreshToken(String refreshToken) throws Exception {
+        return verifyToken(refreshToken);
     }
 
     /**

@@ -40,7 +40,6 @@ public class LogAop {
 
     @Around("@annotation(com.Cang.annotations.LogAnnotation)")
     public Object logPointCut(ProceedingJoinPoint pjp) {
-//        String filePath = "folder/example.txt";
         long startTime = System.currentTimeMillis();
         Object obj = null;
         //
@@ -62,7 +61,6 @@ public class LogAop {
         String time = hour + ":" + minute + ":" + second + "  ";
         assert obj != null;
         String value = time + "method: " + methodName + " inputArgs" + ": " + JSONObject.toJSONString(pjp.getArgs()) + " " + " " + " outputArgs" + ": " + obj;
-//        writeFile(JSONObject.toJSONString(pjp.getArgs()),obj.toString());
         MyLog myLog = new MyLog();
         myLog.setValue(value);
         long endTime = System.currentTimeMillis();

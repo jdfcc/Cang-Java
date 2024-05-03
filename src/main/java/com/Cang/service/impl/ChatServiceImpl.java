@@ -7,8 +7,11 @@ import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
+import com.Cang.utils.UserHolder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -71,31 +74,25 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         return Result.ok();
     }
 
+    /**
+     * 查询与此用户id的聊天记录
+     *
+     * @param id 目标用户id
+     * @return 聊天记录
+     */
+    @Override
+    public List<Object> getDetails(Long id) {
+        return this.getMessage(UserHolder.getUser(), id);
+    }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public List<Object> getMessage(Long userId, Long targetId) {
-        String key = this.getKey(userId, targetId);
-//  TODO 删除此注释     List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
-        Set<Object> chats = redisTemplate.opsForZSet().range(key, 0L, -1L);
-        if (CollectionUtil.isEmpty(chats)) {
-//            从数据库中查询并重建缓存
-            List<Object> newChats = Collections.singletonList(chatMapper.selectDtos(key));
-            //数据库中也为空，两人第一次聊天
-            if (CollectionUtil.isEmpty(newChats)) {
-//                储存空缓存以解决缓存击穿
-                redisTemplate.opsForZSet().add(key, new HashSet<>());
-                return new ArrayList<>();
-            }
-//            重建缓存
-            for (Object temp : newChats) {
-                long seconds = ((ChatDto) temp).getCreateTime().toEpochSecond(ZoneOffset.UTC);
-                double score = seconds * 1000;
-                redisTemplate.opsForZSet().add(key, temp, score);
-            }
-            return newChats;
-        }
-        return new ArrayList<>(chats);
+//            从数据库中查询
+        List<Object> newChats = Collections.
+                singletonList(chatMapper.selectDtos(String.valueOf(userId),String.valueOf(targetId)));
+
+        return new ArrayList<>(newChats);
     }
 
     /**
@@ -112,7 +109,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     public List<ChatDto> getHomeChat(Long userId) {
-        return   chatMapper.selectLast(userId);
+        return chatMapper.selectLast(userId);
 
     }
 

@@ -6,6 +6,8 @@ import com.Cang.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
+
 /**
  * @author Jdfcc
  * @Description ChatController
@@ -38,6 +40,17 @@ public class ChatController {
     @GetMapping("/home/{id}")
     public Result getHomeChat(@PathVariable Long id) {
         return Result.ok( chatService.getHomeChat(id));
+    }
+
+
+    /**
+     * 查询与此用户的聊天记录
+     * @param id 目标用户id
+     * @return 聊天记录
+     */
+    @GetMapping("/details/{id}")
+    public Result getDetails(@PathVariable Long id){
+        return Result.ok( chatService.getDetails(id));
     }
 
 }

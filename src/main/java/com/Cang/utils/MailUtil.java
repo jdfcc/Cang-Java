@@ -23,7 +23,7 @@ import javax.mail.internet.MimeMessage;
 public class MailUtil {
 
     @Value("${spring.mail.username}")
-    private String MAIL_SENDER; //邮件发送者
+    private String mailSender; //邮件发送者
 
     private final JavaMailSender javaMailSender;//注入QQ发送邮件的bean
 
@@ -41,7 +41,7 @@ public class MailUtil {
     public void sendSimpleMail(Mail mailBean) {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
-            mailMessage.setFrom(MAIL_SENDER);//发送者
+            mailMessage.setFrom(mailSender);//发送者
             mailMessage.setTo(mailBean.getRecipient());//接收者
             mailMessage.setSubject(mailBean.getSubject());//邮件标题
             mailMessage.setText(mailBean.getContent());//邮件内容
@@ -60,7 +60,7 @@ public class MailUtil {
             mimeMailMessage = javaMailSender.createMimeMessage();
             //true 表示需要创建一个multipart message
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true);
-            mimeMessageHelper.setFrom(MAIL_SENDER);//发送者
+            mimeMessageHelper.setFrom(mailSender);//发送者
             mimeMessageHelper.setTo(mailBean.getRecipient());//接受者
             mimeMessageHelper.setSubject(mailBean.getSubject());//邮件标题
             //这里的 true，你加了的话，它发送你HTML页面里面的内容

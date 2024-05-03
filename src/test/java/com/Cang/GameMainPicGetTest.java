@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -201,8 +200,6 @@ public class GameMainPicGetTest {
                         continue;
                     }
                     String fileExtension = getFileNameWithExtension(steamImage);
-                    // TODO
-//                downloadPicture(steamImage,FILE_PREFIX,)
                     String fileName = game.getName() + "_" + index;
                     downloadPicture(steamImage, SAVE_PATH, game.getName(), fileName);
 

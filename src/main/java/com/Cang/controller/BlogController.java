@@ -37,6 +37,7 @@ public class BlogController {
      */
     @PostMapping
     public Result saveBlog(@RequestBody @Valid Blog blog) {
+
         return Result.ok(blogService.saveBlog(blog));
     }
 

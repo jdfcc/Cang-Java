@@ -11,23 +11,27 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.Resource;
 
+
+/**
+ * @author Jdfcc
+ */
 @Data
 @Configuration
 @EnableConfigurationProperties({MinIOConfigProperties.class})
-//当引入FileStorageService接口时
 @ConditionalOnClass(FileStorageService.class)
 public class MinIOConfig {
 
-    @Autowired
-    private MinIOConfigProperties minIOConfigProperties;
+    @Resource
+    private MinIOConfigProperties minIoConfigProperties;
 
     @Bean
     public MinioClient buildMinioClient() {
         return MinioClient
                 .builder()
-                .credentials(minIOConfigProperties.getAccessKey(), minIOConfigProperties.getSecretKey())
-                .endpoint(minIOConfigProperties.getEndpoint())
+                .credentials(minIoConfigProperties.getAccessKey(), minIoConfigProperties.getSecretKey())
+                .endpoint(minIoConfigProperties.getEndpoint())
                 .build();
     }
 }

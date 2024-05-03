@@ -4,32 +4,43 @@
 
 
     <select id="selectLast" resultType="com.Cang.dto.ChatDto">
-        select tb_chat.id                  id,
-               send,
-               receive,
-               message,
-               max(tb_chat.create_time) as createTime,
-               `like`,
-               user_key,
-               icon                        avatar,
-               nick_name                   nickName
-        from tb_chat
-                 join tb_user
-        where user_key in (SELECT user_key
-                           FROM tb_chat
-                           WHERE receive = #{userid}
-                              OR send = #{userid}
-                           ORDER BY tb_chat.create_time ASC)
-        GROUP BY user_key;
+        SELECT
+        tb_user.id AS user_id,
+        tb_user.nick_name AS nickName,
+        tb_user.icon AS avatar,
+        last_message.send AS send,
+        last_message.receive AS receive,
+        last_message.create_time AS create_time,
+        last_message.like AS `like`,
+        last_message.user_key AS user_key,
+        last_message.message AS message,
+        last_message.create_time AS last_message_time
+        FROM
+        tb_user
+        INNER JOIN (
+        SELECT
+        MAX(id) AS max_id,
+        IF(send = #{userid}, receive, send) AS other_user_id
+        FROM
+        tb_chat
+        WHERE
+        send = #{userid} OR receive = #{userid}
+        GROUP BY
+        other_user_id
+        ) AS max_chat_id ON (max_chat_id.other_user_id = tb_user.id)
+        INNER JOIN tb_chat AS last_message ON (last_message.id = max_chat_id.max_id)
+        ORDER BY
+        last_message.create_time DESC;
     </select>
 
     <select id="selectDtos" resultType="com.Cang.dto.ChatDto">
         SELECT tb_chat.id id, icon avatar, message, send, receive
         FROM tb_chat
-                 JOIN
-             tb_user
+        JOIN
+        tb_user
         WHERE send = tb_user.id
-          AND user_key = #{userKey}
+        AND receive= #{receive}
+        AND send= #{send}
         ORDER BY tb_chat.create_time ASC;
     </select>
 

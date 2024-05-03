@@ -26,6 +26,8 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
 
     private final MailUtil mailUtil;
 
+    private static final String MAIL_SUBJECT="验证你的邮箱";
+
     private final TemplateEngine templateEngine;
 
     @Value("${code-length}")
@@ -89,13 +91,11 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             String code= RandomUtil.randomNumbers(Integer.valueOf(codeLength));
 //            String code = RandomUtil.randomString(Integer.valueOf(CODE_LENGTH));
             context.setVariable("code", code);
-            context.setVariable("url", "https://www.aliyun.com/?utm_content=se_1000301881");
-            //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
             String emailContent = templateEngine.process("verification", context);
 
             Mail mailBean = new Mail();
             mailBean.setRecipient(user.getEmail());
-            mailBean.setSubject("这是一份测试邮件");
+            mailBean.setSubject(MAIL_SUBJECT);
             mailBean.setContent(emailContent);
 
             mailUtil.sendHTMLMail(mailBean);

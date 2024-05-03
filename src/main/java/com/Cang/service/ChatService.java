@@ -56,4 +56,12 @@ public interface ChatService extends IService<Chat> {
      * @return
      */
     String getKey(Long a, Long b);
+
+    /**
+     * 查询与此用户id的聊天记录
+     *
+     * @param id 目标用户id
+     * @return 聊天记录
+     */
+    List<Object> getDetails(Long id);
 }

@@ -43,8 +43,6 @@ public class CaptchaHandler extends CommonQueueHandler {
     @Override
     public void consume(MessageQueueEntity entity) {
         String mail = (String) entity.getData();
-        Long userId = UserHolder.getUser();
-        System.out.println("************" + userId);
         Thread thread = Thread.currentThread();
         long id = thread.getId();
         System.out.println("消费者" + id);

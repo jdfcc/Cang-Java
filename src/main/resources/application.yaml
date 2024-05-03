@@ -2,7 +2,7 @@ server:
   port: 9986
 
 login:
-  authorization: true # 开启验证
+  authorization: false # 开启验证
 
 my-log:
   src: ./log/
@@ -82,3 +82,12 @@ snowflake:
   data-center: 1 #数据中心id
   worker-id: 1 #机器id
 
+alipay:
+  app-id: 9021000135693774
+  app-private-key-path: security/alipay/app-private-key
+  alipay-public-key-path: security/alipay/alipay-public-key
+  notify-url: "https://json"
+  gateway-host: openapi.alipaydev.com
+  sign-type: RSA2
+  protocol: https
+  char-set: utf-8

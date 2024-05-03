@@ -32,6 +32,4 @@ public class CommonQueueConsumeStrategy {
             queueConsumer.consume(entity);
         }
     }
-
-
 }
