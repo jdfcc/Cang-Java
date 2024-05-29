@@ -1,13 +1,41 @@
 package com.Cang.utils;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 
 /**
  * @author Jdfcc
  * @Description FileUtil
  * @DateTime 2023/6/26 14:39
  */
-public class FileUtil {
+public  class FileUtil {
+
+    public static String calculateMd5(File file) throws Exception {
+        FileInputStream fileInputStream = new FileInputStream(file);
+       return calculateMd5(fileInputStream);
+    }
+    public static String calculateMd5(InputStream inputStream) throws Exception {
+        // 创建MessageDigest实例用于计算MD5
+        MessageDigest md = MessageDigest.getInstance("MD5");
+
+        // 使用DigestInputStream包裹输入流
+        try (DigestInputStream dis = new DigestInputStream(inputStream, md)) {
+            byte[] buffer = new byte[1024];
+            while (dis.read(buffer) != -1) {
+                // 读取输入流，DigestInputStream会自动更新MessageDigest
+            }
+        }
+
+        // 完成哈希计算
+        byte[] md5Bytes = md.digest();
+
+        // 将字节数组转换为16进制字符串
+        BigInteger bigInt = new BigInteger(1, md5Bytes);
+        return String.format("%032x", bigInt);
+    }
+
 
     /**
      * 将文件以固定格式写入

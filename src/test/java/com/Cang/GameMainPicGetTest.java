@@ -116,13 +116,14 @@ public class GameMainPicGetTest {
     public void getPics() throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<GameShow> gameList = new ArrayList<>();
+        HashSet<GameShow> gameList = new HashSet<>();
 
         // 从文件中读取 JSON 数据
         String filePath = "C:\\Users\\Jdfcc\\Desktop\\steam-scraper\\output.json"; // 请替换为你的文件路径
         String jsonFileContent = readFromFile(filePath);
 
         String[] jsonObjects = jsonFileContent.split("\n");
+
 
         for (String jsonObject : jsonObjects) {
             GameShow game = convertJsonToGame(objectMapper.readValue(jsonObject, Map.class));

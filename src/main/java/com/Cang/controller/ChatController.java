@@ -6,6 +6,7 @@ import com.Cang.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 
 /**
@@ -26,7 +27,7 @@ public class ChatController {
     }
 
     @PutMapping("/send")
-    public Result sendMessage(@RequestBody Chat chat) {
+    public Result sendMessage(@RequestBody Chat chat, HttpServletRequest request) {
 
         return chatService.sendMessage(chat);
     }

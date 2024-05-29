@@ -9,10 +9,13 @@ import com.Cang.service.MailService;
 import com.Cang.utils.MailUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.mail.internet.MimeMessage;
 import java.util.Date;
 
 /**
@@ -24,40 +27,62 @@ import java.util.Date;
 @Service
 public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements MailService {
 
+    private static final String SUBJECT_MESSAGE = "验证你的邮箱";
     private final MailUtil mailUtil;
 
-    private static final String MAIL_SUBJECT="验证你的邮箱";
+    private static final String MAIL_SUBJECT = "验证你的邮箱";
 
     private final TemplateEngine templateEngine;
 
     @Value("${code-length}")
-    private  String codeLength;
-    public MailServiceImpl(MailUtil mailUtil, TemplateEngine templateEngine) {
+    private String codeLength;
+
+    @Value("${spring.mail.username}")
+    private String mailSender; //邮件发送者
+
+    private static final String SEND_EMAIL_FAILED = "邮件发送失败";
+
+    private final JavaMailSender javaMailSender;//注入QQ发送邮件的bean
+
+    public MailServiceImpl(MailUtil mailUtil, TemplateEngine templateEngine, JavaMailSender javaMailSender) {
         this.mailUtil = mailUtil;
         this.templateEngine = templateEngine;
+        this.javaMailSender = javaMailSender;
     }
 
     /**
      * 发送验证码
      *
      * @param email 邮箱
-     * @param code 验证码
+     * @param code  验证码
      */
     @Override
     public void sendVerFicationMail(String email, String code) {
 
-            //注意：Context 类是在org.thymeleaf.context.Context包下的。
-            Context context = new Context();
-            //html中填充动态属性值
-            context.setVariable("code", code);
-            //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
-            String emailContent = templateEngine.process("verification", context);
+        //注意：Context 类是在org.thymeleaf.context.Context包下的。
+        Context context = new Context();
+        //html中填充动态属性值
+        context.setVariable("code", code);
+        //org.thymeleaf.exceptions.TemplateInputException: Error resolving template [email]
+        String emailContent = templateEngine.process("verification", context);
 
-            Mail mailBean = new Mail();
-            mailBean.setRecipient(email);
-            mailBean.setSubject("验证你的邮箱");
-            mailBean.setContent(emailContent);
-            mailUtil.sendHTMLMail(mailBean);
+
+        MimeMessage mimeMailMessage = null;
+        try {
+            mimeMailMessage = javaMailSender.createMimeMessage();
+            //true 表示需要创建一个multipart message
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMailMessage, true);
+            mimeMessageHelper.setFrom(mailSender);//发送者
+            mimeMessageHelper.setTo(email);//接受者
+            mimeMessageHelper.setSubject(SUBJECT_MESSAGE);//邮件标题
+            //这里的 true，你加了的话，它发送你HTML页面里面的内容
+            //不加的话，默认是 false，它发送整个HTML页面代码
+            mimeMessageHelper.setText(emailContent, true);
+            //邮件抄送
+            javaMailSender.send(mimeMailMessage);//发送邮件
+        } catch (Exception e) {
+            log.error(SEND_EMAIL_FAILED + "{}", e);
+        }
     }
 
     @Override
@@ -88,7 +113,7 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
             Context context = new Context();
             //html中填充动态属性值
             context.setVariable("nickName", user.getNickName());
-            String code= RandomUtil.randomNumbers(Integer.valueOf(codeLength));
+            String code = RandomUtil.randomNumbers(Integer.valueOf(codeLength));
 //            String code = RandomUtil.randomString(Integer.valueOf(CODE_LENGTH));
             context.setVariable("code", code);
             String emailContent = templateEngine.process("verification", context);

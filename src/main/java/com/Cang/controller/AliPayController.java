@@ -1,31 +1,19 @@
 package com.Cang.controller;
 
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
-import com.Cang.config.AliPayConfig;
-import com.alipay.api.AlipayApiException;
-import com.alipay.api.AlipayClient;
-import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.alipay.easysdk.factory.Factory;
-import com.alipay.easysdk.kernel.Config;
-import com.alipay.easysdk.kernel.util.ResponseChecker;
-import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
-import com.alipay.easysdk.payment.page.models.AlipayTradePagePayResponse;
-import lombok.Data;
+import com.Cang.dto.Result;
+import com.Cang.entity.GameOrder;
+import com.Cang.service.AliService;
+import com.Cang.utils.UserHolder;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.alipay.easysdk.factory.Factory;
-import com.alipay.easysdk.factory.Factory.Payment;
-import com.alipay.easysdk.kernel.Config;
-import com.alipay.easysdk.kernel.util.ResponseChecker;
-import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
+import org.springframework.web.bind.annotation.*;
+
+
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Jdfcc
@@ -39,49 +27,38 @@ import java.net.URLEncoder;
 public class AliPayController {
 
     @Resource
-    AliPayConfig aliPayConfig;
+    AliService aliService;
+//    @Resource
+//    GameOrderService gameOrderService;
 
-    private static final String GATEWAY_URL ="https://openapi-sandbox.dl.alipaydev.com/gateway.do";
 
-
-
-    @GetMapping("/payAll") // &subject=xxx&traceNo=xxx&totalAmount=xxx
-    public void pay( HttpServletResponse httpResponse) throws Exception {
-        AlipayClient alipayClient = new DefaultAlipayClient(GATEWAY_URL, aliPayConfig.getAppId(),
-                aliPayConfig.getAppPrivateKey(), aliPayConfig.getFormat(), aliPayConfig.getCharSet(), aliPayConfig.getAlipayPublicKey(), aliPayConfig.getSignType());
-        AlipayTradePagePayRequest request = new AlipayTradePagePayRequest();
-        request.setNotifyUrl(aliPayConfig.getNotifyUrl());
-        request.setBizContent("{\"out_trade_no\":\"" +"123" + "\","
-                + "\"total_amount\":\"" + "456" + "\","
-                + "\"subject\":\"" +"789"+ "\","
-                + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
-        String form = "";
-        try {
-            // 调用SDK生成表单
-            form = alipayClient.pageExecute(request).getBody();
-        } catch (AlipayApiException e) {
-            e.printStackTrace();
-        }
-        httpResponse.setContentType("text/html;charset=" + aliPayConfig.getCharSet());
-        // 直接将完整的表单html输出到页面
+    @GetMapping("/pay")
+    public void pay(@RequestBody GameOrder order, HttpServletResponse httpResponse) throws Exception {
+        Long user = UserHolder.getUser();
+        String form;
+        form = aliService.createPaymentForm(order.getOutTradeNo(), order.getTotalAmount(), order.getSubject(), user);
+        httpResponse.setContentType("text/html;charset=UTF-8");
         httpResponse.getWriter().write(form);
         httpResponse.getWriter().flush();
         httpResponse.getWriter().close();
     }
 
+    @PostMapping("/notify")
+    public Result payNotify(HttpServletRequest request) throws Exception {
+        Map<String, String> params = new HashMap<>();
+        Map<String, String[]> requestParams = request.getParameterMap();
 
-    @GetMapping("/pay") // &subject=xxx&traceNo=xxx&totalAmount=xxx
-    public String pay( ) {
-        AlipayTradePagePayResponse response;
-        try {
-            //  发起API调用（以创建当面付收款二维码为例）
-            response = Factory.Payment.Page()
-                    .pay(URLEncoder.encode("1234", "UTF-8"), "1234", "1234", "");
-        } catch (Exception e) {
-            System.err.println("调用遭遇异常，原因：" + e.getMessage());
-            throw new RuntimeException(e.getMessage(), e);
+        for (String name : requestParams.keySet()) {
+            params.put(name, request.getParameter(name));
         }
-        return response.getBody();
+        if ("TRADE_SUCCESS".equals(params.get("trade_status"))) {
+            if (aliService.verifyAndProcessNotification(params)) {
+//                TODO 修改订单状态并返回一个该游戏的cdk
+//                gameOrderService.paysuccess(params.get("trade_id"));
+//               String cdk= gameService.getGameCdk(params.get("game_id"));
+               return Result.ok("cdk");
+            }
+        }
+        return Result.fail("用户未支付");
     }
-
 }

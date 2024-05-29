@@ -68,7 +68,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Result sendCode(String email, HttpSession session) {
+    public void sendCode(String email) {
 //        TODO 邮箱验证有问题
 //        if (RegexUtils.isEmailInvalid(email)) {
 //            return Result.fail(WRONG_PATTERN_EMAIL);
@@ -83,7 +83,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 //        System.out.println("生产者" + id);
         rabbitTemplate.convertAndSend(COMMON_EXCHANGE, COMMON_ROUTING_KEY, MessageQueueEntity.build(BusinessType.CAPTCHA, email));
 //        返回
-        return Result.ok();
     }
 
 

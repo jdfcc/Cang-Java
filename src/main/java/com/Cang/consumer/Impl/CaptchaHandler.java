@@ -43,12 +43,8 @@ public class CaptchaHandler extends CommonQueueHandler {
     @Override
     public void consume(MessageQueueEntity entity) {
         String mail = (String) entity.getData();
-        Thread thread = Thread.currentThread();
-        long id = thread.getId();
-        System.out.println("消费者" + id);
         //    生成验证码
         String code = RandomUtil.randomNumbers(4);
-
         //    储存进redis
         stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + mail, code);
         log.info("验证码为: {}", code);

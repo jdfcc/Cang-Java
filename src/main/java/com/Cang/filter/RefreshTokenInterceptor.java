@@ -2,7 +2,6 @@ package com.Cang.filter;
 
 
 import cn.hutool.core.util.StrUtil;
-import com.Cang.constants.TokenConstant;
 import com.Cang.enums.TokenStatus;
 import com.Cang.utils.StatusHolder;
 import com.Cang.utils.TokenUtil;
@@ -10,7 +9,6 @@ import com.Cang.utils.UserHolder;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +36,7 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
             userId = TokenUtil.verifyAccessToken(accessToken);
         } catch (TokenExpiredException e) {
             // accessToken过期，校验refreshToken是否也过期,设置状态码要求前端发送请求到tokenController验证refreshToken是否过期。
+// TODO 完善双token
             StatusHolder.setStatus(TokenStatus.ACCESS_TOKEN_EXPIRED);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;

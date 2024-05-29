@@ -8,6 +8,7 @@
         tb_user.id AS user_id,
         tb_user.nick_name AS nickName,
         tb_user.icon AS avatar,
+        last_message.id AS id,
         last_message.send AS send,
         last_message.receive AS receive,
         last_message.create_time AS create_time,
@@ -33,15 +34,35 @@
         last_message.create_time DESC;
     </select>
 
-    <select id="selectDtos" resultType="com.Cang.dto.ChatDto">
-        SELECT tb_chat.id id, icon avatar, message, send, receive
-        FROM tb_chat
+<!--    <select id="selectDtos" resultType="com.Cang.dto.DetailChatDto">-->
+<!--        SELECT tb_chat.id id, icon avatar, message, send, receive-->
+<!--        FROM tb_chat-->
+<!--        JOIN-->
+<!--        tb_user-->
+<!--        WHERE send = tb_user.id-->
+<!--        AND receive= #{receive}-->
+<!--        AND send= #{send}-->
+<!--        ORDER BY tb_chat.create_time ASC;-->
+<!--    </select>-->
+
+    <select id="selectDtos" resultType="com.Cang.dto.DetailChatDto">
+        SELECT
+        tb_chat.id AS id,
+        tb_user.icon AS avatar,
+        tb_chat.message,
+        tb_chat.send,
+        tb_chat.receive
+        FROM
+        tb_chat
         JOIN
-        tb_user
-        WHERE send = tb_user.id
-        AND receive= #{receive}
-        AND send= #{send}
-        ORDER BY tb_chat.create_time ASC;
+        tb_user ON tb_chat.send = tb_user.id
+        WHERE
+        (tb_chat.receive = #{receive} AND tb_chat.send = #{send})
+        OR
+        (tb_chat.receive = #{send} AND tb_chat.send = #{receive})
+        ORDER BY
+        tb_chat.create_time ASC;
     </select>
+
 
 </mapper>

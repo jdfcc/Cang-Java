@@ -2,6 +2,7 @@ package com.Cang.service.impl;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.Cang.component.ChatServer;
 import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
@@ -17,6 +18,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -36,6 +39,8 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     private final ChatMapper chatMapper;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private ChatServer chatServer;
 
     @Autowired
     public ChatServiceImpl(ChatMapper chatMapper, RedisTemplate<String, Object> redisTemplate) {
@@ -57,14 +62,15 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result sendMessage(Chat chat) {
+    public Result sendMessage(Chat chat) throws IOException {
         chat.setCreateTime(LocalDateTime.now());
-        Long userid = chat.getSend();
+        Long userid = UserHolder.getUser();
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
         chat.setSend(userid);//TODO 加一个异常判断
         this.saveMessage(chat);
+        chatServer.sendMessage(chat);
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
         chat.setCreateTime(null);

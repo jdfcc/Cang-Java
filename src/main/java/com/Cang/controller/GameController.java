@@ -3,8 +3,10 @@ package com.Cang.controller;
 
 import com.Cang.dto.Result;
 import com.Cang.entity.Game;
+import com.Cang.entity.GameShow;
 import com.Cang.entity.Tag;
 import com.Cang.service.GameService;
+import com.Cang.service.GameShowService;
 import com.Cang.service.TagService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,9 @@ public class GameController {
     @Resource
     private TagService tagService;
 
+    @Resource
+    private GameShowService gameShowService;
+
     @PostMapping("/add")
     public Result addGame(@RequestBody Game game) {
         gameService.save(game);
@@ -35,11 +40,22 @@ public class GameController {
     }
 
     @GetMapping("/list")
-    public Result listGame(@RequestParam(value = "index", defaultValue = "1") Integer index) {
-        Page<Game> page = gameService.query()
-                .page(new Page<>(index, PAGE_SIZE));
+    public Result listGame(@RequestParam(value = "index", defaultValue = "1") Integer index,
+                           @RequestParam(value = "type", defaultValue = "") String type,
+                           @RequestParam(value = "name", defaultValue = "") String name) {
+         Page<Game> page = gameService.query(index,PAGE_SIZE,type,name);
         return Result.ok(page);
     }
+
+    @GetMapping("/show")
+    public Result listGames(@RequestParam(value = "index", defaultValue = "1") Integer index,
+                           @RequestParam(value = "type", defaultValue = "") String type,
+                           @RequestParam(value = "name", defaultValue = "") String name) {
+        Page<GameShow> page = gameShowService.query(index,PAGE_SIZE,name);
+        return Result.ok(page);
+    }
+
+
 
     /**
      * 获取游戏tag

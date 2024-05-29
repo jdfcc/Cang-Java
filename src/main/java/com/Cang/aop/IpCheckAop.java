@@ -98,8 +98,7 @@ public class IpCheckAop {
 
 
         Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, HASH_KEY_TIME);
-        LocalDateTime now = LocalDateTime.now();
-        Long nowSec = now.toEpochSecond(ZoneOffset.UTC);
+        long nowSec = System.currentTimeMillis();
 
         int time = annotation.time();
 

@@ -2,7 +2,7 @@ server:
   port: 9986
 
 login:
-  authorization: false # 开启验证
+  authorization: true # 开启验证
 
 my-log:
   src: ./log/
@@ -19,6 +19,11 @@ minio:
 
 
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      maxRequestSize: 10MB
   rabbitmq:
     host: 120.55.80.133
     port: 5672
@@ -30,9 +35,9 @@ spring:
     name: Cang
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://120.55.80.133:3306/cang?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
-    username: cang
-    password: root
+    url: jdbc:mysql://localhost/cang?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 1234
   redis:
     database: 1
     host: 120.55.80.133

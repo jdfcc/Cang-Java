@@ -6,15 +6,31 @@ import cn.hutool.core.util.StrUtil;
 import com.Cang.dto.Result;
 import com.Cang.constants.SystemConstants;
 import com.Cang.service.impl.MinIOFileStorageService;
+import com.Cang.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
+
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -27,30 +43,63 @@ public class UploadController {
     @Autowired
     public MinIOFileStorageService minIoFileStorageService;
 
-//    TODO 重写文件保存逻辑，判断文件是否存在，之后再传
+    private final Parser parser;
+    private final HtmlRenderer renderer;
+
+    @Autowired
+    public UploadController() {
+        this.parser = Parser.builder().build();
+        this.renderer = HtmlRenderer.builder().build();
+    }
+
+    //    TODO 实现文件保存逻辑，判断文件是否存在，之后再传
     @PostMapping("/blog")
-    public Result uploadImage(@RequestParam("file") MultipartFile image, HttpServletRequest request) {
-        log.info("%%%%%%%%%% {}",request.getHeader("Content-Type"));
+    public Result uploadJpg(@RequestParam("file") MultipartFile image, HttpServletRequest request) {
         try {
-            // 获取原始文件名称
-            String originalFilename = image.getOriginalFilename();
-            // 生成新文件名
-//            String fileName = createNewFileName(originalFilename);
-
             UUID uuid = UUID.randomUUID();
-            String filename=uuid.toString()+".jpg";
-
+            String filename = uuid+ ".jpg";
             InputStream inputStream = image.getInputStream();
             String fileUrl = minIoFileStorageService.uploadImgFile("", filename, inputStream);
-            // 保存文件
-//            image.transferTo(new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName));
-            // 返回结果
             log.debug("文件上传成功，{}", fileUrl);
-//            return Result.ok(fileName);
             return Result.ok(fileUrl);
         } catch (IOException e) {
             throw new RuntimeException("文件上传失败", e);
         }
+    }
+
+//    //    TODO
+//    @PostMapping("/blog")
+//    public Result uploadJpg(@RequestParam("file") MultipartFile image, HttpServletRequest request) {
+//        try {
+//            UUID uuid = UUID.randomUUID();
+//            String filename = uuid+ ".jpg";
+//            String md5 = com.Cang.utils.FileUtil.calculateMd5(image.getInputStream());
+//            if(fileService.isFileUpload(md5)){
+//                String url= fileService.getFileByMd5(md5);
+//                return Result.ok(url);
+//            }else{
+//                InputStream inputStream = image.getInputStream();
+//                String fileUrl = minIoFileStorageService.uploadImgFile("", filename, inputStream);
+//                fileService.saveFile(UserHolder.getUser(), fileUrl,md5);
+//                log.debug("文件上传成功，{}", fileUrl);
+//                return Result.ok(fileUrl);
+//            }
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException("文件上传失败", e);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+    @PostMapping("/article")
+    public Result uploadArticle(@RequestParam("file") MultipartFile article) throws IOException {
+// 获取文件内容
+        String markdownContent = new String(article.getBytes(), StandardCharsets.UTF_8);
+
+        // 解析Markdown内容
+        String htmlContent = renderer.render(parser.parse(markdownContent));
+        return Result.ok(htmlContent);
     }
 
     @GetMapping("/blog/delete")

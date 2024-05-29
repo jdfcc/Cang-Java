@@ -1,10 +1,12 @@
 package com.Cang.service.impl;
 
+import com.Cang.dto.Result;
 import com.Cang.entity.Game;
 import com.Cang.entity.Tag;
 import com.Cang.mapper.GameMapper;
 import com.Cang.service.GameService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -50,5 +52,32 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game> implements Ga
     @Override
     public List<Game> getGameByTag(Integer index, int pageSize, String tagName) {
         return gameMapper.getByTag(tagName, index, pageSize);
+    }
+
+    /**
+     * 根据tag或者游戏名查找对应游戏
+     *
+     * @param index    当前页码
+     * @param pageSize 查询页面大小
+     * @param tagName  tag名字
+     * @param gameName 游戏名
+     */
+    @Override
+    public Page<Game> query(Integer index, Integer pageSize, String tagName, String gameName) {
+        // 创建查询对象
+        LambdaQueryWrapper<Game> queryWrapper = new LambdaQueryWrapper<>();
+
+        // 如果 type 参数不为空，则添加 like 条件
+        if (!tagName.isEmpty()) {
+            queryWrapper.like(Game::getGenres, tagName);
+        }
+
+        // 如果 name 参数不为空，则添加 like 条件
+        if (!gameName.isEmpty()) {
+            queryWrapper.like(Game::getAppName, gameName);
+        }
+
+        // 分页查询
+        return page(new Page<>(index, pageSize), queryWrapper);
     }
 }

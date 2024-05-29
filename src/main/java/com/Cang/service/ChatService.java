@@ -5,6 +5,7 @@ import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public interface ChatService extends IService<Chat> {
      * @param chat chat
      * @return Result
      */
-    Result sendMessage(Chat chat);
+    Result sendMessage(Chat chat) throws IOException;
 
     /**
      * 保存消息
