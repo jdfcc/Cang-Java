@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashSet;
 
 /**
@@ -27,7 +28,7 @@ public class ChatController {
     }
 
     @PutMapping("/send")
-    public Result sendMessage(@RequestBody Chat chat, HttpServletRequest request) {
+    public Result sendMessage(@RequestBody Chat chat, HttpServletRequest request) throws IOException {
 
         return chatService.sendMessage(chat);
     }
