@@ -3,7 +3,6 @@ package com.Cang.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.Cang.annotations.LogAnnotation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.Cang.dto.ScrollResult;
@@ -24,15 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.Cang.constants.RedisConstants.*;
-import static com.Cang.constants.SystemConstants.*;
 
 /**
  * <p>
@@ -51,9 +46,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     private CacheClient cacheClient;
     private final FollowMapper followMapper;
 
-    public void testMethod() {
-        System.out.println("Testing method");
-    }
 
     public BlogServiceImpl(StringRedisTemplate redisTemplate, IUserService userService, BlogMapper blogMapper, FollowMapper followMapper) {
         this.redisTemplate = redisTemplate;
@@ -63,7 +55,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     }
 
     @Override
-    @LogAnnotation
+//    @LogAnnotation
     public List<Blog> queryHotblog(Integer current) {
         String json = redisTemplate.opsForValue().get(BLOG_HOT_KEY+ current);
         List<Blog> lists = JSONUtil.toList(json, Blog.class);
@@ -167,9 +159,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         int os = 1; // 2
         for (ZSetOperations.TypedTuple<String> tuple : typedTuples) { // 5 4 4 2 2
             // 4.1.获取id
-            ids.add(Long.valueOf(tuple.getValue()));
+            ids.add(Long.valueOf(Objects.requireNonNull(tuple.getValue())));
             // 4.2.获取分数(时间戳）
-            long time = tuple.getScore().longValue();
+            long time = Objects.requireNonNull(tuple.getScore()).longValue();
             if (time == minTime) {
                 os++;
             } else {
@@ -225,16 +217,13 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
 
     /**
      * 当用户发布博客时，查询关注此用户的所有粉丝并加入set集合以将此blog推送给他们
-     *
-     * @param blog
-     * @return
      */
     @Transactional
     @Override
     public Long saveBlog(Blog blog) {
         Long userId = UserHolder.getUser();
         blog.setUserId(userId);
-        // 保存探店博文
+        // 保存帖子
         blogMapper.insert(blog);
 
         List<String> followsId = followMapper.getFollowerId(userId);
@@ -288,12 +277,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         } else {//未点赞,点赞数加一，将用户添加至集合
             Boolean liked = blogMapper.liked(id);
 
-            if (liked)
+            if (liked) {
                 redisTemplate.opsForZSet().add(key, String.valueOf(userId), System.currentTimeMillis());
+            }
         }
         redisTemplate.opsForValue().getAndDelete(BLOG_KEY + id);
         redisTemplate.opsForValue().getAndDelete(BLOG_HOT_KEY);
-//        cacheClient.set(BLOG_HOT_KEY, records, BLOG_HOT_KEY_TTL, TimeUnit.SECONDS);
     }
 
 
@@ -306,10 +295,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
      */
     public Boolean isLiked(String key, Long userId) {
         Double score = redisTemplate.opsForZSet().score(key, String.valueOf(userId));
-        if (score == null) {
-            return false;
-        }
-        return true;
+        return score != null;
     }
 
     private void queryBlogUser(Blog blog) {

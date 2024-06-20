@@ -15,8 +15,6 @@ import javax.annotation.PostConstruct;
  */
 
 public abstract class CommonQueueHandler {
-
-
     /**
      * 根据消息实体类型执行对应消费者
      *

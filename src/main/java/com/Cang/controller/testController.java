@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @RequestMapping("/test")
-@IpCheckAnnotation(count = 5, time = 100)
 public class testController {
+
 
     @GetMapping("/name/{name}")
     @LogAnnotation
@@ -38,13 +38,18 @@ public class testController {
 
     @GetMapping("/test2")
     @RedisCache(value = "45676", type = RedisCacheType.LIST)
-    public void tet(){}
+    public void tet() {
+    }
 
     @GetMapping("/token")
     public Result testToken() {
         throw new InvalidTokenException("Token is not valid");
     }
 
-
+    @GetMapping()
+    @IpCheckAnnotation
+    public Result testIp() {
+        return Result.ok();
+    }
 
 }

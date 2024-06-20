@@ -8,6 +8,7 @@ import com.Cang.entity.User;
 import com.Cang.mapper.CommentMapper;
 import com.Cang.service.CommentService;
 import com.Cang.service.IUserService;
+import com.Cang.utils.IdGeneratorSnowflake;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
+import org.springframework.util.IdGenerator;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -37,6 +39,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Resource
     private CommentMapper commentMapper;
 
+    @Resource
+    private IdGeneratorSnowflake idGeneratorSnowflake;
+
 
     /**
      * 根据评论id删除评论
@@ -57,8 +62,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
      * @param comment commentEntity
      */
     @Override
-    public void saveComment(Comment comment) {
+    public Comment saveComment(Comment comment) {
+        comment.setId(idGeneratorSnowflake.snowflakeId());
+        comment.setSend(UserHolder.getUser());
         save(comment);
+        return comment;
     }
 
 

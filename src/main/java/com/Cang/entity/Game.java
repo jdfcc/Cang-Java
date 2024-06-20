@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Jdfcc
@@ -32,17 +33,8 @@ public class Game implements Serializable {
     private String appName;
     private String tags;
     private String discountPrice;
-    private Float price;
+    private String price;
     private String unit;
     private String sentiment;
     private boolean earlyAccess;
-
-//    public void setGenres(List<String> genre) {
-//        this.genres = genre.toString();
-//    }
-//
-//    public void setTags(List<String> tag) {
-//        this.tags = tag.toString();
-//    }
-
 }

@@ -10,7 +10,7 @@ public class TokenConstant {
     /**
      * token过期时间
      */
-    public static final int EXPIRE_TIME_60_60 = 60 * 60;
+    public static final int EXPIRE_TIME_60_60 = 60;
 
     /**
      * 服务器签名

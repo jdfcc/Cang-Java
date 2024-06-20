@@ -37,12 +37,12 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
 
     @Override
     public Result selectList() {
-        String key = CACHE_SHOP_TYPE_KEY;
-        String value = stringRedisTemplate.opsForValue().get(key);
-        if (value != null) {
-            List<ShopType> shopTypes = JSONUtil.toList(value, ShopType.class);
-            return Result.ok(shopTypes);
-        }
+//        String key = CACHE_SHOP_TYPE_KEY;
+//        String value = stringRedisTemplate.opsForValue().get(key);
+//        if (value != null) {
+//            List<ShopType> shopTypes = JSONUtil.toList(value, ShopType.class);
+//            return Result.ok(shopTypes);
+//        }
 
         LambdaQueryWrapper<ShopType> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(ShopType::getSort);
@@ -51,8 +51,8 @@ public class ShopTypeServiceImpl extends ServiceImpl<ShopTypeMapper, ShopType> i
         if (shopTypeList == null) {
             return Result.fail("No store list yet");
         }
-        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shopTypeList));
-        stringRedisTemplate.expire(key,CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
+//        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shopTypeList));
+//        stringRedisTemplate.expire(key,CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
         return Result.ok(shopTypeList);
     }
 }

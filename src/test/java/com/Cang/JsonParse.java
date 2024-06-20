@@ -2,7 +2,11 @@ package com.Cang;
 
 
 import com.Cang.entity.Game;
+import com.Cang.entity.GameRoundPic;
+import com.Cang.entity.GameShow;
+import com.Cang.service.GameRoundPicService;
 import com.Cang.service.GameService;
+import com.Cang.service.GameShowService;
 import com.Cang.service.impl.MinIOFileStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.minio.MinioClient;
@@ -15,13 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Jdfcc
@@ -37,6 +40,11 @@ public class JsonParse {
 
     @Autowired
     public GameService gameService;
+    @Resource
+    public GameShowService gameShowService;
+
+    @Resource
+    GameRoundPicService gameRoundPicService;
 
     @Test
     public void parser() {
@@ -45,7 +53,7 @@ public class JsonParse {
             List<Game> gameList = new ArrayList<>();
 
             // 从文件中读取 JSON 数据
-            String filePath = "C:\\Users\\Jdfcc\\Desktop\\steam-scraper\\output\\products_all copy.jl"; // 请替换为你的文件路径
+            String filePath = "E:\\steam-scraper\\output\\products_all copy.jl"; // 请替换为你的文件路径
             String jsonFileContent = readFromFile(filePath);
 
             String[] jsonObjects = jsonFileContent.split("\n");
@@ -58,10 +66,93 @@ public class JsonParse {
             for (Game game : gameList) {
                 System.out.println(game);
             }
-            gameService.saveBatch(gameList);
+            List<Game> distinctList = new ArrayList<>(
+                    gameList.stream().collect(Collectors.toMap(Game::getId, obj -> obj, (existing, replacement) -> existing)).values()
+            );
+            gameService.saveBatch(distinctList);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 展示页面游戏获取
+     */
+    @Test
+    public void mainGamePicParser() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<GameShow> gameList = new ArrayList<>();
+
+            // 从文件中读取 JSON 数据
+            String filePath = "E:\\steam-scraper\\output.json"; // 请替换为你的文件路径
+            String jsonFileContent = readFromFile(filePath);
+
+            String[] jsonObjects = jsonFileContent.split("\n");
+
+            for (String jsonObject : jsonObjects) {
+                GameShow game = convertJsonToGameShow(objectMapper.readValue(jsonObject, Map.class));
+                gameList.add(game);
+            }
+            // 打印结果
+            for (GameShow game : gameList) {
+                System.out.println(game);
+            }
+            List<GameShow> distinctList = new ArrayList<>(
+                    gameList.stream().collect(Collectors.toMap(GameShow::getId, obj -> obj, (existing, replacement) -> existing)).values()
+            );
+            gameShowService.saveBatch(distinctList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    /**
+     * 详情页游戏轮播图获取
+     */
+    @Test
+    public void detailGamePicParser() {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<GameRoundPic> gameList = new ArrayList<>();
+
+            // 从文件中读取 JSON 数据
+            String filePath = "E:\\steam-scraper\\output_detail.json"; // 请替换为你的文件路径
+            String jsonFileContent = readFromFile(filePath);
+
+            String[] jsonObjects = jsonFileContent.split("\n");
+
+            for (String jsonObject : jsonObjects) {
+                GameRoundPic game = convertJsonToRoundGame(objectMapper.readValue(jsonObject, Map.class));
+                gameList.add(game);
+            }
+            // 打印结果
+            for (GameRoundPic game : gameList) {
+                System.out.println(game);
+            }
+            List<GameRoundPic> distinctList = new ArrayList<>(
+                    gameList.stream().collect(Collectors.toMap(GameRoundPic::getId, obj -> obj, (existing, replacement) -> existing)).values()
+            );
+            gameRoundPicService.saveBatch(distinctList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    private static GameRoundPic convertJsonToRoundGame(Map<String, Object> jsonMap) {
+        GameRoundPic game = new GameRoundPic();
+        String url = (String) jsonMap.get("game_urls");
+        String[] split = url.split("/");
+        String id = split[split.length - 2];
+        game.setId(Long.valueOf(id));
+        game.setName((String) jsonMap.get("game_name"));
+        game.setUrl((String) jsonMap.get("game_urls"));
+        game.setSteamImages((List<String>) jsonMap.get("game_pic"));
+        return game;
     }
 
     private static String readFromFile(String filePath) throws IOException {
@@ -75,6 +166,13 @@ public class JsonParse {
         return content.toString();
     }
 
+    @Test
+    public void testArray() {
+        int[] array = {1, 2, 4};
+        String string = Arrays.toString(array);
+        System.out.println(string);
+    }
+
     private Game convertJsonToGame(Map<String, Object> jsonMap) {
         Game game = new Game();
         System.out.println(jsonMap);
@@ -84,7 +182,7 @@ public class JsonParse {
         game.setTitle((String) jsonMap.get("title"));
         List<String> genres = (List<String>) jsonMap.get("genres");
         if (genres != null) {
-//            game.setGenres(genres);
+            game.setGenres(Arrays.toString(genres.toArray()));
         }
         game.setDeveloper((String) jsonMap.get("developer"));
         game.setPublisher((String) jsonMap.get("publisher"));
@@ -93,7 +191,7 @@ public class JsonParse {
         game.setAppName((String) jsonMap.get("app_name"));
         List<String> tags = (List<String>) jsonMap.get("tags");
         if (tags != null) {
-//            game.setTags(tags);
+            game.setTags(Arrays.toString(tags.toArray()));
         }
         String discount = (String) jsonMap.get("discount_price");
         if (discount != null) {
@@ -106,11 +204,16 @@ public class JsonParse {
         String obj = (String) jsonMap.get("price");
         if (obj != null) {
             if (obj.contains("Free")) {
-                game.setPrice(0F);
+                game.setPrice("0");
             } else {
                 String[] s = obj.split(" ");
-                game.setUnit(s[0]);
-                game.setPrice(Float.valueOf(s[1]));
+                try {
+                    game.setUnit(s[0]);
+                    game.setPrice(s[1]);
+                } catch (Exception e) {
+                    System.out.println("出错的数据是" + Arrays.toString(s));
+                }
+
             }
 
         }
@@ -119,6 +222,14 @@ public class JsonParse {
         return game;
     }
 
+    private static GameShow convertJsonToGameShow(Map<String, Object> jsonMap) {
+        GameShow game = new GameShow();
+        game.setId(Long.valueOf((String) jsonMap.get("id")));
+        game.setName((String) jsonMap.get("game_name"));
+        game.setUrl((String) jsonMap.get("game_url"));
+        game.setSteamPic((String) jsonMap.get("game_pic"));
+        return game;
+    }
 //    @Data
 //    public class Game implements Serializable {
 //        private String url;

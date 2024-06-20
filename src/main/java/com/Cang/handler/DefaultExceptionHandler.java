@@ -5,6 +5,7 @@ import com.Cang.dto.Result;
 import com.Cang.entity.MessageQueueEntity;
 import com.Cang.enums.BusinessType;
 import com.Cang.exception.*;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.annotation.Order;
@@ -29,7 +30,7 @@ import static com.Cang.constants.RabbitMqConstants.*;
  * @Description ExceptionHandler
  * @DateTime 2024/1/3 10:51
  */
-@RestControllerAdvice
+//@RestControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
 
@@ -53,13 +54,13 @@ public class DefaultExceptionHandler {
         return Result.fail(e.getMessage());
     }
 
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    @ExceptionHandler(value = EmptyUserHolderException.class)
-    public Result userHolderNullPointerExceptionRun(Throwable e) {
-
-        log.error("用户未登录: {}", e.toString());
-        return Result.fail("用户未登录");
-    }
+//    @Order(Ordered.HIGHEST_PRECEDENCE)
+//    @ExceptionHandler(value = EmptyUserHolderException.class)
+//    public Result userHolderNullPointerExceptionRun(Throwable e,HttpServletResponse response) {
+//        e.printStackTrace();
+//        log.error("用户未登录: {}", e.toString());
+//        return Result.failAndReLogin(response);
+//    }
 
     @ExceptionHandler(SQLException.class)
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -86,8 +87,16 @@ public class DefaultExceptionHandler {
 
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ExceptionHandler({InvalidTokenException.class})
-    public Result tokenExceptionHandler(HttpServletResponse response) {
-        return Result.failAndReLogin("身份验证已失效，请重新登录",response);
+    public Result tokenExceptionHandler(Throwable e,HttpServletResponse response) {
+        e.printStackTrace();
+        return Result.failAndReLogin(response);
+    }
+
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ExceptionHandler({TokenExpiredException.class})
+    public Result tokenExpiredExceptionHandler(Throwable e,HttpServletResponse response) {
+        e.printStackTrace();
+        return Result.failAndValidToken(response);
     }
 
     /**
@@ -96,14 +105,24 @@ public class DefaultExceptionHandler {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ExceptionHandler({InvalidRefreshTokenException.class})
     public Result refreshTokenExceptionHandler(HttpServletResponse response) {
-        return Result.failAndReLogin("身份验证已失效，请重新登录",response);
+        return Result.failAndReLogin(response);
+    }
+
+    /**
+     * accessToken失效，需要用户重新登录
+     */
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @ExceptionHandler({InvalidAccessTokenException.class})
+    public Result accessTokenExceptionHandler(HttpServletResponse response) {
+        return Result.failAndReLogin(response);
     }
 
     @ExceptionHandler(Exception.class)
-    @Order()
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public Result defaultExceptionHandler(Throwable e) {
+        System.out.println("*********************************");
         e.printStackTrace();
-        return Result.fail(e.getMessage());
+        return Result.fail("服务器异常，请稍后再试!");
     }
 
 }

@@ -92,43 +92,30 @@ public class IpCheckAop {
 
     private Boolean validAndHandleIp(String ip, IpCheckAnnotation annotation) {
         String key = IP_CACHE_KEY + ip;
-
         Integer lastCount = (Integer) redisTemplate.opsForHash().get(key, HASH_KEY_COUNT);
         int limitCount = annotation.count();
-
-
         Integer lastSec = (Integer) redisTemplate.opsForHash().get(key, HASH_KEY_TIME);
-        LocalDateTime now = LocalDateTime.now();
-        Long nowSec = now.toEpochSecond(ZoneOffset.UTC);
-
+        long nowSec = System.currentTimeMillis();
         int time = annotation.time();
-
         if (lastCount == null || lastSec == null) {
             redisTemplate.opsForHash().put(key, HASH_KEY_COUNT, 1);
             redisTemplate.opsForHash().put(key, HASH_KEY_TIME, nowSec);
             redisTemplate.expire(key, time, TimeUnit.SECONDS);
             return true;
         }
-
         if (limitCount <= 0) {
             throw new IllegalArgumentException("Count can not be 0 and even smaller");
         }
-
         //        允许访问
         int step = time / limitCount;
-
         long durSec = nowSec - lastSec;
-
         //        按照步长减少访问次数
         int tem = Math.toIntExact((durSec / step));
-
         lastCount -= tem;
-
         if ((lastCount) >= limitCount && nowSec >= lastSec) {
 //            规定时间内问次数达到上限，不能访问。过期时间为步长.
             return false;
         }
-
         lastCount = lastCount > 0 ? lastCount : 0;
         redisTemplate.opsForHash().put(key, HASH_KEY_COUNT, lastCount + 1);
         redisTemplate.opsForHash().put(key, HASH_KEY_TIME, nowSec);

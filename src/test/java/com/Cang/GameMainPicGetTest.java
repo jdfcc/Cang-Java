@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
@@ -117,13 +116,14 @@ public class GameMainPicGetTest {
     public void getPics() throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<GameShow> gameList = new ArrayList<>();
+        HashSet<GameShow> gameList = new HashSet<>();
 
         // 从文件中读取 JSON 数据
         String filePath = "C:\\Users\\Jdfcc\\Desktop\\steam-scraper\\output.json"; // 请替换为你的文件路径
         String jsonFileContent = readFromFile(filePath);
 
         String[] jsonObjects = jsonFileContent.split("\n");
+
 
         for (String jsonObject : jsonObjects) {
             GameShow game = convertJsonToGame(objectMapper.readValue(jsonObject, Map.class));
@@ -201,8 +201,6 @@ public class GameMainPicGetTest {
                         continue;
                     }
                     String fileExtension = getFileNameWithExtension(steamImage);
-                    // TODO
-//                downloadPicture(steamImage,FILE_PREFIX,)
                     String fileName = game.getName() + "_" + index;
                     downloadPicture(steamImage, SAVE_PATH, game.getName(), fileName);
 

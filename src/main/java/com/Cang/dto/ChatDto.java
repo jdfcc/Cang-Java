@@ -37,12 +37,12 @@ public class ChatDto implements Serializable {
      */
     private String message;
     /**
-     * 发送者
+     * 发送者id
      */
     @JsonSerialize(using = ToStringSerializer.class)
     private Long send;
     /**
-     * 接收者
+     * 接收者id
      */
     @JsonSerialize(using = ToStringSerializer.class)
     private Long receive;
@@ -56,7 +56,7 @@ public class ChatDto implements Serializable {
     private LocalDateTime createTime;
 
     /**
-     * 昵称
+     * 目标用户昵称，非当前用户昵称
      */
     private String nickName;
 

@@ -40,7 +40,7 @@ public interface CommentService extends IService<Comment> {
      * 保存评论
      * @param comment commentEntity
      */
-    void saveComment(Comment comment);
+     Comment saveComment(Comment comment);
 
     /**
      * 根据评论id删除评论

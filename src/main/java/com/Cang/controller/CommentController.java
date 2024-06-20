@@ -32,8 +32,8 @@ public class CommentController {
     @PostMapping("/send")
     Result comment(@RequestBody @Valid Comment comment) {
 
-        commentService.saveComment(comment);
-        return Result.ok();
+        Comment newComment = commentService.saveComment(comment);
+        return Result.ok(newComment);
     }
 
     /**

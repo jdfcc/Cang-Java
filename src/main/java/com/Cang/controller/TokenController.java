@@ -2,10 +2,8 @@ package com.Cang.controller;
 
 import com.Cang.dto.Result;
 import com.Cang.utils.TokenUtil;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author Jdfcc
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Description TokenController
  * @DateTime 2024/1/5 16:42
  */
+@Slf4j
 @RestController
 @RequestMapping("/token")
 public class TokenController {
@@ -21,10 +20,11 @@ public class TokenController {
      * @param refreshToken token refresh token
      * @return accessToken
      */
-    @PostMapping("/verify")
+    @GetMapping("/verify")
     public Result generateToken(@RequestParam("refreshToken") String refreshToken) throws Exception {
         Long userid = TokenUtil.verifyRefreshToken(refreshToken);
         String accessToken = TokenUtil.generateToken(userid);
+        log.info("Generating access token: {}", accessToken);
         return Result.ok(accessToken);
     }
 }

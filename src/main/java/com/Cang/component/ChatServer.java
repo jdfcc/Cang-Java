@@ -49,22 +49,40 @@ public class ChatServer {
 
     @OnOpen
     // TODO token建立连接
-    public void onOpen(Session session, @PathParam("token") String token) throws IOException {
+    public void onOpen(Session session, @PathParam("token") String token) throws Exception {
         String sessionId = session.getId();
-        // TODO 若AccessToken不可用，则验证RefreshToken的操作不应在此处进行，由统一controller进行续签管理从而减少与代码的耦合性
+        if (token.isEmpty()  || "null".equals(token)) {
+            return;
+        }
         Long userid = TokenUtil.verifyAccessToken(token);
-
         ChatSessions.addClient(String.valueOf(userid), session);
         ChatSessions.Session2IdMapping.addMapping(sessionId, String.valueOf(userid));
-        log.info("首页有新连接加入：{} ,当前连接数为 {}", session.getId(), ChatSessions.getSize());
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
         String userId = ChatSessions.Session2IdMapping.getUserId(session.getId());
-        ChatSessions.removeClient(String.valueOf(userId), session);
-        ChatSessions.Session2IdMapping.removeMapping(session.getId(), userId);
-        log.info("首页有连接断开：{},当前连接数为 {}", userId,ChatSessions.getSize());
+        if (userId != null) {
+            ChatSessions.removeClient(String.valueOf(userId), session);
+            ChatSessions.Session2IdMapping.removeMapping(session.getId(), userId);
+            log.info("首页有连接断开：{},当前连接数为 {}", userId, ChatSessions.getSize());
+        }
+
+    }
+
+    public void sendMessage(Chat chat) throws IOException {
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat, chatDto);
+        String avatar = userService.getAvatar(chat.getSend());
+        chatDto.setAvatar(avatar);
+        Long targetId = chat.getReceive();
+        List<Session> targetSessions = ChatSessions.getSession(targetId);
+        if (targetSessions != null) {
+            for (Session targetSession : targetSessions) {
+                // 在线
+                targetSession.getBasicRemote().sendText(MessageDto.receive(chat.getSend(), chatDto));
+            }
+        }
     }
 
     @OnMessage
@@ -73,9 +91,7 @@ public class ChatServer {
             String userId = ChatSessions.Session2IdMapping.getUserId(session.getId());
             MessageDto messageDto = JSON.parseObject(message, MessageDto.class);
             Long id = messageDto.getUserid();
-            log.info("首页收到来自用户：" + id + "的信息   " + message);
             if ("heartbeat".equals(messageDto.getType())) {
-                //  立刻向前台发送消息，代表后台正常运行
                 log.info("首页心跳检测 {}", userId);
                 session.getBasicRemote().sendText(MessageDto.heartBeat());
             } else if ("message".equals(messageDto.getType())) {
@@ -95,21 +111,8 @@ public class ChatServer {
                     for (Session targetSession : targetSessions) {
                         // 在线
                         targetSession.getBasicRemote().sendText(MessageDto.receive(Long.valueOf(userId), chatDto));
-                        // TODO 首页发送一份提醒消息
                     }
                 }
-            }
-            else if ("query".equals(messageDto.getType())) {
-                Long targetId = messageDto.getTargetId();
-                //      TODO 查询信息
-                ChatSessions.Session2IdMapping.getUserId(session.getId());
-                List<Object> chats = chatService.getMessage(id, targetId);
-                session.getBasicRemote().sendText(MessageDto.query(targetId, chats));
-            } else if ("list".equals(messageDto.getType())) {
-                log.info("List");
-                Long userid = messageDto.getUserid();
-                List<ChatDto> data = chatService.getHomeChat(userid);
-                session.getBasicRemote().sendText(MessageDto.list(userid, data));
             }
         } catch (Exception e) {
             session.getBasicRemote().sendText("消息发送失败，请刷新页面重试");
@@ -136,12 +139,20 @@ public class ChatServer {
         return chatDto;
     }
 
+    public ChatDto newChat(Chat chat){
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat, chatDto);
+        String avatar = userService.getAvatar(chat.getSend());
+        chatDto.setAvatar(avatar);
+        return chatDto;
+    }
+
     /**
      * @description: 当连接发生错误时，执行该方法
      **/
     @OnError
     public void onError(Throwable error) {
-        log.info("系统错误 {}",error.getMessage());
+        log.info("系统错误 {}", error.getMessage());
         error.printStackTrace();
     }
 

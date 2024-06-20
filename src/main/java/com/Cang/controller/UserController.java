@@ -36,9 +36,9 @@ public class UserController {
      * 发送手机验证码
      */
     @PostMapping("/code")
-    public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
-
-        return userService.sendCode(phone, session);
+    public Result sendCode(@RequestParam("email") String email) {
+         userService.sendCode(email);
+         return Result.ok();
     }
 
 
@@ -70,10 +70,8 @@ public class UserController {
         //  获取当前登录的用户并返回
         Long userId = UserHolder.getUser();
         log.info("User {}", userId);
-//        return Result.ok(user);
         UserDTO userInfo = userService.getUserInfo(userId);
         return Result.ok(userInfo);
-
     }
 
 

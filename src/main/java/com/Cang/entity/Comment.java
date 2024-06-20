@@ -34,12 +34,16 @@ public class Comment implements Serializable {
 
     private Long postId;
 
-    private Integer response;
 
     /**
      * 点赞数
      */
     private Integer likeCount;
+
+    /**
+     * 评分
+     */
+    private Integer rate;
 
     @JsonIgnore
     private Integer status;

@@ -23,7 +23,7 @@ public interface IUserService extends IService<User> {
      * 用户注册或登录发送验证码
      * @param email 邮箱
      */
-    Result sendCode(String email, HttpSession session);
+    void sendCode(String email);
 
     /**
      * 用户登录

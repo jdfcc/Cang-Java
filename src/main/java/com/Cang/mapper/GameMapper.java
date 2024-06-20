@@ -1,5 +1,6 @@
 package com.Cang.mapper;
 
+import com.Cang.dto.GameDetailDto;
 import com.Cang.entity.Game;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,4 +20,6 @@ public interface GameMapper extends BaseMapper<Game> {
     List<Game> getByTag(@Param("tag") String tag,
                         @Param("index") Integer index,
                         @Param("pageSize") Integer pageSize);
+
+    GameDetailDto getDetail(@Param("id") String id);
 }

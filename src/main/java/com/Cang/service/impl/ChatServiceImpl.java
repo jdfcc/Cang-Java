@@ -1,19 +1,27 @@
 package com.Cang.service.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import com.Cang.component.ChatServer;
 import com.Cang.dto.ChatDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
+import com.Cang.service.IUserService;
+import com.Cang.utils.UserHolder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -33,6 +41,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     private final ChatMapper chatMapper;
 
     private final RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private ChatServer chatServer;
+
+    @Resource
+    private IUserService userService;
 
     @Autowired
     public ChatServiceImpl(ChatMapper chatMapper, RedisTemplate<String, Object> redisTemplate) {
@@ -54,48 +67,48 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result sendMessage(Chat chat) {
+    public Result sendMessage(Chat chat) throws IOException {
         chat.setCreateTime(LocalDateTime.now());
-        Long userid = chat.getSend();
+        Long userid = UserHolder.getUser();
         Long targetId = chat.getReceive();
         String key = this.getKey(userid, targetId);
         chat.setUserKey(key);
         chat.setSend(userid);//TODO 加一个异常判断
         this.saveMessage(chat);
+        chatServer.sendMessage(chat);
         long seconds = chat.getCreateTime().toEpochSecond(ZoneOffset.UTC);
         double score = seconds * 1000;
         chat.setCreateTime(null);
 //        在当前用户与目标用户首页消息列表中添加此条消息
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userid, chat, score);
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + targetId, chat, score);
-        return Result.ok();
+
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat, chatDto);
+        String avatar = userService.getAvatar(chat.getSend());
+        chatDto.setAvatar(avatar);
+        return Result.ok(chatDto);
     }
 
+    /**
+     * 查询与此用户id的聊天记录
+     *
+     * @param id 目标用户id
+     * @return 聊天记录
+     */
+    @Override
+    public List<Object> getDetails(Long id) {
+        return this.getMessage(UserHolder.getUser(), id);
+    }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     public List<Object> getMessage(Long userId, Long targetId) {
-        String key = this.getKey(userId, targetId);
-//  TODO 删除此注释     List<Object> chats = redisTemplate.opsForList().range(String.valueOf(key), 0L, -1L);
-        Set<Object> chats = redisTemplate.opsForZSet().range(key, 0L, -1L);
-        if (CollectionUtil.isEmpty(chats)) {
-//            从数据库中查询并重建缓存
-            List<Object> newChats = Collections.singletonList(chatMapper.selectDtos(key));
-            //数据库中也为空，两人第一次聊天
-            if (CollectionUtil.isEmpty(newChats)) {
-//                储存空缓存以解决缓存击穿
-                redisTemplate.opsForZSet().add(key, new HashSet<>());
-                return new ArrayList<>();
-            }
-//            重建缓存
-            for (Object temp : newChats) {
-                long seconds = ((ChatDto) temp).getCreateTime().toEpochSecond(ZoneOffset.UTC);
-                double score = seconds * 1000;
-                redisTemplate.opsForZSet().add(key, temp, score);
-            }
-            return newChats;
-        }
-        return new ArrayList<>(chats);
+//            从数据库中查询
+        List<Object> newChats = Collections.
+                singletonList(chatMapper.selectDtos(String.valueOf(userId), String.valueOf(targetId)));
+
+        return new ArrayList<>(newChats);
     }
 
     /**
@@ -112,7 +125,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     public List<ChatDto> getHomeChat(Long userId) {
-        return   chatMapper.selectLast(userId);
+        return chatMapper.selectLast(userId);
 
     }
 

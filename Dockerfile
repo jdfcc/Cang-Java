@@ -1,10 +1,10 @@
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-slim
 
 WORKDIR /app
 
-COPY target/Cang-1.0.jar app.jar
+COPY target/cang-2.0.1.jar app.jar
 
-EXPOSE 9090
+EXPOSE 9986
 
 CMD ["java","-jar","app.jar"]
 
