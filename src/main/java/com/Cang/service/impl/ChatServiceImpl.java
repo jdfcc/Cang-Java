@@ -1,6 +1,7 @@
 package com.Cang.service.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.Cang.component.ChatServer;
 import com.Cang.dto.ChatDto;
@@ -8,6 +9,7 @@ import com.Cang.dto.Result;
 import com.Cang.entity.Chat;
 import com.Cang.mapper.ChatMapper;
 import com.Cang.service.ChatService;
+import com.Cang.service.IUserService;
 import com.Cang.utils.UserHolder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -41,6 +43,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     private final RedisTemplate<String, Object> redisTemplate;
     @Resource
     private ChatServer chatServer;
+
+    @Resource
+    private IUserService userService;
 
     @Autowired
     public ChatServiceImpl(ChatMapper chatMapper, RedisTemplate<String, Object> redisTemplate) {
@@ -77,7 +82,12 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 //        在当前用户与目标用户首页消息列表中添加此条消息
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + userid, chat, score);
         redisTemplate.opsForZSet().add(CHAT_MESSAGE_USER_CACHE_KEY_LAST + targetId, chat, score);
-        return Result.ok();
+
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat, chatDto);
+        String avatar = userService.getAvatar(chat.getSend());
+        chatDto.setAvatar(avatar);
+        return Result.ok(chatDto);
     }
 
     /**
@@ -96,7 +106,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     public List<Object> getMessage(Long userId, Long targetId) {
 //            从数据库中查询
         List<Object> newChats = Collections.
-                singletonList(chatMapper.selectDtos(String.valueOf(userId),String.valueOf(targetId)));
+                singletonList(chatMapper.selectDtos(String.valueOf(userId), String.valueOf(targetId)));
 
         return new ArrayList<>(newChats);
     }

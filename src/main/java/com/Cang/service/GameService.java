@@ -1,5 +1,6 @@
 package com.Cang.service;
 
+import com.Cang.dto.GameDetailDto;
 import com.Cang.entity.Game;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -29,4 +30,10 @@ public interface GameService extends IService<Game> {
      * @param gameName 游戏名
      */
     Page<Game> query(Integer index, Integer pageSize, String tagName,String gameName);
+
+    /**
+     * 获取游戏详细信息
+     * @param id 游戏id
+     */
+    GameDetailDto getGameDetail(String id);
 }

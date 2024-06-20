@@ -15,7 +15,7 @@ public class GameOrder {
      */
     private String outTradeNo;
     /**
-     * 商品数
+     * 商品价格
      */
     private String totalAmount;
     /**

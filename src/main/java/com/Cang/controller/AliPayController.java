@@ -3,6 +3,7 @@ package com.Cang.controller;
 import com.Cang.dto.Result;
 import com.Cang.entity.GameOrder;
 import com.Cang.service.AliService;
+import com.Cang.utils.IdGeneratorSnowflake;
 import com.Cang.utils.UserHolder;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,13 +31,16 @@ public class AliPayController {
     AliService aliService;
 //    @Resource
 //    GameOrderService gameOrderService;
+    @Resource
+    IdGeneratorSnowflake idGeneratorSnowflake;
 
 
-    @GetMapping("/pay")
+    @PostMapping("/pay")
     public void pay(@RequestBody GameOrder order, HttpServletResponse httpResponse) throws Exception {
         Long user = UserHolder.getUser();
+        long orderNo = idGeneratorSnowflake.snowflakeId();
         String form;
-        form = aliService.createPaymentForm(order.getOutTradeNo(), order.getTotalAmount(), order.getSubject(), user);
+        form = aliService.createPaymentForm(String.valueOf(orderNo), order.getTotalAmount(), order.getSubject(), user);
         httpResponse.setContentType("text/html;charset=UTF-8");
         httpResponse.getWriter().write(form);
         httpResponse.getWriter().flush();

@@ -1,5 +1,6 @@
 package com.Cang.service.impl;
 
+import com.Cang.dto.GameDetailDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Game;
 import com.Cang.entity.Tag;
@@ -79,5 +80,15 @@ public class GameServiceImpl extends ServiceImpl<GameMapper, Game> implements Ga
 
         // 分页查询
         return page(new Page<>(index, pageSize), queryWrapper);
+    }
+
+    /**
+     * 获取游戏详细信息
+     *
+     * @param id 游戏id
+     */
+    @Override
+    public GameDetailDto getGameDetail(String id) {
+        return gameMapper.getDetail(id);
     }
 }

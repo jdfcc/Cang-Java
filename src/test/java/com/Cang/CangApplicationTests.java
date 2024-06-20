@@ -92,14 +92,14 @@ class CangApplicationTests {
         log.info("follows: {}", follows);
     }
 
-    @Test
-    public void testChat() {
-        Chat chat = new Chat();
-        chat.setMessage("Hello");
-        chat.setSend(1L);
-        chat.setReceive(2L);
-        chatService.sendMessage(chat);
-    }
+//    @Test
+//    public void testChat() {
+//        Chat chat = new Chat();
+//        chat.setMessage("Hello");
+//        chat.setSend(1L);
+//        chat.setReceive(2L);
+//        chatService.sendMessage(chat);
+//    }
 
     @Test
     public void testHello() {

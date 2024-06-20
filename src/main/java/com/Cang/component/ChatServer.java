@@ -51,7 +51,7 @@ public class ChatServer {
     // TODO token建立连接
     public void onOpen(Session session, @PathParam("token") String token) throws Exception {
         String sessionId = session.getId();
-        if (token.isEmpty() || token.isBlank() || "null".equals(token)) {
+        if (token.isEmpty()  || "null".equals(token)) {
             return;
         }
         Long userid = TokenUtil.verifyAccessToken(token);
@@ -135,6 +135,14 @@ public class ChatServer {
         ChatDto chatDto = new ChatDto();
         BeanUtil.copyProperties(chat, chatDto);
         String avatar = userService.getAvatar(id);
+        chatDto.setAvatar(avatar);
+        return chatDto;
+    }
+
+    public ChatDto newChat(Chat chat){
+        ChatDto chatDto = new ChatDto();
+        BeanUtil.copyProperties(chat, chatDto);
+        String avatar = userService.getAvatar(chat.getSend());
         chatDto.setAvatar(avatar);
         return chatDto;
     }

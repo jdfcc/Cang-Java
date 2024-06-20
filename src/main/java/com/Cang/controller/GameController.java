@@ -1,10 +1,13 @@
 package com.Cang.controller;
 
 
+import com.Cang.dto.GameDetailDto;
 import com.Cang.dto.Result;
 import com.Cang.entity.Game;
+import com.Cang.entity.GameRoundPic;
 import com.Cang.entity.GameShow;
 import com.Cang.entity.Tag;
+import com.Cang.service.GameRoundPicService;
 import com.Cang.service.GameService;
 import com.Cang.service.GameShowService;
 import com.Cang.service.TagService;
@@ -43,18 +46,23 @@ public class GameController {
     public Result listGame(@RequestParam(value = "index", defaultValue = "1") Integer index,
                            @RequestParam(value = "type", defaultValue = "") String type,
                            @RequestParam(value = "name", defaultValue = "") String name) {
-         Page<Game> page = gameService.query(index,PAGE_SIZE,type,name);
+        Page<Game> page = gameService.query(index, PAGE_SIZE, type, name);
         return Result.ok(page);
     }
 
     @GetMapping("/show")
     public Result listGames(@RequestParam(value = "index", defaultValue = "1") Integer index,
-                           @RequestParam(value = "type", defaultValue = "") String type,
-                           @RequestParam(value = "name", defaultValue = "") String name) {
-        Page<GameShow> page = gameShowService.query(index,PAGE_SIZE,name);
+                            @RequestParam(value = "type", defaultValue = "") String type,
+                            @RequestParam(value = "name", defaultValue = "") String name) {
+        Page<GameShow> page = gameShowService.query(index, PAGE_SIZE, name);
         return Result.ok(page);
     }
 
+    @GetMapping("/detail")
+    public Result getDetails(@RequestParam(value = "id") String id) {
+        GameDetailDto detail = gameService.getGameDetail(id);
+        return Result.ok(detail);
+    }
 
 
     /**

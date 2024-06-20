@@ -9,4 +9,32 @@
     <select id="getByTag" resultType="com.Cang.entity.Game">
         select * from game where tags like CONCAT('%', #{tag}, '%') limit ${index}, ${pageSize}
     </select>
+
+    <select id="getDetail" resultType="com.Cang.dto.GameDetailDto">
+        SELECT
+        g.url,
+        g.reviews_url AS reviewsUrl,
+        g.id,
+        g.title,
+        g.genres,
+        g.developer,
+        g.publisher,
+        g.release_date AS releaseDate,
+        g.app_name AS appName,
+        g.tags,
+        g.discount_price AS discountPrice,
+        g.price,
+        g.unit,
+        g.sentiment,
+        g.early_access AS earlyAccess,
+        grp.steam_images AS steamImages
+        FROM
+        game g
+        LEFT JOIN
+        game_round_pic grp
+        ON
+        g.id = grp.id
+        WHERE
+        g.id = #{id}
+    </select>
 </mapper>
